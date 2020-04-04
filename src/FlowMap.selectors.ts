@@ -13,7 +13,6 @@ import {
   getFlowOriginId,
   getLocationCentroid,
   getLocationId,
-  isLocationCluster,
   Location,
 } from './types';
 import * as Cluster from '@flowmap.gl/cluster';
@@ -292,22 +291,6 @@ export const getUnknownLocations: Selector<Set<string> | undefined> = createSele
   }
 );
 
-export const getSortedAggregatedFlows: Selector<Flow[] | undefined> = createSelector(
-  getClusterIndex,
-  getSortedFlowsForKnownLocations,
-  getClusterZoom,
-  (clusterTree, flows, clusterZoom) => {
-    if (!clusterTree || !flows || clusterZoom == null) return undefined;
-    return clusterTree
-      .aggregateFlows(flows, clusterZoom, {
-        getFlowOriginId,
-        getFlowDestId,
-        getFlowMagnitude,
-      })
-      .sort((a, b) => descending(Math.abs(getFlowMagnitude(a)), Math.abs(getFlowMagnitude(b))));
-  }
-);
-
 export const getMaxClusterZoom: Selector<number | undefined> = createSelector(
   getClusterIndex,
   clusterIndex => {
@@ -381,17 +364,19 @@ const getLocationsForZoom: Selector<Location[] | ClusterNode[] | undefined> = cr
 type KDBushTree = any;
 
 export const getLocationsTree: Selector<KDBushTree> = createSelector(
-  getLocationsForZoom,
+  getLocationsHavingFlows,
   locations => {
     if (!locations) {
       return undefined;
     }
     return new KDBush(
       locations,
-      (location: Location | Cluster.Cluster) =>
-        lngX(isLocationCluster(location) ? location.centroid[0] : location.lon),
-      (location: Location | Cluster.Cluster) =>
-        latY(isLocationCluster(location) ? location.centroid[1] : location.lat)
+      (location: Location) => lngX(location.lon),
+      (location: Location) => latY(location.lat)
+      // (location: Location | Cluster.Cluster) =>
+      //   lngX(isLocationCluster(location) ? location.centroid[0] : location.lon),
+      // (location: Location | Cluster.Cluster) =>
+      //   latY(isLocationCluster(location) ? location.centroid[1] : location.lat)
     );
   }
 );
@@ -439,30 +424,113 @@ const getLocationIdsInViewport: Selector<Set<string> | undefined> = createSelect
   return locationIds;
 });
 
-export const getLocationsForFlowMapLayer: Selector<
-  Location[] | ClusterNode[] | undefined
-> = createSelector(
-  getLocationsForZoom,
-  getLocationIdsInViewport,
-  (locations, locationIdsInViewport) => {
-    if (!locations) return undefined;
-    if (!locationIdsInViewport) return locations;
-    if (locationIdsInViewport.size === locations.length) return locations;
-    // const filtered = [];
-    // for (const loc of locations) {
-    //   if (locationIdsInViewport.has(loc.id)) {
-    //     filtered.push(loc);
-    //   }
-    // }
-    // return filtered;
-    // @ts-ignore
-    // return locations.filter(
-    //   (loc: Location | ClusterNode) => locationIdsInViewport.has(loc.id)
-    // );
-    // TODO: return location in viewport + "connected" ones
-    return locations;
+export const getExpandedSelectedLocationSet: Selector<Set<string> | undefined> = createSelector(
+  getSelectedLocations,
+  getClusterIndex,
+  (selectedLocationIds, clusterIndex) => {
+    if (!selectedLocationIds || selectedLocationIds.length === 0) return undefined;
+    if (!clusterIndex) {
+      return new Set(selectedLocationIds);
+    }
+    const expandedIds = new Set<string>();
+    for (const id of selectedLocationIds) {
+      const cluster = clusterIndex.getClusterById(id);
+      if (cluster) {
+        for (const eid of clusterIndex.expandCluster(cluster)) {
+          expandedIds.add(eid);
+        }
+      } else {
+        expandedIds.add(id);
+      }
+    }
+    return expandedIds;
   }
 );
+
+export const getSortedAggregatedFlows: Selector<Flow[] | undefined> = createSelector(
+  getClusterIndex,
+  getSortedFlowsForKnownLocations,
+  getLocationIdsInViewport,
+  getExpandedSelectedLocationSet,
+  getLocationFilterMode,
+  getClusterZoom,
+  (
+    clusterTree,
+    flows,
+    locationIdsInViewport,
+    expandedSelectedLocationsSet,
+    locationFilterMode,
+    clusterZoom
+  ) => {
+    if (!clusterTree || !flows || clusterZoom == null || !locationIdsInViewport) return undefined;
+
+    const pickFlows = function*() {
+      for (const flow of flows) {
+        const { origin, dest } = flow;
+        if (locationIdsInViewport.has(origin) || locationIdsInViewport.has(dest)) {
+          let pick = true;
+          if (expandedSelectedLocationsSet) {
+            switch (locationFilterMode) {
+              case LocationFilterMode.ALL:
+                pick =
+                  expandedSelectedLocationsSet.has(origin) ||
+                  expandedSelectedLocationsSet.has(dest);
+                break;
+              case LocationFilterMode.BETWEEN:
+                pick =
+                  expandedSelectedLocationsSet.has(origin) &&
+                  expandedSelectedLocationsSet.has(dest);
+                break;
+              case LocationFilterMode.INCOMING:
+                pick = expandedSelectedLocationsSet.has(dest);
+                break;
+              case LocationFilterMode.OUTGOING:
+                pick = expandedSelectedLocationsSet.has(origin);
+                break;
+            }
+          }
+          if (pick) {
+            yield flow;
+          }
+        }
+      }
+    };
+
+    // TODO: this should accept an iterable to avoid creating a new array of picked
+    const aggregatedFlows = clusterTree
+      .aggregateFlows(pickFlows() as any, clusterZoom, {
+        getFlowOriginId,
+        getFlowDestId,
+        getFlowMagnitude,
+      })
+      .sort((a, b) => descending(Math.abs(getFlowMagnitude(a)), Math.abs(getFlowMagnitude(b))));
+    if (aggregatedFlows.length > NUMBER_OF_FLOWS_TO_DISPLAY) {
+      return aggregatedFlows.slice(0, NUMBER_OF_FLOWS_TO_DISPLAY);
+    }
+    return aggregatedFlows;
+  }
+);
+
+export const getLocationsForFlowMapLayer: Selector<
+  Location[] | ClusterNode[] | undefined
+> = createSelector(getLocationsForZoom, locations => {
+  if (!locations) return undefined;
+  // if (!locationIdsInViewport) return locations;
+  // if (locationIdsInViewport.size === locations.length) return locations;
+  // const filtered = [];
+  // for (const loc of locations) {
+  //   if (locationIdsInViewport.has(loc.id)) {
+  //     filtered.push(loc);
+  //   }
+  // }
+  // return filtered;
+  // @ts-ignore
+  // return locations.filter(
+  //   (loc: Location | ClusterNode) => locationIdsInViewport.has(loc.id)
+  // );
+  // TODO: return location in viewport + "connected" ones
+  return locations;
+});
 
 const getSortedFlowsForZoom: Selector<Flow[] | undefined> = createSelector(
   getClusteringEnabled,
@@ -481,46 +549,9 @@ const getSortedFlowsForZoom: Selector<Flow[] | undefined> = createSelector(
 
 export const getFlowsForFlowMapLayer: Selector<Flow[] | undefined> = createSelector(
   getSortedFlowsForZoom,
-  getLocationIdsInViewport,
-  getSelectedLocationSet,
-  getLocationFilterMode,
-  (flows, locationIdsInViewport, selectedLocationsSet, locationFilterMode) => {
-    if (!flows || !locationIdsInViewport) return undefined;
-    const picked: Flow[] = [];
-    let pickedCount = 0;
-    for (const flow of flows) {
-      const { origin, dest } = flow;
-      if (locationIdsInViewport.has(origin) || locationIdsInViewport.has(dest)) {
-        let pick = true;
-        if (selectedLocationsSet) {
-          switch (locationFilterMode) {
-            case LocationFilterMode.ALL:
-              pick = selectedLocationsSet.has(origin) || selectedLocationsSet.has(dest);
-              break;
-            case LocationFilterMode.BETWEEN:
-              pick = selectedLocationsSet.has(origin) && selectedLocationsSet.has(dest);
-              break;
-            case LocationFilterMode.INCOMING:
-              pick = selectedLocationsSet.has(dest);
-              break;
-            case LocationFilterMode.OUTGOING:
-              pick = selectedLocationsSet.has(origin);
-              break;
-          }
-        }
-
-        if (pick) {
-          picked.push(flow);
-          if (origin !== dest) {
-            // exclude self-loops from count
-            pickedCount++;
-          }
-        }
-      }
-      // Only keep top
-      if (pickedCount > NUMBER_OF_FLOWS_TO_DISPLAY) break;
-    }
-    return picked;
+  flows => {
+    if (!flows) return undefined;
+    return flows;
   }
 );
 
