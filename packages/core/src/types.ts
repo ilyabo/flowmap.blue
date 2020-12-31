@@ -1,4 +1,5 @@
 import * as Cluster from '@flowmap.gl/cluster';
+import { ClusterNode } from '@flowmap.gl/cluster';
 
 export enum ConfigPropName {
   TITLE = 'title',
@@ -31,10 +32,12 @@ export const getFlowTime = (flow: Flow) => flow.time;
 export const getFlowMagnitude = (flow: Flow) => +flow.count || 0;
 export const getFlowOriginId = (flow: Flow) => flow.origin;
 export const getFlowDestId = (flow: Flow) => flow.dest;
-export const getLocationId = (loc: Location) => loc.id;
+export const getLocationId = (loc: Location | ClusterNode) => loc.id;
 
-export const getLocationCentroid = (location: Location | Cluster.Cluster): [number, number] =>
-  isLocationCluster(location) ? location.centroid : [location.lon, location.lat];
+export const getLocationCentroid = (location: Location | ClusterNode): [number, number] =>
+  isLocationCluster(location)
+    ? location.centroid
+    : [(location as Location).lon, (location as Location).lat];
 
 export interface Location {
   id: string;
@@ -49,7 +52,7 @@ export interface LocationTotals {
   within: number;
 }
 
-export function isLocationCluster(l: Location | Cluster.Cluster): l is Cluster.Cluster {
+export function isLocationCluster(l: Location | ClusterNode): l is Cluster.Cluster {
   const { zoom } = l as Cluster.Cluster;
   return zoom !== undefined;
 }

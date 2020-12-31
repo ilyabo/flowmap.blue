@@ -1,9 +1,4 @@
-import {
-  createSelector,
-  createSelectorCreator,
-  defaultMemoize,
-  ParametricSelector,
-} from 'reselect';
+import { createSelector, createSelectorCreator, defaultMemoize, ParametricSelector, } from 'reselect';
 import { LocationFilterMode, MAX_ZOOM_LEVEL, State } from './FlowMap.state';
 import {
   Config,
@@ -17,7 +12,8 @@ import {
   getLocationCentroid,
   getLocationId,
   isLocationCluster,
-  Location, LocationTotals,
+  Location,
+  LocationTotals,
 } from './types';
 import * as Cluster from '@flowmap.gl/cluster';
 import { ClusterNode, findAppropriateZoomLevel, isCluster } from '@flowmap.gl/cluster';
@@ -27,9 +23,18 @@ import { nest } from 'd3-collection';
 import { Props } from './FlowMap';
 import { bounds } from '@mapbox/geo-viewport';
 import KDBush from 'kdbush';
-import { descending, min } from 'd3-array';
+import { ascending, descending, max, min } from 'd3-array';
 import { csvParseRows } from 'd3-dsv';
 import { getTimeGranularityByOrder, getTimeGranularityForDate, TimeGranularity } from './time';
+import {
+  calcLocationTotals,
+  Colors,
+  ColorsRGBA,
+  DiffColors,
+  DiffColorsRGBA,
+  getLocationMaxAbsTotalGetter
+} from '@flowmap.gl/core';
+import { scaleLinear } from 'd3-scale';
 
 export const NUMBER_OF_FLOWS_TO_DISPLAY = 5000;
 
@@ -790,4 +795,77 @@ function latY(lat: number) {
   const sin = Math.sin((lat * Math.PI) / 180);
   const y = 0.5 - (0.25 * Math.log((1 + sin) / (1 - sin))) / Math.PI;
   return y < 0 ? 0 : y > 1 ? 1 : y;
+}
+
+function flatMap<S, T>(xs: S[], f: (item: S) => T | T[]): T[] {
+  return xs.reduce((acc: T[], x: S) => acc.concat(f(x)), []);
+}
+
+export function prepareLayersData(
+  locations: (Location | ClusterNode)[],
+  flows: Flow[],
+  flowMapColors: ColorsRGBA | DiffColorsRGBA,
+) {
+  const sortedFlows: Flow[] = flows.slice().sort((a: Flow, b: Flow) => ascending(+a.count, +b.count));
+  const {incoming, outgoing, within} = calcLocationTotals(locations, flows, {
+    getFlowOriginId: (flow: Flow) => flow.origin,
+    getFlowDestId: (flow: Flow) => flow.dest,
+    getFlowMagnitude: (flow: Flow) => +flow.count,
+  });
+  const centroidsById = locations.reduce(
+    (m, d) => (m.set(getLocationId(d), getLocationCentroid(d)), m),
+    new Map<string, [number, number]>(),
+  );
+  const getLocationMaxAbsTotal = getLocationMaxAbsTotalGetter(
+    locations,
+    d => incoming[getLocationId(d)],
+    d => outgoing[getLocationId(d)],
+    d => within[getLocationId(d)],
+  );
+  const maxAbsTotalsById: Map<string, number> = locations.reduce(
+    (m, d) => (m.set(getLocationId(d), getLocationMaxAbsTotal(d)), m),
+    new Map<string, number>(),
+  );
+  const circleSizeScale = scaleLinear()
+    .range([0, 15])
+    .domain([0, max(maxAbsTotalsById.values()) || 0]);
+  const thicknessScale = scaleLinear()
+    .range([0, 10])
+    .domain([0, max(sortedFlows, (f: Flow) => +f.count) || 0]);
+
+  const circlePositions = new Float32Array(flatMap(locations, getLocationCentroid));
+  const circleColors = new Uint8Array(flatMap(locations, d => flowMapColors.locationCircles.incoming));
+  const circleRadii = new Float32Array(
+    locations.map(d => circleSizeScale(getLocationMaxAbsTotal(d) || 0) || 0),
+  );
+
+  const sourcePositions = new Float32Array(flatMap(sortedFlows, (d: Flow) => centroidsById.get(d.origin)!));
+  const targetPositions = new Float32Array(flatMap(sortedFlows, (d: Flow) => centroidsById.get(d.dest)!));
+  const thicknesses = new Float32Array(sortedFlows.map((d: Flow) => thicknessScale(d.count) || 0));
+  const endpointOffsets = new Float32Array(
+    flatMap(sortedFlows, (d: Flow) => [
+      circleSizeScale(maxAbsTotalsById.get(d.origin) || 0) || 0,
+      circleSizeScale(maxAbsTotalsById.get(d.dest) || 0) || 0,
+    ]),
+  );
+
+  return {
+    circleAttributes: {
+      length: locations.length,
+      attributes: {
+        getPosition: {value: circlePositions, size: 2},
+        getColor: {value: circleColors, size: 4},
+        getRadius: {value: circleRadii, size: 1},
+      },
+    },
+    lineAttributes: {
+      length: sortedFlows.length,
+      attributes: {
+        getSourcePosition: {value: sourcePositions, size: 2},
+        getTargetPosition: {value: targetPositions, size: 2},
+        getThickness: {value: thicknesses, size: 1},
+        getEndpointOffsets: {value: endpointOffsets, size: 2},
+      },
+    },
+  };
 }

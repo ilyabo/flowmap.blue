@@ -48,7 +48,7 @@
     "@emotion/core": "^10.0.27",
     "@emotion/styled": "^10.0.27",
     "@flowmap.gl/cluster": "^7.3.0",
-    "@flowmap.gl/core": "^7.3.0",
+    "@flowmap.gl/core": "7.3.4-alpha.0",
     "@flowmap.gl/react": "^7.3.0",
     "@luma.gl/constants": "^8.1.0",
     "@luma.gl/core": "^8.1.0",
@@ -83,6 +83,8 @@
     "react-dom": ">= 16.0.0"
   },
   "devDependencies": {
+    "@blueprintjs/core": "^3.23.1",
+    "@blueprintjs/select": "^3.10.0",
     "@types/d3-array": "^2.0.0",
     "@types/d3-collection": "^1.0.7",
     "@types/d3-color": "^1.2.1",
@@ -103,8 +105,6 @@
     "@types/react": "^16.9.38",
     "@types/react-dom": "^16.9.8",
     "@types/seedrandom": "^2.4.28",
-    "@blueprintjs/core": "^3.23.1",
-    "@blueprintjs/select": "^3.10.0",
     "css-loader": "^4.3.0",
     "file-loader": "^6.0.0",
     "html-webpack-plugin": "^4.3.0",

@@ -176,6 +176,7 @@ export default function getColors(
   }
 
   return {
+    darkMode,
     flows: {
       scheme,
     },

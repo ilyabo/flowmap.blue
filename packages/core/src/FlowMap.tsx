@@ -2,11 +2,13 @@ import { DeckGL } from '@deck.gl/react';
 import { MapController } from '@deck.gl/core';
 import * as React from 'react';
 import { ReactNode, Reducer, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { alea } from 'seedrandom';
 import { _MapContext as MapContext, StaticMap } from 'react-map-gl';
-import FlowMapLayer, {
+import {
+  FlowCirclesLayer,
   FlowLayerPickingInfo,
+  FlowLinesLayer,
   FlowPickingInfo,
+  getColorsRGBA, getDiffColorsRGBA,
   LocationPickingInfo,
   PickingType,
 } from '@flowmap.gl/core';
@@ -23,9 +25,6 @@ import {
   Config,
   ConfigPropName,
   Flow,
-  getFlowDestId,
-  getFlowMagnitude,
-  getFlowOriginId,
   getLocationCentroid,
   getLocationId,
   Location,
@@ -61,7 +60,6 @@ import {
   getDarkMode,
   getDiffMode,
   getFetchedFlows,
-  getFlowMagnitudeExtent,
   getFlowMapColors,
   getFlowsForFlowMapLayer,
   getFlowsSheets,
@@ -73,9 +71,7 @@ import {
   getLocationsInBbox,
   getLocationsTree,
   getLocationTotals,
-  getLocationTotalsExtent,
   getMapboxMapStyle,
-  getMaxLocationCircleSize,
   getSortedFlowsForKnownLocations,
   getTimeExtent,
   getTimeGranularity,
@@ -83,7 +79,7 @@ import {
   getTotalFilteredCount,
   getTotalUnfilteredCount,
   getUnknownLocations,
-  NUMBER_OF_FLOWS_TO_DISPLAY,
+  prepareLayersData,
 } from './FlowMap.selectors';
 import { AppToaster } from './AppToaster';
 import useDebounced from './hooks';
@@ -95,6 +91,7 @@ import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import Timeline from './Timeline';
 import { TimeGranularity } from './time';
 import { findAppropriateZoomLevel } from '@flowmap.gl/cluster/dist-esm';
+import { isDiffColors } from '@flowmap.gl/core/dist/colors';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -418,6 +415,17 @@ const FlowMap: React.FC<Props> = (props) => {
     });
   }
 
+  const flowMapColors = getFlowMapColors(state, props);
+  const flowMapColorsRGBA = useMemo(() =>
+    isDiffColors(flowMapColors)
+      ? getDiffColorsRGBA(flowMapColors)
+      : getColorsRGBA(flowMapColors), [flowMapColors]);
+
+  console.log(flowMapColors,flowMapColorsRGBA)
+
+  const layersData = useMemo(
+      () => locations && flows ? prepareLayersData(locations, flows, flowMapColorsRGBA) : undefined,
+      [ locations, flows, flowMapColorsRGBA ]);
 
   const [showFullscreenButton, setShowFullscreenButton] = useState(
     embed && document.fullscreenEnabled
@@ -787,7 +795,7 @@ const FlowMap: React.FC<Props> = (props) => {
       fadeAmount,
     } = state;
     const layers = [];
-    if (locations && flows) {
+    if (layersData) {
       const id = [
         'flow-map',
         animationEnabled ? 'animated' : 'arrows',
@@ -799,56 +807,69 @@ const FlowMap: React.FC<Props> = (props) => {
 
       const locationTotals = getLocationTotals(state, props);
       const highlight = getHighlightForZoom();
-      layers.push(
-        new FlowMapLayer({
-          id,
-          animate: animationEnabled,
-          animationCurrentTime: time,
-          diffMode: getDiffMode(state, props),
-          colors: getFlowMapColors(state, props),
-          locations,
-          flows,
-          showOnlyTopFlows: NUMBER_OF_FLOWS_TO_DISPLAY,
-          getLocationCentroid,
-          getFlowMagnitude,
-          getFlowOriginId,
-          getFlowDestId,
-          getLocationId,
-          getLocationTotalIn: loc => locationTotals?.get(loc.id)?.incoming || 0,
-          getLocationTotalOut: loc => locationTotals?.get(loc.id)?.outgoing || 0,
-          getLocationTotalWithin: loc => locationTotals?.get(loc.id)?.within || 0,
-          getAnimatedFlowLineStaggering: (d: Flow) =>
-            // @ts-ignore
-            new alea(`${d.origin}-${d.dest}`)(),
-          showTotals: true,
-          maxLocationCircleSize: getMaxLocationCircleSize(state, props),
-          maxFlowThickness: animationEnabled ? 18 : 12,
-          ...(!adaptiveScalesEnabled) && {
-            flowMagnitudeExtent: getFlowMagnitudeExtent(state, props),
-          },
-          // locationTotalsExtent needs to be always calculated, because locations
-          // are not filtered by the viewport (e.g. the connected ones need to be included).
-          // Also, the totals cannot be correctly calculated from the flows passed to the layer.
-          locationTotalsExtent: getLocationTotalsExtent(state, props),
-          // selectedLocationIds: getExpandedSelection(state, props),
-          highlightedLocationId:
-            highlight && highlight.type === HighlightType.LOCATION
-              ? highlight.locationId
-              : undefined,
-          highlightedFlow:
-            highlight && highlight.type === HighlightType.FLOW ? highlight.flow : undefined,
-          pickable: true,
-          ...(!mapDrawingEnabled && {
-            onHover: handleHover,
-            onClick: handleClick as any,
-          }),
-          visible: true,
-          updateTriggers: {
-            onHover: handleHover, // to avoid stale closure in the handler
-            onClick: handleClick,
-          } as any,
-        })
-      );
+
+      layers.push(new FlowLinesLayer({
+        id: 'lines',
+        data: layersData.lineAttributes,
+        drawOutline: true,
+      }));
+      layers.push(new FlowCirclesLayer({
+        id: 'circles',
+        data: layersData.circleAttributes,
+        opacity: 1,
+      }));
+
+
+      // layers.push(
+      //   new FlowMapLayer({
+      //     id,
+      //     animate: animationEnabled,
+      //     animationCurrentTime: time,
+      //     diffMode: getDiffMode(state, props),
+      //     colors: getFlowMapColors(state, props),
+      //     locations,
+      //     flows,
+      //     showOnlyTopFlows: NUMBER_OF_FLOWS_TO_DISPLAY,
+      //     getLocationCentroid,
+      //     getFlowMagnitude,
+      //     getFlowOriginId,
+      //     getFlowDestId,
+      //     getLocationId,
+      //     getLocationTotalIn: loc => locationTotals?.get(loc.id)?.incoming || 0,
+      //     getLocationTotalOut: loc => locationTotals?.get(loc.id)?.outgoing || 0,
+      //     getLocationTotalWithin: loc => locationTotals?.get(loc.id)?.within || 0,
+      //     getAnimatedFlowLineStaggering: (d: Flow) =>
+      //       // @ts-ignore
+      //       new alea(`${d.origin}-${d.dest}`)(),
+      //     showTotals: true,
+      //     maxLocationCircleSize: getMaxLocationCircleSize(state, props),
+      //     maxFlowThickness: animationEnabled ? 18 : 12,
+      //     ...(!adaptiveScalesEnabled) && {
+      //       flowMagnitudeExtent: getFlowMagnitudeExtent(state, props),
+      //     },
+      //     // locationTotalsExtent needs to be always calculated, because locations
+      //     // are not filtered by the viewport (e.g. the connected ones need to be included).
+      //     // Also, the totals cannot be correctly calculated from the flows passed to the layer.
+      //     locationTotalsExtent: getLocationTotalsExtent(state, props),
+      //     // selectedLocationIds: getExpandedSelection(state, props),
+      //     highlightedLocationId:
+      //       highlight && highlight.type === HighlightType.LOCATION
+      //         ? highlight.locationId
+      //         : undefined,
+      //     highlightedFlow:
+      //       highlight && highlight.type === HighlightType.FLOW ? highlight.flow : undefined,
+      //     pickable: true,
+      //     ...(!mapDrawingEnabled && {
+      //       onHover: handleHover,
+      //       onClick: handleClick as any,
+      //     }),
+      //     visible: true,
+      //     updateTriggers: {
+      //       onHover: handleHover, // to avoid stale closure in the handler
+      //       onClick: handleClick,
+      //     } as any,
+      //   })
+      // );
     }
 
     return layers;
@@ -963,7 +984,7 @@ const FlowMap: React.FC<Props> = (props) => {
               <Collapsible darkMode={darkMode} width={160} direction={Direction.RIGHT}>
                 <Column spacing={10} padding={12}>
                   <LegendTitle>Location totals</LegendTitle>
-                  <LocationTotalsLegend diff={diffMode} colors={getFlowMapColors(state, props)} />
+                  <LocationTotalsLegend diff={diffMode} colors={flowMapColors} />
                 </Column>
               </Collapsible>
             </Box>
@@ -1090,4 +1111,5 @@ function selectedTimeRangeToString(
 
   return `${startStr} – ${endStr}`;
 }
+
 export default FlowMap;
