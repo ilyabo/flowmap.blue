@@ -1340,10 +1340,10 @@
     d3-array "^2.7.1"
     kdbush "^3.0.0"
 
-"@flowmap.gl/core@7.3.4-alpha.0":
-  version "7.3.4-alpha.0"
-  resolved "https://registry.yarnpkg.com/@flowmap.gl/core/-/core-7.3.4-alpha.0.tgz#ab5daae2a5176142ff65ee319b71c6f602be8377"
-  integrity sha512-w4zraQZj/YzF1vTfICUqR/4DxEjDd0/d5bjSR/DQvBP8iNd98W0v0vvKAVdnaNsbKBerobweNmy6/KE5i926eg==
+"@flowmap.gl/core@7.3.4-alpha.1":
+  version "7.3.4-alpha.1"
+  resolved "https://registry.yarnpkg.com/@flowmap.gl/core/-/core-7.3.4-alpha.1.tgz#8bb4c825dd30e7476e6f25dfcc4b88c48bacae9a"
+  integrity sha512-SWfAESuseeQzk9MBsREErpnnw5rsi5qhQNx1Q9BncqZIVGSgwf0dTgeyQ6Vy88V+nRgu9If8dGzbDKu33hQfXg==
   dependencies:
     d3-array "^2.7.1"
     d3-collection "^1.0.7"

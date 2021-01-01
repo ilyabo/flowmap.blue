@@ -64,7 +64,7 @@ import {
   getFlowsForFlowMapLayer,
   getFlowsSheets,
   getInvalidLocationIds,
-  getLocations,
+  getLocations, getLocationsById,
   getLocationsForFlowMapLayer,
   getLocationsForSearchBox,
   getLocationsHavingFlows,
@@ -420,8 +420,6 @@ const FlowMap: React.FC<Props> = (props) => {
     isDiffColors(flowMapColors)
       ? getDiffColorsRGBA(flowMapColors)
       : getColorsRGBA(flowMapColors), [flowMapColors]);
-
-  console.log(flowMapColors,flowMapColorsRGBA)
 
   const layersData = useMemo(
       () => locations && flows ? prepareLayersData(locations, flows, flowMapColorsRGBA) : undefined,
@@ -807,11 +805,32 @@ const FlowMap: React.FC<Props> = (props) => {
 
       const locationTotals = getLocationTotals(state, props);
       const highlight = getHighlightForZoom();
+      const locationsById = getLocationsById(state, props);
 
       layers.push(new FlowLinesLayer({
         id: 'lines',
         data: layersData.lineAttributes,
         drawOutline: true,
+        opacity: 1,
+        pickable: true,
+        ...(!mapDrawingEnabled && {
+          onHover: (info: any) => {
+            const flow = info.index != -1 && flows ? flows[info.index] : undefined;
+            console.log(info.index, info.object)
+            handleHover({
+              ...info,
+              type: PickingType.FLOW,
+              object: flow,
+              ...flow && {
+                origin: locationsById?.get(flow.origin),
+                dest: locationsById?.get(flow.dest),
+              },
+            });
+          },
+        }),
+        updateTriggers: {
+          onHover: handleHover, // to avoid stale closure in the handler
+        } as any,
       }));
       layers.push(new FlowCirclesLayer({
         id: 'circles',

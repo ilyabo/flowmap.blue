@@ -23,16 +23,16 @@ import { nest } from 'd3-collection';
 import { Props } from './FlowMap';
 import { bounds } from '@mapbox/geo-viewport';
 import KDBush from 'kdbush';
-import { ascending, descending, max, min } from 'd3-array';
+import { ascending, descending, extent, max, min } from 'd3-array';
 import { csvParseRows } from 'd3-dsv';
 import { getTimeGranularityByOrder, getTimeGranularityForDate, TimeGranularity } from './time';
 import {
   calcLocationTotals,
-  Colors,
   ColorsRGBA,
-  DiffColors,
   DiffColorsRGBA,
-  getLocationMaxAbsTotalGetter
+  getFlowColorScale,
+  getLocationMaxAbsTotalGetter,
+  isDiffColorsRGBA
 } from '@flowmap.gl/core';
 import { scaleLinear } from 'd3-scale';
 
@@ -176,11 +176,23 @@ export const getLocationsHavingFlows: Selector<Location[] | undefined> = createS
   }
 );
 
+export const getLocationsById: Selector<Map<string, Location> | undefined> = createSelector(
+  getLocationsHavingFlows,
+  locations => {
+    if (!locations) return undefined;
+    return nest<Location, Location>()
+      .key((d: Location) => d.id)
+      .rollup(([d]) => d)
+      .map(locations) as any as Map<string, Location>;
+  },
+);
+
 export const getClusterIndex: Selector<Cluster.ClusterIndex | undefined> = createSelector(
   getLocationsHavingFlows,
+  getLocationsById,
   getSortedFlowsForKnownLocations,
-  (locations, flows) => {
-    if (!locations || !flows) return undefined;
+  (locations, locationsById, flows) => {
+    if (!locations || !locationsById || !flows) return undefined;
 
     const getLocationWeight = Cluster.makeLocationWeightGetter(flows, {
       getFlowOriginId,
@@ -197,14 +209,9 @@ export const getClusterIndex: Selector<Cluster.ClusterIndex | undefined> = creat
     );
     const clusterIndex = Cluster.buildIndex(clusterLevels);
 
-    const locationsById = nest<Location, Location>()
-      .key((d: Location) => d.id)
-      .rollup(([d]) => d)
-      .object(locations);
-
     // Adding meaningful names
     const getName = (id: string) => {
-      const loc = locationsById[id];
+      const loc = locationsById.get(id);
       if (loc) return loc.name || loc.id || id;
       return `#${id}`;
     };
@@ -833,8 +840,18 @@ export function prepareLayersData(
     .range([0, 10])
     .domain([0, max(sortedFlows, (f: Flow) => +f.count) || 0]);
 
+  const flowMagnitudeExtent = extent(flows, f => getFlowMagnitude(f)) as [number, number];
+  const flowColorScale = getFlowColorScale(
+    flowMapColors,
+    flowMagnitudeExtent,
+    false,
+  );
+
   const circlePositions = new Float32Array(flatMap(locations, getLocationCentroid));
-  const circleColors = new Uint8Array(flatMap(locations, d => flowMapColors.locationCircles.incoming));
+  const circleColor = isDiffColorsRGBA(flowMapColors)
+    ? flowMapColors.positive.locationCircles.incoming
+    : flowMapColors.locationCircles.incoming;
+  const circleColors = new Uint8Array(flatMap(locations, d => circleColor));
   const circleRadii = new Float32Array(
     locations.map(d => circleSizeScale(getLocationMaxAbsTotal(d) || 0) || 0),
   );
@@ -847,6 +864,9 @@ export function prepareLayersData(
       circleSizeScale(maxAbsTotalsById.get(d.origin) || 0) || 0,
       circleSizeScale(maxAbsTotalsById.get(d.dest) || 0) || 0,
     ]),
+  );
+  const flowLineColors = new Uint8Array(
+    flatMap(sortedFlows, (f: Flow) => flowColorScale(getFlowMagnitude(f)))
   );
 
   return {
@@ -864,6 +884,7 @@ export function prepareLayersData(
         getSourcePosition: {value: sourcePositions, size: 2},
         getTargetPosition: {value: targetPositions, size: 2},
         getThickness: {value: thicknesses, size: 1},
+        getColor: {value: flowLineColors, size: 4},
         getEndpointOffsets: {value: endpointOffsets, size: 2},
       },
     },
