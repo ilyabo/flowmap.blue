@@ -813,12 +813,14 @@ export function prepareLayersData(
   flows: Flow[],
   flowMapColors: ColorsRGBA | DiffColorsRGBA,
 ) {
-  const sortedFlows: Flow[] = flows.slice().sort((a: Flow, b: Flow) => ascending(+a.count, +b.count));
   const {incoming, outgoing, within} = calcLocationTotals(locations, flows, {
     getFlowOriginId: (flow: Flow) => flow.origin,
     getFlowDestId: (flow: Flow) => flow.dest,
     getFlowMagnitude: (flow: Flow) => +flow.count,
   });
+  const sortedNonInternalFlows: Flow[] = flows
+    .filter((f: Flow) => f.origin !== f.dest)
+    .sort((a: Flow, b: Flow) => ascending(+a.count, +b.count));
   const centroidsById = locations.reduce(
     (m, d) => (m.set(getLocationId(d), getLocationCentroid(d)), m),
     new Map<string, [number, number]>(),
@@ -837,10 +839,10 @@ export function prepareLayersData(
     .range([0, 15])
     .domain([0, max(maxAbsTotalsById.values()) || 0]);
   const thicknessScale = scaleLinear()
-    .range([0, 10])
-    .domain([0, max(sortedFlows, (f: Flow) => +f.count) || 0]);
+    .range([0, 0.5])
+    .domain([0, max(sortedNonInternalFlows, (f: Flow) => +f.count) || 0]);
 
-  const flowMagnitudeExtent = extent(flows, f => getFlowMagnitude(f)) as [number, number];
+  const flowMagnitudeExtent = extent(sortedNonInternalFlows, f => getFlowMagnitude(f)) as [number, number];
   const flowColorScale = getFlowColorScale(
     flowMapColors,
     flowMagnitudeExtent,
@@ -856,17 +858,17 @@ export function prepareLayersData(
     locations.map(d => circleSizeScale(getLocationMaxAbsTotal(d) || 0) || 0),
   );
 
-  const sourcePositions = new Float32Array(flatMap(sortedFlows, (d: Flow) => centroidsById.get(d.origin)!));
-  const targetPositions = new Float32Array(flatMap(sortedFlows, (d: Flow) => centroidsById.get(d.dest)!));
-  const thicknesses = new Float32Array(sortedFlows.map((d: Flow) => thicknessScale(d.count) || 0));
+  const sourcePositions = new Float32Array(flatMap(sortedNonInternalFlows, (d: Flow) => centroidsById.get(d.origin)!));
+  const targetPositions = new Float32Array(flatMap(sortedNonInternalFlows, (d: Flow) => centroidsById.get(d.dest)!));
+  const thicknesses = new Float32Array(sortedNonInternalFlows.map((d: Flow) => thicknessScale(d.count) || 0));
   const endpointOffsets = new Float32Array(
-    flatMap(sortedFlows, (d: Flow) => [
+    flatMap(sortedNonInternalFlows, (d: Flow) => [
       circleSizeScale(maxAbsTotalsById.get(d.origin) || 0) || 0,
       circleSizeScale(maxAbsTotalsById.get(d.dest) || 0) || 0,
     ]),
   );
   const flowLineColors = new Uint8Array(
-    flatMap(sortedFlows, (f: Flow) => flowColorScale(getFlowMagnitude(f)))
+    flatMap(sortedNonInternalFlows, (f: Flow) => flowColorScale(getFlowMagnitude(f)))
   );
 
   return {
@@ -879,7 +881,7 @@ export function prepareLayersData(
       },
     },
     lineAttributes: {
-      length: sortedFlows.length,
+      length: sortedNonInternalFlows.length,
       attributes: {
         getSourcePosition: {value: sourcePositions, size: 2},
         getTargetPosition: {value: targetPositions, size: 2},
