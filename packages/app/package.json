@@ -42,6 +42,7 @@
     "@babel/helper-call-delegate": "^7.10.4",
     "@types/blueimp-md5": "^2.7.0",
     "@types/react-router-hash-link": "^1.2.1",
+    "comlink-loader": "^2.0.0",
     "favicons": "^5.4.1",
     "puppeteer": "^2.1.1",
     "sharp": "^0.25.4"
