@@ -21,7 +21,7 @@ const timeFromQuery = timeParse(TIME_QUERY_FORMAT);
 
 export function mapTransition(duration: number = 500) {
   return {
-    transitionDuration: 500,
+    transitionDuration: duration,
     transitionInterpolator: new FlyToInterpolator(),
     transitionEasing: easeCubic,
   };

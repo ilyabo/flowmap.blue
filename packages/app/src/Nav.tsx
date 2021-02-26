@@ -91,7 +91,7 @@ const Nav = () => (
         {/*    <Icon icon={IconNames.HEART} />*/}
         {/*  </LinkItem>*/}
         {/*</Away>*/}
-        <Away href="https://spectrum.chat/flowmap-blue/">
+        <Away href="https://github.com/FlowmapBlue/flowmap.blue/discussions">
           <LinkItem>
             <span>Ask a question</span>
             <img width={20} height={20} alt="Flowmap.blue chat on Spectrum" src={SpectrumLogo} />

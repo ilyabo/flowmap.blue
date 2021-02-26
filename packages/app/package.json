@@ -32,7 +32,7 @@
     "react-refetch": "^3.0.0",
     "react-router-dom": "^5.1.2",
     "react-router-hash-link": "^2.1.0",
-    "react-scripts": "^3.4.3",
+    "react-scripts": "4.0.2",
     "react-use": "^15.3.4",
     "recompose": "^0.30.0",
     "source-map-explorer": "^2.4.2",
