@@ -1,5 +1,6 @@
 import * as Cluster from '@flowmap.gl/cluster';
-import { ClusterNode } from '@flowmap.gl/cluster';
+import {ClusterNode} from '@flowmap.gl/cluster';
+import {Flow, Location} from '@flowmap.blue/data';
 
 export enum ConfigPropName {
   TITLE = 'title',
@@ -39,29 +40,10 @@ export const getLocationCentroid = (location: Location | ClusterNode): [number, 
     ? location.centroid
     : [(location as Location).lon, (location as Location).lat];
 
-export interface Location {
-  id: string;
-  lon: number;
-  lat: number;
-  name: string;
-}
-
-export interface LocationTotals {
-  incoming: number;
-  outgoing: number;
-  within: number;
-}
 
 export function isLocationCluster(l: Location | ClusterNode): l is Cluster.Cluster {
-  const { zoom } = l as Cluster.Cluster;
+  const {zoom} = l as Cluster.Cluster;
   return zoom !== undefined;
-}
-
-export interface Flow {
-  origin: string;
-  dest: string;
-  count: number;
-  time?: Date;
 }
 
 export interface CountByTime {

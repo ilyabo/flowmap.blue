@@ -36,7 +36,8 @@
     "react-use": "^15.3.4",
     "recompose": "^0.30.0",
     "source-map-explorer": "^2.4.2",
-    "typescript": "^4.0.2"
+    "typescript": "^4.0.2",
+    "zustand": "^3.3.2"
   },
   "devDependencies": {
     "@babel/helper-call-delegate": "^7.10.4",
@@ -45,7 +46,8 @@
     "comlink-loader": "^2.0.0",
     "favicons": "^5.4.1",
     "puppeteer": "^2.1.1",
-    "sharp": "^0.25.4"
+    "sharp": "^0.25.4",
+    "worker-loader": "^3.0.8"
   },
   "scripts": {
     "start": "PORT=7000 node -r dotenv/config ../../node_modules/.bin/react-scripts start dotenv_config_path=../../.env",

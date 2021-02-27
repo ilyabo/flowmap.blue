@@ -8,11 +8,11 @@ import FlowMap, {
   DEFAULT_CONFIG,
   getFlowsSheets,
   LoadingSpinner,
-  Location,
   MapContainer,
   prepareFlows,
   Props as FlowMapProps,
 } from '@flowmap.blue/core';
+import { Location } from '@flowmap.blue/data';
 import { Helmet } from 'react-helmet';
 import sendEvent from './ga';
 import { useAsync } from 'react-use';

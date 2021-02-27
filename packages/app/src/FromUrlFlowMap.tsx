@@ -1,12 +1,15 @@
-import React from 'react';
-import useFetch from 'react-fetch-hook';
-import { PromiseState } from 'react-refetch';
-import FlowMap, { ConfigPropName, DEFAULT_CONFIG, LoadingSpinner, MapContainer, prepareFlows } from '@flowmap.blue/core';
-import { csvParse } from 'd3-dsv';
-import { useLocation } from 'react-router-dom';
+// http://localhost:7000/from-url?colors.darkMode=no&flows=https://gist.githubusercontent.com/ilyabo/a7b9701424257146b571149d92a14926/raw/2e9e1e9bcf64cf0090781b451037229ccb78e1b1/flows.csv&locations=https://gist.githubusercontent.com/ilyabo/a7b9701424257146b571149d92a14926/raw/2e9e1e9bcf64cf0090781b451037229ccb78e1b1/locations.csv
+
+
+import React, {FC, useEffect, useMemo} from 'react';
+import {PromiseState} from 'react-refetch';
+import FlowMap, {ConfigPropName, DEFAULT_CONFIG, LoadingSpinner, MapContainer} from '@flowmap.blue/core';
+import {useLocation} from 'react-router-dom';
 import * as queryString from 'query-string';
 import ErrorFallback from './ErrorFallback';
-import { useMemo } from 'react';
+import {useStore} from "./FlowMapState";
+import {LoadingStatus} from "@flowmap.blue/data";
+
 
 // A custom hook that builds on useLocation to parse
 // the query string for you.
@@ -14,16 +17,25 @@ function useQuery() {
   return queryString.parse(useLocation().search);
 }
 
-const FromUrlFlowMap = (props: {}) => {
+const FromUrlFlowMap: FC<{}> = (props: {}) => {
   const params = useQuery();
-  const locationsUrl = params.locations;
-  const flowsUrl = params.flows;
-  if (typeof locationsUrl !== 'string') {
+  if (typeof params.locations !== 'string') {
     throw new Error(`Invalid locations URL`);
   }
-  if (typeof flowsUrl !== 'string') {
+  if (typeof params.flows !== 'string') {
     throw new Error(`Invalid flows URL`);
   }
+  const locationsUrl = params.locations as string;
+  const flowsUrl = params.flows as string;
+
+  const loadLocations = useStore(state => state.loadLocations);
+  const loadFlows = useStore(state => state.loadFlows);
+  useEffect(() => {
+    loadLocations(locationsUrl);
+  }, [locationsUrl]);
+  useEffect(() => {
+    loadFlows(flowsUrl);
+  }, [flowsUrl]);
 
   const config = useMemo(() => {
     const config = { ...DEFAULT_CONFIG };
@@ -36,48 +48,28 @@ const FromUrlFlowMap = (props: {}) => {
     return config;
   }, [params]);
 
-  const fetchFlows = useFetch(flowsUrl, {
-    formatter: (response) =>
-      response.text().then((text) =>
-        csvParse(text, (row: any) => ({
-          ...row,
-          count: +row.count,
-        }))
-      ),
-  });
-  const fetchLocations = useFetch(locationsUrl, {
-    formatter: (response) =>
-      response.text().then((text) =>
-        csvParse(text, (row: any) => ({
-          ...row,
-          lat: +row.lat,
-          lon: +row.lon,
-        }))
-      ),
-  });
 
-  if (fetchLocations.error) {
-    return <ErrorFallback error={fetchLocations.error} />;
+  const locations = useStore(state => state.locations);
+  const flows = useStore(state => state.flows);
+
+  if (locations?.status === LoadingStatus.ERROR || flows?.status === LoadingStatus.ERROR) {
+    return <ErrorFallback error="Couldn't load data" />;
   }
-
-  if (fetchFlows.error) {
-    return <ErrorFallback error={fetchFlows.error} />;
-  }
-
-  if (fetchLocations.isLoading || fetchFlows.isLoading) {
+  if (locations?.status === LoadingStatus.LOADING || flows?.status === LoadingStatus.LOADING) {
     return <LoadingSpinner />;
   }
 
   return (
     <MapContainer>
+      {locations?.status === LoadingStatus.DONE && flows?.status === LoadingStatus.DONE &&
       <FlowMap
         inBrowser={true}
         flowsSheet={undefined}
-        flowsFetch={PromiseState.resolve(prepareFlows(fetchFlows.data as any[]))}
-        locationsFetch={PromiseState.resolve(fetchLocations.data)}
+        flowsFetch={PromiseState.resolve(flows.data)}
+        locationsFetch={PromiseState.resolve(locations.data)}
         config={config}
         spreadSheetKey={undefined}
-      />
+      />}
     </MapContainer>
   );
 };
