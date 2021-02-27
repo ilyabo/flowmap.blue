@@ -26,7 +26,7 @@ import KDBush from 'kdbush';
 import {ascending, descending, extent, max, min} from 'd3-array';
 import {csvParseRows} from 'd3-dsv';
 import {getTimeGranularityByOrder, getTimeGranularityForDate, TimeGranularity} from './time';
-import {ColorsRGBA, DiffColorsRGBA, FlowAccessors,} from '@flowmap.gl/core';
+import {ColorsRGBA, DiffColorsRGBA, FlowAccessors} from '@flowmap.gl/core';
 import {scaleLinear} from 'd3-scale';
 
 // TODO move necessary props to State

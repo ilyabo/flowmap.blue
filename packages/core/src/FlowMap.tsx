@@ -89,9 +89,9 @@ import MapDrawingEditor, {MapDrawingFeature, MapDrawingMode} from './MapDrawingE
 import getBbox from '@turf/bbox';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import Timeline from './Timeline';
-import {TimeGranularity} from '@flowmap.blue/data/dist/time';
-import {findAppropriateZoomLevel} from '@flowmap.gl/cluster/dist-esm';
-import {isDiffColors} from '@flowmap.gl/core/dist/colors';
+import {TimeGranularity} from '@flowmap.blue/data';
+import {findAppropriateZoomLevel} from '@flowmap.gl/cluster';
+import {isDiffColors} from '@flowmap.gl/core';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -815,17 +815,17 @@ const FlowMap: React.FC<Props> = (props) => {
         pickable: true,
         ...(!mapDrawingEnabled && {
           onHover: (info: any) => {
-            const flow = info.index != -1 && flows ? flows[info.index] : undefined;
-            console.log(info.index, info.object)
-            handleHover({
-              ...info,
-              type: PickingType.FLOW,
-              object: flow,
-              ...flow && {
-                origin: locationsById?.get(flow.origin),
-                dest: locationsById?.get(flow.dest),
-              },
-            });
+            // const flow = info.index != -1 && flows ? flows[info.index] : undefined;
+            // console.log(info.index, info.object)
+            // handleHover({
+            //   ...info,
+            //   type: PickingType.FLOW,
+            //   object: flow,
+            //   ...flow && {
+            //     origin: locationsById?.get(flow.origin),
+            //     dest: locationsById?.get(flow.dest),
+            //   },
+            // });
           },
         }),
         updateTriggers: {
