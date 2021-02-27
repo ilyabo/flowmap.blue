@@ -1,8 +1,8 @@
-import { ColorScheme } from './colors';
-import { Link } from 'react-router-dom';
+import {ColorScheme} from '@flowmap.blue/data';
+import {Link} from 'react-router-dom';
 import * as React from 'react';
 import styled from '@emotion/styled';
-import { Row } from './Boxes';
+import {Row} from './Boxes';
 
 type Props = {
   embed?: boolean;

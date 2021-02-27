@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import styled from '@emotion/styled';
-import { scaleLinear, scaleTime } from 'd3-scale';
-import { max } from 'd3-array';
-import { EventManager } from 'mjolnir.js';
+import {scaleLinear, scaleTime} from 'd3-scale';
+import {max} from 'd3-array';
+import {EventManager} from 'mjolnir.js';
 import PlayControl from './PlayControl';
-import { Colors } from '@blueprintjs/core';
-import { useMeasure, useThrottle } from 'react-use';
-import { areRangesEqual, tickMultiFormat, TimeGranularity } from './time';
-import { CountByTime } from './types';
-import { ColorScheme } from './colors';
-import { hcl } from 'd3-color';
+import {Colors} from '@blueprintjs/core';
+import {useMeasure, useThrottle} from 'react-use';
+import {areRangesEqual, tickMultiFormat, TimeGranularity} from '@flowmap.blue/data';
+import {CountByTime} from '@flowmap.blue/data/dist/types';
+import {ColorScheme} from '@flowmap.blue/data/dist/colors';
+import {hcl} from 'd3-color';
 
 interface Props {
   selectedRange: [Date, Date];

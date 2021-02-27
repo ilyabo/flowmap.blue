@@ -1,30 +1,6 @@
-import {timeParse} from 'd3-time-format';
 import {nest} from 'd3-collection';
 import {Flow} from './types';
-
-const dateParsers = [
-  timeParse('%Y-%m-%d'),
-  timeParse('%Y-%m-%d %H:%M'),
-  timeParse('%Y-%m-%d %H:%M:%S'),
-  timeParse('%Y'),
-  timeParse('%Y-%m'),
-];
-
-export function parseTime(input: string | Date | undefined): Date | undefined {
-  if (input != null) {
-    if (input instanceof Date) {
-      return input;
-    }
-    for (const parse of dateParsers) {
-      const date = parse(input);
-      if (date) {
-        return date;
-      }
-    }
-  }
-  return undefined;
-}
-
+import {parseTime} from './time';
 
 export function prepareFlows(rows: any[]) {
   let dupes: Flow[] = [];

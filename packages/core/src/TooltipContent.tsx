@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Config, getFlowMagnitude } from './types';
+import { Config, getFlowMagnitude } from '@flowmap.blue/data';
 import styled from '@emotion/styled';
 import * as d3Format from 'd3-format';
 import { LocationPickingInfo } from '@flowmap.gl/core';

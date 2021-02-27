@@ -12,7 +12,7 @@ import { IconNames } from '@blueprintjs/icons';
 import { ItemPredicate, ItemRenderer, MultiSelect } from '@blueprintjs/select';
 import React, {ReactNode} from 'react';
 import { defaultMemoize } from 'reselect';
-import { LocationFilterMode } from './FlowMap.state';
+import { LocationFilterMode } from '@flowmap.blue/data';
 import { Column } from './Boxes';
 import { ClassNames } from '@emotion/core';
 

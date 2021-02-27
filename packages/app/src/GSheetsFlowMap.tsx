@@ -3,15 +3,17 @@ import { useEffect, useState } from 'react';
 import sheetFetcher, { makeSheetQueryUrl } from './sheetFetcher';
 import FlowMap, {
   AppToaster,
-  ConfigProp,
-  ConfigPropName,
-  DEFAULT_CONFIG,
-  getFlowsSheets,
   LoadingSpinner,
   MapContainer,
   prepareFlows,
   Props as FlowMapProps,
 } from '@flowmap.blue/core';
+import {
+  ConfigProp,
+  ConfigPropName,
+  DEFAULT_CONFIG,
+  getFlowsSheets,
+} from '@flowmap.blue/data';
 import { Location } from '@flowmap.blue/data';
 import { Helmet } from 'react-helmet';
 import sendEvent from './ga';

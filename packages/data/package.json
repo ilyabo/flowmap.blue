@@ -30,7 +30,10 @@
     "access": "public"
   },
   "dependencies": {
+    "@flowmap.gl/cluster": "^7.3.3",
     "d3-collection": "^1.0.7",
-    "d3-time-format": "^3.0.0"
+    "d3-time": "^2.0.0",
+    "d3-time-format": "^3.0.0",
+    "kdbush": "^3.0.0"
   }
 }

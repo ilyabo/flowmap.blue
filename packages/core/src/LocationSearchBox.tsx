@@ -5,10 +5,9 @@ import React from 'react';
 import { defaultMemoize } from 'reselect';
 import { matchesSearchQuery } from './matchesSearchQuery';
 import SearchBox from './SearchBox';
-import { Location } from './types';
+import { Location, LocationFilterMode } from '@flowmap.blue/data';
 import styled from '@emotion/styled';
 import { Cluster } from '@flowmap.gl/cluster';
-import { LocationFilterMode } from './FlowMap.state';
 
 export interface Props {
   selectedLocations: string[] | undefined;

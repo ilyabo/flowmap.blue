@@ -1,17 +1,25 @@
 import { FlyToInterpolator } from 'react-map-gl';
-import { Config, ConfigPropName, Flow, ViewportProps } from './types';
+import {
+  Config,
+  ConfigPropName,
+  Flow,
+  LocationFilterMode,
+  ViewportProps,
+  MAX_ZOOM_LEVEL as _MAX_ZOOM_LEVEL,
+  BaseState
+} from '@flowmap.blue/data';
 import { Props as TooltipProps } from './Tooltip';
 import * as queryString from 'query-string';
 import { viewport } from '@mapbox/geo-viewport';
-import { parseBoolConfigProp, parseNumberConfigProp } from './config';
-import { COLOR_SCHEME_KEYS } from './colors';
+import { parseBoolConfigProp, parseNumberConfigProp } from '@flowmap.blue/data';
+import { COLOR_SCHEME_KEYS } from '@flowmap.blue/data';
 import { csvFormatRows, csvParseRows } from 'd3-dsv';
 import { Reducer } from 'react';
 import { easeCubic } from 'd3-ease';
 import { timeFormat, timeParse } from 'd3-time-format';
 
+export const MAX_ZOOM_LEVEL = _MAX_ZOOM_LEVEL;
 export const MIN_ZOOM_LEVEL = 0;
-export const MAX_ZOOM_LEVEL = 20;
 export const MIN_PITCH = 0;
 export const MAX_PITCH = +60;
 
@@ -41,36 +49,11 @@ export interface FlowHighlight {
   flow: Flow;
 }
 
-export enum LocationFilterMode {
-  ALL = 'ALL',
-  INCOMING = 'INCOMING',
-  OUTGOING = 'OUTGOING',
-  BETWEEN = 'BETWEEN',
-}
-
 export type Highlight = LocationHighlight | FlowHighlight;
 
-export interface State {
-  viewport: ViewportProps;
-  adjustViewportToLocations: boolean;
+export interface State extends BaseState {
   tooltip?: TooltipProps;
   highlight?: Highlight;
-  selectedLocations: string[] | undefined;
-  selectedTimeRange: [Date, Date] | undefined;
-  locationFilterMode: LocationFilterMode;
-  animationEnabled: boolean;
-  fadeEnabled: boolean;
-  locationTotalsEnabled: boolean;
-  adaptiveScalesEnabled: boolean;
-  clusteringEnabled: boolean;
-  clusteringAuto: boolean;
-  manualClusterZoom?: number;
-  baseMapEnabled: boolean;
-  darkMode: boolean;
-  fadeAmount: number;
-  baseMapOpacity: number;
-  colorSchemeKey: string | undefined;
-  selectedFlowsSheet: string | undefined;
 }
 
 export enum ActionType {

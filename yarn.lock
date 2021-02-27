@@ -1354,7 +1354,7 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@flowmap.gl/cluster@^7.3.0":
+"@flowmap.gl/cluster@^7.3.0", "@flowmap.gl/cluster@^7.3.3":
   version "7.3.3"
   resolved "https://registry.yarnpkg.com/@flowmap.gl/cluster/-/cluster-7.3.3.tgz#388a5049c54fb93815bf2bd955ab3d05cba7ef4c"
   integrity sha512-B8qnMgotAX/UiV2dN3ripCUlagYQsBbPGpDSN7TYdy2/++WIFFAhDQ00/cKCItMTortIvONWm+9ypfRE7NBEgA==

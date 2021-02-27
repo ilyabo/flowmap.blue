@@ -1,13 +1,13 @@
-import { ItemRenderer, Select } from '@blueprintjs/select';
-import { Button, Colors, Intent, MenuItem } from '@blueprintjs/core';
+import {ItemRenderer, Select} from '@blueprintjs/select';
+import {Button, Colors, Intent, MenuItem} from '@blueprintjs/core';
 import styled from '@emotion/styled';
-import React, { FC, useLayoutEffect, useMemo, useRef } from 'react';
-import { IconNames } from '@blueprintjs/icons';
-import { scaleLinear, scaleSequential } from 'd3-scale';
-import { interpolateRgbBasis } from 'd3-interpolate';
-import { ClassNames } from '@emotion/core';
-import { COLOR_SCHEMES, DEFAULT_COLOR_SCHEME } from './colors';
-import { Row } from './Boxes';
+import React, {FC, useLayoutEffect, useMemo, useRef} from 'react';
+import {IconNames} from '@blueprintjs/icons';
+import {scaleLinear, scaleSequential} from 'd3-scale';
+import {interpolateRgbBasis} from 'd3-interpolate';
+import {ClassNames} from '@emotion/core';
+import {COLOR_SCHEMES, DEFAULT_COLOR_SCHEME} from '@flowmap.blue/data';
+import {Row} from './Boxes';
 
 export interface Props {
   selected?: string;

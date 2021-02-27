@@ -1,59 +1,31 @@
-import { DeckGL } from '@deck.gl/react';
+import {DeckGL} from '@deck.gl/react';
 import {MapController, MapView} from '@deck.gl/core';
 import * as React from 'react';
-import { ReactNode, Reducer, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { _MapContext as MapContext, StaticMap } from 'react-map-gl';
+import {ReactNode, Reducer, useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import {_MapContext as MapContext, StaticMap} from 'react-map-gl';
 import {
   FlowCirclesLayer,
   FlowLayerPickingInfo,
   FlowLinesLayer,
   FlowPickingInfo,
-  getColorsRGBA, getDiffColorsRGBA,
+  getColorsRGBA,
+  getDiffColorsRGBA,
   LocationPickingInfo,
   PickingType,
 } from '@flowmap.gl/core';
-import { Button, ButtonGroup, Classes, Colors, HTMLSelect, Intent } from '@blueprintjs/core';
-import { getViewStateForLocations, LocationTotalsLegend } from '@flowmap.gl/react';
+import {Button, ButtonGroup, Classes, Colors, HTMLSelect, Intent} from '@blueprintjs/core';
+import {getViewStateForLocations, LocationTotalsLegend} from '@flowmap.gl/react';
 import WebMercatorViewport from '@math.gl/web-mercator';
-import { Absolute, Box, BoxStyle, Column, Description, LegendTitle, Title, TitleBox, ToastContent, } from './Boxes';
-import { FlowTooltipContent, formatCount, LocationTooltipContent } from './TooltipContent';
-import Tooltip, { TargetBounds } from './Tooltip';
-import { Link, useHistory } from 'react-router-dom';
-import Collapsible, { Direction } from './Collapsible';
+import {Absolute, Box, BoxStyle, Column, Description, LegendTitle, Title, TitleBox, ToastContent,} from './Boxes';
+import {FlowTooltipContent, formatCount, LocationTooltipContent} from './TooltipContent';
+import Tooltip, {TargetBounds} from './Tooltip';
+import {Link, useHistory} from 'react-router-dom';
+import Collapsible, {Direction} from './Collapsible';
 import {
   AsyncState,
   Config,
   ConfigPropName,
   Flow,
-  getLocationCentroid,
-  getLocationId,
-  Location,
-  ViewportProps,
-} from './types';
-import Message from './Message';
-import LoadingSpinner from './LoadingSpinner';
-import NoScrollContainer from './NoScrollContainer';
-import styled from '@emotion/styled';
-import { IconNames } from '@blueprintjs/icons';
-import LocationsSearchBox from './LocationSearchBox';
-import Away from './Away';
-import {
-  Action,
-  ActionType,
-  getInitialState,
-  Highlight,
-  HighlightType,
-  LocationFilterMode,
-  mapTransition,
-  MAX_PITCH,
-  MAX_ZOOM_LEVEL,
-  MIN_PITCH,
-  MIN_ZOOM_LEVEL,
-  reducer,
-  State,
-  stateToQueryString,
-} from './FlowMap.state';
-import {
   getAvailableClusterZoomLevels,
   getClusterIndex,
   getClusterZoom,
@@ -64,7 +36,10 @@ import {
   getFlowsForFlowMapLayer,
   getFlowsSheets,
   getInvalidLocationIds,
-  getLocations, getLocationsById,
+  getLocationCentroid,
+  getLocationId,
+  getLocations,
+  getLocationsById,
   getLocationsForFlowMapLayer,
   getLocationsForSearchBox,
   getLocationsHavingFlows,
@@ -79,19 +54,44 @@ import {
   getTotalFilteredCount,
   getTotalUnfilteredCount,
   getUnknownLocations,
+  Location,
+  LocationFilterMode,
   prepareLayersData,
-} from './FlowMap.selectors';
-import { AppToaster } from './AppToaster';
+  ViewportProps,
+} from '@flowmap.blue/data';
+import Message from './Message';
+import LoadingSpinner from './LoadingSpinner';
+import NoScrollContainer from './NoScrollContainer';
+import styled from '@emotion/styled';
+import {IconNames} from '@blueprintjs/icons';
+import LocationsSearchBox from './LocationSearchBox';
+import Away from './Away';
+import {
+  Action,
+  ActionType,
+  getInitialState,
+  Highlight,
+  HighlightType,
+  mapTransition,
+  MAX_PITCH,
+  MAX_ZOOM_LEVEL,
+  MIN_PITCH,
+  MIN_ZOOM_LEVEL,
+  reducer,
+  State,
+  stateToQueryString,
+} from './FlowMap.state';
+import {AppToaster} from './AppToaster';
 import useDebounced from './hooks';
 import SharePopover from './SharePopover';
 import SettingsPopover from './SettingsPopover';
-import MapDrawingEditor, { MapDrawingFeature, MapDrawingMode } from './MapDrawingEditor';
+import MapDrawingEditor, {MapDrawingFeature, MapDrawingMode} from './MapDrawingEditor';
 import getBbox from '@turf/bbox';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import Timeline from './Timeline';
-import { TimeGranularity } from './time';
-import { findAppropriateZoomLevel } from '@flowmap.gl/cluster/dist-esm';
-import { isDiffColors } from '@flowmap.gl/core/dist/colors';
+import {TimeGranularity} from '@flowmap.blue/data/dist/time';
+import {findAppropriateZoomLevel} from '@flowmap.gl/cluster/dist-esm';
+import {isDiffColors} from '@flowmap.gl/core/dist/colors';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,

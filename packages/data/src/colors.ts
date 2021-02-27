@@ -1,4 +1,3 @@
-import { Colors, DiffColors } from '@flowmap.gl/core';
 import {
   interpolateCool,
   interpolateInferno,
@@ -26,10 +25,34 @@ import {
   schemeYlOrRd,
 } from 'd3-scale-chromatic';
 import { range } from 'd3-array';
-import { scalePow, scaleSequential } from 'd3-scale';
+import {scalePow, scaleSequential, scaleSequentialPow} from 'd3-scale';
 import { interpolateRgbBasis } from 'd3-interpolate';
 import { Config } from './types';
-import { hcl } from 'd3-color';
+import {color as d3color, hcl} from 'd3-color';
+import {
+  Colors,
+  DiffColors,
+  ColorScale,
+  ColorsRGBA,
+  DiffColorsRGBA,
+  RGBA
+} from '@flowmap.gl/core';
+
+const FALLBACK_COLOR_RGBA: RGBA = [255, 255, 255, 255];
+
+export function opacityFloatToInteger(opacity: number): number {
+  return Math.round(opacity * 255);
+}
+
+export function colorAsRgba(color: string): RGBA {
+  const col = d3color(color);
+  if (!col) {
+    console.warn('Invalid color: ', color);
+    return FALLBACK_COLOR_RGBA;
+  }
+  const rgbColor = col.rgb();
+  return [Math.floor(rgbColor.r), Math.floor(rgbColor.g), Math.floor(rgbColor.b), opacityFloatToInteger(col.opacity)];
+}
 
 const asScheme = (scheme: ReadonlyArray<ReadonlyArray<string>>) =>
   scheme[scheme.length - 1] as string[];
@@ -185,4 +208,39 @@ export default function getColors(
     },
     outlineColor: darkMode ? '#000' : 'rgba(255, 255, 255, 0.5)',
   };
+}
+
+export function createFlowColorScale(
+  domain: [number, number],
+  scheme: string[],
+  animate: boolean | undefined,
+): ColorScale {
+  const scale = scaleSequentialPow(interpolateRgbBasis(scheme))
+  // @ts-ignore
+  .exponent(animate ? 1 / 2 : 1 / 3)
+  .domain(domain);
+  return (value: number) => colorAsRgba(scale(value));
+}
+
+export function getFlowColorScale(
+  colors: ColorsRGBA | DiffColorsRGBA,
+  magnitudeExtent: [number, number] | undefined,
+  animate: boolean | undefined,
+) {
+  const minMagnitude = magnitudeExtent ? magnitudeExtent[0] : 0;
+  const maxMagnitude = magnitudeExtent ? magnitudeExtent[1] : 0;
+  if (isDiffColorsRGBA(colors)) {
+    const posScale = createFlowColorScale([0, maxMagnitude], colors.positive.flows.scheme, animate);
+    const negScale = createFlowColorScale([0, minMagnitude], colors.negative.flows.scheme, animate);
+
+    return (magnitude: number) => (magnitude >= 0 ? posScale(magnitude) : negScale(magnitude));
+  }
+
+  const scale = createFlowColorScale([0, maxMagnitude || 0], colors.flows.scheme, animate);
+  return (magnitude: number) => scale(magnitude);
+}
+
+
+export function isDiffColorsRGBA(colors: DiffColorsRGBA | ColorsRGBA): colors is DiffColorsRGBA {
+  return (colors as DiffColorsRGBA).positive !== undefined;
 }

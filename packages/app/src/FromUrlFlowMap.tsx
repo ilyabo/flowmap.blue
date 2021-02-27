@@ -3,7 +3,8 @@
 
 import React, {FC, useEffect, useMemo} from 'react';
 import {PromiseState} from 'react-refetch';
-import FlowMap, {ConfigPropName, DEFAULT_CONFIG, LoadingSpinner, MapContainer} from '@flowmap.blue/core';
+import FlowMap, { LoadingSpinner, MapContainer} from '@flowmap.blue/core';
+import {ConfigPropName, DEFAULT_CONFIG} from '@flowmap.blue/data';
 import {useLocation} from 'react-router-dom';
 import * as queryString from 'query-string';
 import ErrorFallback from './ErrorFallback';

@@ -1,19 +1,18 @@
 import React from 'react';
 import * as ReactDOM from 'react-dom';
-import { DEFAULT_CONFIG } from './config';
+import {ConfigPropName, DEFAULT_CONFIG, Flow, Location} from '@flowmap.blue/data';
 import FlowMap from './FlowMap';
-import { ConfigPropName, Flow, Location } from './types';
 import MapContainer from './MapContainer';
-import { AppToaster, ColorScheme, Fallback } from './index';
-import { Router } from 'react-router-dom';
-import { createBrowserHistory } from 'history';
+import {AppToaster, ColorScheme, Fallback} from './index';
+import {Router} from 'react-router-dom';
+import {createBrowserHistory} from 'history';
 
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { css, Global } from '@emotion/core';
-import { Classes, Colors, FocusStyleManager } from '@blueprintjs/core';
+import {css, Global} from '@emotion/core';
+import {Classes, Colors, FocusStyleManager} from '@blueprintjs/core';
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
