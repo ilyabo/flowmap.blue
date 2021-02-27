@@ -1,5 +1,5 @@
 import { DeckGL } from '@deck.gl/react';
-import { MapController } from '@deck.gl/core';
+import {MapController, MapView} from '@deck.gl/core';
 import * as React from 'react';
 import { ReactNode, Reducer, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { _MapContext as MapContext, StaticMap } from 'react-map-gl';
@@ -913,6 +913,7 @@ const FlowMap: React.FC<Props> = (props) => {
           ref={deckRef}
           controller={CONTROLLER_OPTIONS}
           viewState={viewport}
+          views={[new MapView({id: 'map', repeat: true})]}
           onViewStateChange={handleViewStateChange}
           layers={getLayers()}
           ContextProvider={MapContext.Provider}
