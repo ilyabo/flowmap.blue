@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "es2015",
+    "outDir": "dist",
+    "moduleResolution": "node",
     "downlevelIteration": true,
     "esModuleInterop": true,
-    "outDir": "dist",
     "declaration": true,
     "declarationMap": true,
     "skipLibCheck": true,
@@ -15,7 +16,7 @@
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
     "lib": [
-      "es2015",
+      "esnext",
       "dom"
     ]
   },
