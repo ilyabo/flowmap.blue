@@ -1,9 +1,9 @@
 import React from 'react';
 import * as ReactDOM from 'react-dom';
-import {ConfigPropName, DEFAULT_CONFIG, Flow, Location} from '@flowmap.blue/data';
+import {ConfigPropName, ColorScheme, DEFAULT_CONFIG, Flow, Location} from '@flowmap.blue/data';
 import FlowMap from './FlowMap';
 import MapContainer from './MapContainer';
-import {AppToaster, ColorScheme, Fallback} from './index';
+import {AppToaster, Fallback} from './index';
 import {Router} from 'react-router-dom';
 import {createBrowserHistory} from 'history';
 

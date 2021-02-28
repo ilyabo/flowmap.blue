@@ -4,13 +4,15 @@
 import React, {FC, useEffect, useMemo} from 'react';
 import {PromiseState} from 'react-refetch';
 import FlowMap, { LoadingSpinner, MapContainer} from '@flowmap.blue/core';
-import {ConfigPropName, DEFAULT_CONFIG} from '@flowmap.blue/data';
+import {ConfigPropName, DEFAULT_CONFIG, Store} from '@flowmap.blue/data';
 import {useLocation} from 'react-router-dom';
 import * as queryString from 'query-string';
 import ErrorFallback from './ErrorFallback';
-import {useStore} from "./FlowMapState";
 import {LoadingStatus} from "@flowmap.blue/data";
+import store from './store';
+import create from 'zustand';
 
+const useStore = create<Store>(store);
 
 // A custom hook that builds on useLocation to parse
 // the query string for you.

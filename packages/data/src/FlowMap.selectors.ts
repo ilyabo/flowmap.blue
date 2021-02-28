@@ -1,5 +1,5 @@
 import {createSelector, createSelectorCreator, defaultMemoize, ParametricSelector,} from 'reselect';
-import {State} from './state';
+import {State} from './';
 import {getFlowColorScale, isDiffColorsRGBA, LocationFilterMode, MAX_ZOOM_LEVEL} from './';
 import {
   Config,
@@ -889,10 +889,16 @@ export function prepareLayersData(
   };
 }
 
-export function calcLocationTotals(locations: Location[], flows: Flow[], inputAccessors: FlowAccessors) {
+export interface LocationsTotals {
+  incoming: {[id: string]: number},
+  outgoing: {[id: string]: number},
+  within: {[id: string]: number}
+}
+
+export function calcLocationTotals(locations: (Location | ClusterNode)[], flows: Flow[], inputAccessors: FlowAccessors) {
   const { getFlowOriginId, getFlowDestId, getFlowMagnitude } = inputAccessors;
-  return flows.reduce<LocationTotals>(
-    (acc, curr) => {
+  return flows.reduce(
+    (acc: LocationsTotals, curr) => {
       const originId = getFlowOriginId(curr);
       const destId = getFlowDestId(curr);
       const magnitude = getFlowMagnitude(curr);
@@ -909,12 +915,12 @@ export function calcLocationTotals(locations: Location[], flows: Flow[], inputAc
 }
 
 export function getLocationMaxAbsTotalGetter(
-  locations: Location[],
-  getLocationTotalIn: (location: Location) => number,
-  getLocationTotalOut: (location: Location) => number,
-  getLocationTotalWithin: (location: Location) => number,
+  locations: (Location | ClusterNode)[],
+  getLocationTotalIn: (location: (Location | ClusterNode)) => number,
+  getLocationTotalOut: (location: (Location | ClusterNode)) => number,
+  getLocationTotalWithin: (location: (Location | ClusterNode)) => number,
 ) {
-  return (location: Location) =>
+  return (location: (Location | ClusterNode)) =>
     Math.max(
       Math.abs(getLocationTotalIn(location) + getLocationTotalWithin(location)),
       Math.abs(getLocationTotalOut(location) + getLocationTotalWithin(location)),

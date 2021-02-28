@@ -10,18 +10,21 @@ import {
   FlowPickingInfo,
   getColorsRGBA,
   getDiffColorsRGBA,
+  isDiffColors,
   LocationPickingInfo,
   PickingType,
 } from '@flowmap.gl/core';
 import {Button, ButtonGroup, Classes, Colors, HTMLSelect, Intent} from '@blueprintjs/core';
 import {getViewStateForLocations, LocationTotalsLegend} from '@flowmap.gl/react';
 import WebMercatorViewport from '@math.gl/web-mercator';
-import {Absolute, Box, BoxStyle, Column, Description, LegendTitle, Title, TitleBox, ToastContent,} from './Boxes';
+import {Absolute, Box, BoxStyle, Column, Description, LegendTitle, Title, TitleBox, ToastContent} from './Boxes';
 import {FlowTooltipContent, formatCount, LocationTooltipContent} from './TooltipContent';
-import Tooltip, {TargetBounds} from './Tooltip';
+import Tooltip from './Tooltip';
 import {Link, useHistory} from 'react-router-dom';
 import Collapsible, {Direction} from './Collapsible';
 import {
+  Action,
+  ActionType,
   AsyncState,
   Config,
   ConfigPropName,
@@ -35,6 +38,7 @@ import {
   getFlowMapColors,
   getFlowsForFlowMapLayer,
   getFlowsSheets,
+  getInitialState,
   getInvalidLocationIds,
   getLocationCentroid,
   getLocationId,
@@ -54,10 +58,22 @@ import {
   getTotalFilteredCount,
   getTotalUnfilteredCount,
   getUnknownLocations,
+  Highlight,
+  HighlightType,
   Location,
   LocationFilterMode,
+  mapTransition,
+  MAX_PITCH,
+  MAX_ZOOM_LEVEL,
+  MIN_PITCH,
+  MIN_ZOOM_LEVEL,
   prepareLayersData,
-  ViewportProps,
+  reducer,
+  State,
+  stateToQueryString,
+  TargetBounds,
+  TimeGranularity,
+  ViewportProps
 } from '@flowmap.blue/data';
 import Message from './Message';
 import LoadingSpinner from './LoadingSpinner';
@@ -66,21 +82,6 @@ import styled from '@emotion/styled';
 import {IconNames} from '@blueprintjs/icons';
 import LocationsSearchBox from './LocationSearchBox';
 import Away from './Away';
-import {
-  Action,
-  ActionType,
-  getInitialState,
-  Highlight,
-  HighlightType,
-  mapTransition,
-  MAX_PITCH,
-  MAX_ZOOM_LEVEL,
-  MIN_PITCH,
-  MIN_ZOOM_LEVEL,
-  reducer,
-  State,
-  stateToQueryString,
-} from '@flowmap.blue/data';
 import {AppToaster} from './AppToaster';
 import useDebounced from './hooks';
 import SharePopover from './SharePopover';
@@ -89,9 +90,7 @@ import MapDrawingEditor, {MapDrawingFeature, MapDrawingMode} from './MapDrawingE
 import getBbox from '@turf/bbox';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import Timeline from './Timeline';
-import {TimeGranularity} from '@flowmap.blue/data';
 import {findAppropriateZoomLevel} from '@flowmap.gl/cluster';
-import {isDiffColors} from '@flowmap.gl/core';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,

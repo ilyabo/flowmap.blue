@@ -1,6 +1,5 @@
 import * as Cluster from '@flowmap.gl/cluster';
 import {ClusterNode} from '@flowmap.gl/cluster';
-import {TargetBounds} from '@flowmap.blue/core/dist/src/Tooltip';
 
 export interface Location {
   id: string;
@@ -111,9 +110,15 @@ export declare type AsyncState<T> = {
   value: T;
 };
 
+export interface TargetBounds {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+};
+
 export interface TooltipProps {
   target: TargetBounds;
   placement?: string;
   content: any;
 }
-

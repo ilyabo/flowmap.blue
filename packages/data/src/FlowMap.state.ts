@@ -550,7 +550,7 @@ export function getInitialState(
   queryString: string
 ) {
   const draft = {
-    viewport: getInitialViewport(dims, [-180, -70, 180, 70]);
+    viewport: getInitialViewport(dims, [-180, -70, 180, 70]),
     adjustViewportToLocations: true,
     selectedLocations: undefined,
     locationTotalsEnabled: true,
