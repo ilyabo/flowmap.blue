@@ -1,5 +1,5 @@
 import {createSelector, createSelectorCreator, defaultMemoize, ParametricSelector,} from 'reselect';
-import {State} from './';
+import {LayersAttributes, State} from './';
 import {getFlowColorScale, isDiffColorsRGBA, LocationFilterMode, MAX_ZOOM_LEVEL} from './';
 import {
   Config,
@@ -343,7 +343,6 @@ export const getFadeAmount: Selector<number> = (state: State, props: Props) => s
 export const getAnimate: Selector<boolean> = (state: State, props: Props) => state.animationEnabled;
 
 export const getFlowMapColors = createSelector(
-  getConfig,
   getDiffMode,
   getColorSchemeKey,
   getDarkMode,
@@ -808,7 +807,7 @@ export function prepareLayersData(
   locations: (Location | ClusterNode)[],
   flows: Flow[],
   flowMapColors: ColorsRGBA | DiffColorsRGBA,
-) {
+): LayersAttributes {
   const {incoming, outgoing, within} = calcLocationTotals(locations, flows, {
     getFlowOriginId: (flow: Flow) => flow.origin,
     getFlowDestId: (flow: Flow) => flow.dest,

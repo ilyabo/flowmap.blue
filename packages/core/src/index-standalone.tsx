@@ -128,8 +128,7 @@ export function init(
           <FlowMap
             inBrowser={true}
             embed={true}
-            flowsFetch={{ value: flows }}
-            locationsFetch={{ value: locations }}
+            layersData={undefined}
             config={{
               ...DEFAULT_CONFIG,
               [ConfigPropName.MAPBOX_ACCESS_TOKEN]: mapboxAccessToken,

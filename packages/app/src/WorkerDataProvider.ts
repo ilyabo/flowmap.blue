@@ -1,37 +1,26 @@
-import {createStore} from '@flowmap.blue/data';
+import {createDataStore} from '@flowmap.blue/data';
 import * as Comlink from 'comlink';
+import {DataProvider} from './DataProvider';
 
-const dataStore = createStore();
+const dataStore = createDataStore();
 const { getState, setState, subscribe, destroy } = dataStore;
-// Comlink.expose(store);
 
 
 
-export class WorkerDataProvider {
+export class WorkerDataProvider implements DataProvider {
   async loadLocations(locationsUrl: string) {
     await getState().loadLocations(locationsUrl);
-    return getState().locations;
+    return getState().locations!.status;
   }
 
   async loadFlows(flowsUrl: string) {
     await getState().loadFlows(flowsUrl);
-    return getState().flows;
+    return getState().flows!.status;
   }
 
-
-  // getLayersData() {
-  //
-  //   const flowMapColors = getFlowMapColors(state, props);
-  //   const flowMapColorsRGBA = useMemo(() =>
-  //     isDiffColors(flowMapColors)
-  //       ? getDiffColorsRGBA(flowMapColors)
-  //       : getColorsRGBA(flowMapColors), [flowMapColors]);
-  //
-  //   const layersData = useMemo(
-  //     () => locations && flows ? prepareLayersData(locations, flows, flowMapColorsRGBA) : undefined,
-  //     [ locations, flows, flowMapColorsRGBA ]);
-  //
-  // }
+  getLayersData() {
+    return getState().getLayersData();
+  }
 }
 
 Comlink.expose(new WorkerDataProvider());

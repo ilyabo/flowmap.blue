@@ -4,12 +4,12 @@
 import React, {FC, useEffect, useMemo} from 'react';
 import {PromiseState} from 'react-refetch';
 import FlowMap, { LoadingSpinner, MapContainer} from '@flowmap.blue/core';
-import {ConfigPropName, DEFAULT_CONFIG, Store} from '@flowmap.blue/data';
+import {ConfigPropName, DEFAULT_CONFIG} from '@flowmap.blue/data';
 import {useLocation} from 'react-router-dom';
 import * as queryString from 'query-string';
 import ErrorFallback from './ErrorFallback';
 import {LoadingStatus} from "@flowmap.blue/data";
-import store from './store';
+import store, {Store} from './store';
 import create from 'zustand';
 
 const useStore = create<Store>(store);
@@ -33,12 +33,9 @@ const FromUrlFlowMap: FC<{}> = (props: {}) => {
 
   const loadLocations = useStore(state => state.loadLocations);
   const loadFlows = useStore(state => state.loadFlows);
-  useEffect(() => {
-    loadLocations(locationsUrl);
-  }, [locationsUrl]);
-  useEffect(() => {
-    loadFlows(flowsUrl);
-  }, [flowsUrl]);
+  useEffect(() => { loadLocations(locationsUrl); }, [locationsUrl]);
+  useEffect(() => { loadFlows(flowsUrl); }, [flowsUrl]);
+  const layersData = useStore(state => state.layersData);
 
   const config = useMemo(() => {
     const config = { ...DEFAULT_CONFIG };
@@ -52,24 +49,20 @@ const FromUrlFlowMap: FC<{}> = (props: {}) => {
   }, [params]);
 
 
-  const locations = useStore(state => state.locations);
-  const flows = useStore(state => state.flows);
-
-  if (locations?.status === LoadingStatus.ERROR || flows?.status === LoadingStatus.ERROR) {
-    return <ErrorFallback error="Couldn't load data" />;
-  }
-  if (locations?.status === LoadingStatus.LOADING || flows?.status === LoadingStatus.LOADING) {
+  if (!layersData || layersData?.status === LoadingStatus.LOADING) {
     return <LoadingSpinner />;
+  }
+  if (layersData?.status === LoadingStatus.ERROR) {
+    return <ErrorFallback error="Couldn't load data" />;
   }
 
   return (
     <MapContainer>
-      {locations?.status === LoadingStatus.DONE && flows?.status === LoadingStatus.DONE &&
+      {layersData &&
       <FlowMap
         inBrowser={true}
         flowsSheet={undefined}
-        flowsFetch={PromiseState.resolve(flows.data)}
-        locationsFetch={PromiseState.resolve(locations.data)}
+        layersData={layersData}
         config={config}
         spreadSheetKey={undefined}
       />}

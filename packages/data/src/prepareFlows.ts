@@ -38,5 +38,30 @@ export function prepareFlows(rows: any[]) {
       }
     }
   }
+
+  // if (dupes.length > 0) {
+  //   AppToaster.show({
+  //     intent: Intent.WARNING,
+  //     icon: IconNames.WARNING_SIGN,
+  //     timeout: 0,
+  //     message: (
+  //       <ToastContent>
+  //         The following flows (origin → dest pairs) were encountered more than once in the dataset:
+  //     <ErrorsLocationsBlock>
+  //       {(dupes.length > MAX_NUM_OF_IDS_IN_ERROR
+  //         ? dupes.slice(0, MAX_NUM_OF_IDS_IN_ERROR)
+  //         : dupes
+  //       )
+  //       .map(({ origin, dest }) => `${origin} → ${dest}`)
+  //       .join(', ')}
+  //   {dupes.length > MAX_NUM_OF_IDS_IN_ERROR &&
+  //   ` … and ${dupes.length - MAX_NUM_OF_IDS_IN_ERROR} others`}
+  //   </ErrorsLocationsBlock>
+  //   Their counts were summed up.
+  //   </ToastContent>
+  // ),
+  // });
+  // }
+
   return rv;
 }

@@ -8,9 +8,6 @@ import {
   FlowLayerPickingInfo,
   FlowLinesLayer,
   FlowPickingInfo,
-  getColorsRGBA,
-  getDiffColorsRGBA,
-  isDiffColors,
   LocationPickingInfo,
   PickingType,
 } from '@flowmap.gl/core';
@@ -25,17 +22,14 @@ import Collapsible, {Direction} from './Collapsible';
 import {
   Action,
   ActionType,
-  AsyncState,
   Config,
   ConfigPropName,
-  Flow,
   getAvailableClusterZoomLevels,
   getClusterIndex,
   getClusterZoom,
   getDarkMode,
   getDiffMode,
   getFetchedFlows,
-  getFlowMapColors,
   getFlowsForFlowMapLayer,
   getFlowsSheets,
   getInitialState,
@@ -44,7 +38,6 @@ import {
   getLocationId,
   getLocations,
   getLocationsById,
-  getLocationsForFlowMapLayer,
   getLocationsForSearchBox,
   getLocationsHavingFlows,
   getLocationsInBbox,
@@ -60,14 +53,14 @@ import {
   getUnknownLocations,
   Highlight,
   HighlightType,
-  Location,
+  LayersAttributes,
+  LoadingState, LoadingStatus,
   LocationFilterMode,
   mapTransition,
   MAX_PITCH,
   MAX_ZOOM_LEVEL,
   MIN_PITCH,
   MIN_ZOOM_LEVEL,
-  prepareLayersData,
   reducer,
   State,
   stateToQueryString,
@@ -105,8 +98,7 @@ export type Props = {
   inBrowser: boolean;
   embed?: boolean;
   config: Config;
-  locationsFetch: AsyncState<Location[]>;
-  flowsFetch: AsyncState<Flow[]>;
+  layersData: LoadingState<LayersAttributes> | undefined;
   spreadSheetKey: string | undefined;
   flowsSheet: string | undefined;
   onSetFlowsSheet?: (sheet: string) => void;
@@ -163,7 +155,7 @@ const TotalCount = styled.div<{ darkMode: boolean }>((props) => ({
 export const MAX_NUM_OF_IDS_IN_ERROR = 100;
 
 const FlowMap: React.FC<Props> = (props) => {
-  const { inBrowser, embed, config, spreadSheetKey, locationsFetch, flowsFetch } = props;
+  const { inBrowser, embed, config, spreadSheetKey, layersData } = props;
   const deckRef = useRef<any>();
   const history = useHistory();
   const initialState = useMemo<State>(() =>
@@ -176,254 +168,243 @@ const FlowMap: React.FC<Props> = (props) => {
 
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, initialState);
   const [mapDrawingEnabled, setMapDrawingEnabled] = useState(false);
-  const { selectedTimeRange } = state;
-
-  const timeGranularity = getTimeGranularity(state, props);
-  const timeExtent = getTimeExtent(state, props);
-  const totalCountsByTime = getTotalCountsByTime(state, props);
-  const totalFilteredCount = getTotalFilteredCount(state, props);
-  const totalUnfilteredCount = getTotalUnfilteredCount(state, props);
-
-  useEffect(() => {
-    if (timeExtent) {
-      if (!selectedTimeRange ||
-         // reset selectedTimeRange if not within the timeExtent
-         !(timeExtent[0] <= selectedTimeRange[0] && selectedTimeRange[1] <= timeExtent[1])
-      ) {
-        dispatch({
-          type: ActionType.SET_TIME_RANGE,
-          range: timeExtent,
-        });
-      }
-    }
-  }, [timeExtent, selectedTimeRange]);
-
-  const [updateQuerySearch] = useDebounced(
-    () => {
-      if (inBrowser) return;
-      const locationSearch = `?${stateToQueryString(state)}`;
-      if (locationSearch !== history.location.search) {
-        history.replace({
-          ...history.location, // keep location state for in-browser flowmap
-          search: locationSearch,
-        });
-      }
-    },
-    250,
-    [state, history.location.search]
-  );
-  useEffect(updateQuerySearch, [history, state]);
-
+  // const { selectedTimeRange } = state;
+  // const timeGranularity = getTimeGranularity(state, props);
+  // const timeExtent = getTimeExtent(state, props);
+  // const totalCountsByTime = getTotalCountsByTime(state, props);
+  // const totalFilteredCount = getTotalFilteredCount(state, props);
+  // const totalUnfilteredCount = getTotalUnfilteredCount(state, props);
+  //
+  // useEffect(() => {
+  //   if (timeExtent) {
+  //     if (!selectedTimeRange ||
+  //        // reset selectedTimeRange if not within the timeExtent
+  //        !(timeExtent[0] <= selectedTimeRange[0] && selectedTimeRange[1] <= timeExtent[1])
+  //     ) {
+  //       dispatch({
+  //         type: ActionType.SET_TIME_RANGE,
+  //         range: timeExtent,
+  //       });
+  //     }
+  //   }
+  // }, [timeExtent, selectedTimeRange]);
+  //
+  // const [updateQuerySearch] = useDebounced(
+  //   () => {
+  //     if (inBrowser) return;
+  //     const locationSearch = `?${stateToQueryString(state)}`;
+  //     if (locationSearch !== history.location.search) {
+  //       history.replace({
+  //         ...history.location, // keep location state for in-browser flowmap
+  //         search: locationSearch,
+  //       });
+  //     }
+  //   },
+  //   250,
+  //   [state, history.location.search]
+  // );
+  // useEffect(updateQuerySearch, [history, state]);
+  //
   const { viewport, tooltip, animationEnabled, baseMapEnabled } = state;
-  const allFlows = getFetchedFlows(state, props);
-  const allLocations = getLocations(state, props);
-  const locationsHavingFlows = getLocationsHavingFlows(state, props);
-  const locations = getLocationsForFlowMapLayer(state, props);
-  const flows = getFlowsForFlowMapLayer(state, props);
-  const flowsSheets = getFlowsSheets(config);
+  // const allFlows = getFetchedFlows(state, props);
+  // const allLocations = getLocations(state, props);
+  // const locationsHavingFlows = getLocationsHavingFlows(state, props);
+  // const flows = getFlowsForFlowMapLayer(state, props);
+  // const flowsSheets = getFlowsSheets(config);
+  //
+  // const handleKeyDown = (evt: Event) => {
+  //   if (evt instanceof KeyboardEvent && evt.key === 'Escape') {
+  //     if (mapDrawingEnabled) {
+  //       setMapDrawingEnabled(false);
+  //     } else {
+  //       if (tooltip) {
+  //         hideTooltip();
+  //       }
+  //       if (state.highlight) {
+  //         highlight(undefined);
+  //       }
+  //       // dispatch({ type: ActionType.CLEAR_SELECTION });
+  //     }
+  //   }
+  // };
+  // useEffect(() => {
+  //   window.addEventListener('keydown', handleKeyDown);
+  //   return () => {
+  //     window.removeEventListener('keydown', handleKeyDown);
+  //   };
+  // });
+  //
+  // const [time, setTime] = useState(0);
+  //
+  // // Use useRef for mutable variables that we want to persist
+  // // without triggering a re-render on their change
+  // const requestAnimationFrameRef = useRef<number>();
+  //
+  // const animate = useCallback(
+  //   (time: number) => {
+  //     const loopLength = 1800;
+  //     const animationSpeed = 20;
+  //     const loopTime = loopLength / animationSpeed;
+  //     const timestamp = time / 1000;
+  //     setTime(((timestamp % loopTime) / loopTime) * loopLength);
+  //     requestAnimationFrameRef.current = requestAnimationFrame(animate);
+  //   },
+  //   [requestAnimationFrameRef, setTime]
+  // );
+  //
+  // useEffect(() => {
+  //   if (animationEnabled) {
+  //     requestAnimationFrameRef.current = requestAnimationFrame(animate);
+  //   } else {
+  //     const animationFrame = requestAnimationFrameRef.current;
+  //     if (animationFrame != null && animationFrame > 0) {
+  //       window.cancelAnimationFrame(animationFrame);
+  //       requestAnimationFrameRef.current = undefined;
+  //     }
+  //   }
+  //   return () => {
+  //     if (requestAnimationFrameRef.current != null) {
+  //       cancelAnimationFrame(requestAnimationFrameRef.current);
+  //     }
+  //   };
+  // }, [animationEnabled, animate]);
+  //
+  // const showErrorToast = useCallback(
+  //   (errorText: ReactNode) => {
+  //     if (config[ConfigPropName.IGNORE_ERRORS] !== 'yes') {
+  //       AppToaster.show({
+  //         intent: Intent.WARNING,
+  //         icon: IconNames.WARNING_SIGN,
+  //         timeout: 0,
+  //         message: <ToastContent>{errorText}</ToastContent>,
+  //       });
+  //     }
+  //   },
+  //   [config]
+  // );
+  //
+  // const invalidLocations = getInvalidLocationIds(state, props);
+  // useEffect(() => {
+  //   if (invalidLocations) {
+  //     showErrorToast(
+  //       <>
+  //         Locations with the following IDs have invalid coordinates:
+  //         <ErrorsLocationsBlock>
+  //           {(invalidLocations.length > MAX_NUM_OF_IDS_IN_ERROR
+  //             ? invalidLocations.slice(0, MAX_NUM_OF_IDS_IN_ERROR)
+  //             : invalidLocations
+  //           )
+  //             .map((id) => `${id}`)
+  //             .join(', ')}
+  //           {invalidLocations.length > MAX_NUM_OF_IDS_IN_ERROR &&
+  //             `… and ${invalidLocations.length - MAX_NUM_OF_IDS_IN_ERROR} others`}
+  //         </ErrorsLocationsBlock>
+  //         Make sure you named the columns "lat" and "lon" and didn't confuse latitudes and
+  //         longitudes. The coordinates must be in decimal form. If your coordinates are in
+  //         degrees-minutes-seconds (DSM format) you can convert them with{' '}
+  //         <Away href="https://www.latlong.net/degrees-minutes-seconds-to-decimal-degrees">
+  //           this tool
+  //         </Away>{' '}
+  //         for example.
+  //       </>
+  //     );
+  //   }
+  // }, [invalidLocations, showErrorToast]);
+  //
+  // const unknownLocations = getUnknownLocations(state, props);
+  // const flowsForKnownLocations = getSortedFlowsForKnownLocations(state, props);
+  // useEffect(() => {
+  //   if (unknownLocations) {
+  //     if (flowsForKnownLocations && allFlows) {
+  //       const ids = Array.from(unknownLocations).sort();
+  //       showErrorToast(
+  //         <>
+  //           Locations with the following IDs couldn't be found in the locations sheet:
+  //           <ErrorsLocationsBlock>
+  //             {(ids.length > MAX_NUM_OF_IDS_IN_ERROR ? ids.slice(0, MAX_NUM_OF_IDS_IN_ERROR) : ids)
+  //               .map((id) => `${id}`)
+  //               .join(', ')}
+  //             {ids.length > MAX_NUM_OF_IDS_IN_ERROR &&
+  //               `… and ${ids.length - MAX_NUM_OF_IDS_IN_ERROR} others`}
+  //           </ErrorsLocationsBlock>
+  //           {formatCount(allFlows.length - flowsForKnownLocations.length)} flows were omitted.
+  //           {flowsForKnownLocations.length === 0 && (
+  //             <div style={{ marginTop: '1em' }}>
+  //               Make sure the columns are named header row in the flows sheet is correct. There must
+  //               be <b>origin</b>, <b>dest</b>, and <b>count</b>.
+  //             </div>
+  //           )}
+  //         </>
+  //       );
+  //     }
+  //   }
+  // }, [unknownLocations, showErrorToast, allFlows, flowsForKnownLocations]);
+  //
+  // const { adjustViewportToLocations } = state;
+  //
+  // useEffect(() => {
+  //   if (!adjustViewportToLocations) {
+  //     return;
+  //   }
+  //
+  //   const width = window.innerWidth;
+  //   const height = window.innerHeight;
+  //   if (allLocations != null) {
+  //     let draft = getViewStateForLocations(
+  //       locationsHavingFlows ?? allLocations,
+  //       getLocationCentroid,
+  //       [width, height],
+  //       { pad: 0.1 }
+  //     );
+  //
+  //     if (!draft.zoom) {
+  //       draft = {
+  //         zoom: 1,
+  //         latitude: 0,
+  //         longitude: 0,
+  //       };
+  //     }
+  //
+  //     dispatch({
+  //       type: ActionType.SET_VIEWPORT,
+  //       viewport: {
+  //         width,
+  //         height,
+  //         ...draft,
+  //         minZoom: MIN_ZOOM_LEVEL,
+  //         maxZoom: MAX_ZOOM_LEVEL,
+  //         minPitch: MIN_PITCH,
+  //         maxPitch: MAX_PITCH,
+  //         bearing: 0,
+  //         pitch: 0,
+  //         altitude: 1.5,
+  //         ...mapTransition(),
+  //       },
+  //       adjustViewportToLocations: false,
+  //     });
+  //   }
+  // }, [allLocations, locationsHavingFlows, adjustViewportToLocations]);
 
-  const handleKeyDown = (evt: Event) => {
-    if (evt instanceof KeyboardEvent && evt.key === 'Escape') {
-      if (mapDrawingEnabled) {
-        setMapDrawingEnabled(false);
-      } else {
-        if (tooltip) {
-          hideTooltip();
-        }
-        if (state.highlight) {
-          highlight(undefined);
-        }
-        // dispatch({ type: ActionType.CLEAR_SELECTION });
-      }
-    }
-  };
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  });
-
-  const [time, setTime] = useState(0);
-
-  // Use useRef for mutable variables that we want to persist
-  // without triggering a re-render on their change
-  const requestAnimationFrameRef = useRef<number>();
-
-  const animate = useCallback(
-    (time: number) => {
-      const loopLength = 1800;
-      const animationSpeed = 20;
-      const loopTime = loopLength / animationSpeed;
-      const timestamp = time / 1000;
-      setTime(((timestamp % loopTime) / loopTime) * loopLength);
-      requestAnimationFrameRef.current = requestAnimationFrame(animate);
-    },
-    [requestAnimationFrameRef, setTime]
-  );
-
-  useEffect(() => {
-    if (animationEnabled) {
-      requestAnimationFrameRef.current = requestAnimationFrame(animate);
-    } else {
-      const animationFrame = requestAnimationFrameRef.current;
-      if (animationFrame != null && animationFrame > 0) {
-        window.cancelAnimationFrame(animationFrame);
-        requestAnimationFrameRef.current = undefined;
-      }
-    }
-    return () => {
-      if (requestAnimationFrameRef.current != null) {
-        cancelAnimationFrame(requestAnimationFrameRef.current);
-      }
-    };
-  }, [animationEnabled, animate]);
-
-  const showErrorToast = useCallback(
-    (errorText: ReactNode) => {
-      if (config[ConfigPropName.IGNORE_ERRORS] !== 'yes') {
-        AppToaster.show({
-          intent: Intent.WARNING,
-          icon: IconNames.WARNING_SIGN,
-          timeout: 0,
-          message: <ToastContent>{errorText}</ToastContent>,
-        });
-      }
-    },
-    [config]
-  );
-
-  const invalidLocations = getInvalidLocationIds(state, props);
-  useEffect(() => {
-    if (invalidLocations) {
-      showErrorToast(
-        <>
-          Locations with the following IDs have invalid coordinates:
-          <ErrorsLocationsBlock>
-            {(invalidLocations.length > MAX_NUM_OF_IDS_IN_ERROR
-              ? invalidLocations.slice(0, MAX_NUM_OF_IDS_IN_ERROR)
-              : invalidLocations
-            )
-              .map((id) => `${id}`)
-              .join(', ')}
-            {invalidLocations.length > MAX_NUM_OF_IDS_IN_ERROR &&
-              `… and ${invalidLocations.length - MAX_NUM_OF_IDS_IN_ERROR} others`}
-          </ErrorsLocationsBlock>
-          Make sure you named the columns "lat" and "lon" and didn't confuse latitudes and
-          longitudes. The coordinates must be in decimal form. If your coordinates are in
-          degrees-minutes-seconds (DSM format) you can convert them with{' '}
-          <Away href="https://www.latlong.net/degrees-minutes-seconds-to-decimal-degrees">
-            this tool
-          </Away>{' '}
-          for example.
-        </>
-      );
-    }
-  }, [invalidLocations, showErrorToast]);
-
-  const unknownLocations = getUnknownLocations(state, props);
-  const flowsForKnownLocations = getSortedFlowsForKnownLocations(state, props);
-  useEffect(() => {
-    if (unknownLocations) {
-      if (flowsForKnownLocations && allFlows) {
-        const ids = Array.from(unknownLocations).sort();
-        showErrorToast(
-          <>
-            Locations with the following IDs couldn't be found in the locations sheet:
-            <ErrorsLocationsBlock>
-              {(ids.length > MAX_NUM_OF_IDS_IN_ERROR ? ids.slice(0, MAX_NUM_OF_IDS_IN_ERROR) : ids)
-                .map((id) => `${id}`)
-                .join(', ')}
-              {ids.length > MAX_NUM_OF_IDS_IN_ERROR &&
-                `… and ${ids.length - MAX_NUM_OF_IDS_IN_ERROR} others`}
-            </ErrorsLocationsBlock>
-            {formatCount(allFlows.length - flowsForKnownLocations.length)} flows were omitted.
-            {flowsForKnownLocations.length === 0 && (
-              <div style={{ marginTop: '1em' }}>
-                Make sure the columns are named header row in the flows sheet is correct. There must
-                be <b>origin</b>, <b>dest</b>, and <b>count</b>.
-              </div>
-            )}
-          </>
-        );
-      }
-    }
-  }, [unknownLocations, showErrorToast, allFlows, flowsForKnownLocations]);
-
-  const { adjustViewportToLocations } = state;
-
-  useEffect(() => {
-    if (!adjustViewportToLocations) {
-      return;
-    }
-
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    if (allLocations != null) {
-      let draft = getViewStateForLocations(
-        locationsHavingFlows ?? allLocations,
-        getLocationCentroid,
-        [width, height],
-        { pad: 0.1 }
-      );
-
-      if (!draft.zoom) {
-        draft = {
-          zoom: 1,
-          latitude: 0,
-          longitude: 0,
-        };
-      }
-
-      dispatch({
-        type: ActionType.SET_VIEWPORT,
-        viewport: {
-          width,
-          height,
-          ...draft,
-          minZoom: MIN_ZOOM_LEVEL,
-          maxZoom: MAX_ZOOM_LEVEL,
-          minPitch: MIN_PITCH,
-          maxPitch: MAX_PITCH,
-          bearing: 0,
-          pitch: 0,
-          altitude: 1.5,
-          ...mapTransition(),
-        },
-        adjustViewportToLocations: false,
-      });
-    }
-  }, [allLocations, locationsHavingFlows, adjustViewportToLocations]);
-
-  const clusterIndex = getClusterIndex(state, props);
-  const handleChangeClusteringAuto = (value: boolean) => {
-    if (!value) {
-      if (clusterIndex) {
-        const { availableZoomLevels } = clusterIndex;
-        if (availableZoomLevels != null) {
-          dispatch({
-            type: ActionType.SET_MANUAL_CLUSTER_ZOOM,
-            manualClusterZoom:
-              findAppropriateZoomLevel(clusterIndex.availableZoomLevels, viewport.zoom),
-          });
-        }
-      }
-    }
-    dispatch({
-      type: ActionType.SET_CLUSTERING_AUTO,
-      clusteringAuto: value,
-    });
-  }
-
-  const flowMapColors = getFlowMapColors(state, props);
-  const flowMapColorsRGBA = useMemo(() =>
-    isDiffColors(flowMapColors)
-      ? getDiffColorsRGBA(flowMapColors)
-      : getColorsRGBA(flowMapColors), [flowMapColors]);
-
-  const layersData = useMemo(
-      () => locations && flows ? prepareLayersData(locations, flows, flowMapColorsRGBA) : undefined,
-      [ locations, flows, flowMapColorsRGBA ]);
+  const handleChangeClusteringAuto = (value: boolean) => {};
+  // const clusterIndex = getClusterIndex(state, props);
+  // const handleChangeClusteringAuto = (value: boolean) => {
+  //   if (!value) {
+  //     if (clusterIndex) {
+  //       const { availableZoomLevels } = clusterIndex;
+  //       if (availableZoomLevels != null) {
+  //         dispatch({
+  //           type: ActionType.SET_MANUAL_CLUSTER_ZOOM,
+  //           manualClusterZoom:
+  //             findAppropriateZoomLevel(clusterIndex.availableZoomLevels, viewport.zoom),
+  //         });
+  //       }
+  //     }
+  //   }
+  //   dispatch({
+  //     type: ActionType.SET_CLUSTERING_AUTO,
+  //     clusteringAuto: value,
+  //   });
+  // }
 
   const [showFullscreenButton, setShowFullscreenButton] = useState(
     embed && document.fullscreenEnabled
@@ -444,18 +425,18 @@ const FlowMap: React.FC<Props> = (props) => {
     if (!container) return undefined;
     return container.getBoundingClientRect();
   }, [outerRef]);
-
-  const getMercator = useCallback(() => {
-    const containerBounds = getContainerClientRect();
-    if (!containerBounds) return undefined;
-    const { width, height } = containerBounds;
-    return new WebMercatorViewport({
-      ...viewport,
-      width,
-      height,
-    });
-  }, [viewport, getContainerClientRect]);
-
+  //
+  // const getMercator = useCallback(() => {
+  //   const containerBounds = getContainerClientRect();
+  //   if (!containerBounds) return undefined;
+  //   const { width, height } = containerBounds;
+  //   return new WebMercatorViewport({
+  //     ...viewport,
+  //     width,
+  //     height,
+  //   });
+  // }, [viewport, getContainerClientRect]);
+  //
   const showTooltip = (bounds: TargetBounds, content: React.ReactNode) => {
     const containerBounds = getContainerClientRect();
     if (!containerBounds) return;
@@ -487,107 +468,108 @@ const FlowMap: React.FC<Props> = (props) => {
     });
     cancelShowTooltipDebounced();
   };
+  //
+  // const showFlowTooltip = (pos: [number, number], info: FlowPickingInfo) => {
+  //   const [x, y] = pos;
+  //   const r = 5;
+  //   const bounds = {
+  //     left: x - r,
+  //     top: y - r,
+  //     width: r * 2,
+  //     height: r * 2,
+  //   };
+  //   const content = (
+  //     <FlowTooltipContent
+  //       flow={info.object}
+  //       origin={info.origin}
+  //       dest={info.dest}
+  //       config={config}
+  //     />
+  //   );
+  //   if (state.tooltip) {
+  //     showTooltip(bounds, content);
+  //     cancelShowTooltipDebounced();
+  //   } else {
+  //     showTooltipDebounced(bounds, content);
+  //   }
+  // };
+  //
+  // const showLocationTooltip = (info: LocationPickingInfo) => {
+  //   const { object: location, circleRadius } = info;
+  //   const mercator = getMercator();
+  //   if (!mercator) return;
+  //   const [x, y] = mercator.project(getLocationCentroid(location));
+  //   const r = circleRadius + 5;
+  //   const { selectedLocations } = state;
+  //   const bounds = {
+  //     left: x - r,
+  //     top: y - r,
+  //     width: r * 2,
+  //     height: r * 2,
+  //   };
+  //   const content = (
+  //     <LocationTooltipContent
+  //       locationInfo={info}
+  //       isSelectionEmpty={!selectedLocations}
+  //       isSelected={
+  //         selectedLocations && selectedLocations.find((id) => id === location.id) ? true : false
+  //       }
+  //       config={config}
+  //     />
+  //   );
+  //   if (state.tooltip) {
+  //     showTooltip(bounds, content);
+  //     cancelShowTooltipDebounced();
+  //   } else {
+  //     showTooltipDebounced(bounds, content);
+  //   }
+  // };
 
-  const showFlowTooltip = (pos: [number, number], info: FlowPickingInfo) => {
-    const [x, y] = pos;
-    const r = 5;
-    const bounds = {
-      left: x - r,
-      top: y - r,
-      width: r * 2,
-      height: r * 2,
-    };
-    const content = (
-      <FlowTooltipContent
-        flow={info.object}
-        origin={info.origin}
-        dest={info.dest}
-        config={config}
-      />
-    );
-    if (state.tooltip) {
-      showTooltip(bounds, content);
-      cancelShowTooltipDebounced();
-    } else {
-      showTooltipDebounced(bounds, content);
-    }
-  };
+  const handleHover = (info: FlowLayerPickingInfo) => {};
+  // const handleHover = (info: FlowLayerPickingInfo) => {
+  //   const { type, object, x, y } = info;
+  //   switch (type) {
+  //     case PickingType.FLOW: {
+  //       if (object) {
+  //         highlight({
+  //           type: HighlightType.FLOW,
+  //           flow: object,
+  //         });
+  //         cancelHighlightDebounced();
+  //         showFlowTooltip([x, y], info as FlowPickingInfo);
+  //       } else {
+  //         highlight(undefined);
+  //         cancelHighlightDebounced();
+  //         hideTooltip();
+  //       }
+  //       break;
+  //     }
+  //     case PickingType.LOCATION: {
+  //       if (object) {
+  //         highlightDebounced({
+  //           type: HighlightType.LOCATION,
+  //           locationId: getLocationId!(object),
+  //         });
+  //         showLocationTooltip(info as LocationPickingInfo);
+  //       } else {
+  //         highlight(undefined);
+  //         cancelHighlightDebounced();
+  //         hideTooltip();
+  //       }
+  //       break;
+  //     }
+  //     default: {
+  //       highlight(undefined);
+  //       cancelHighlightDebounced();
+  //       hideTooltip();
+  //     }
+  //   }
+  // };
 
-  const showLocationTooltip = (info: LocationPickingInfo) => {
-    const { object: location, circleRadius } = info;
-    const mercator = getMercator();
-    if (!mercator) return;
-    const [x, y] = mercator.project(getLocationCentroid(location));
-    const r = circleRadius + 5;
-    const { selectedLocations } = state;
-    const bounds = {
-      left: x - r,
-      top: y - r,
-      width: r * 2,
-      height: r * 2,
-    };
-    const content = (
-      <LocationTooltipContent
-        locationInfo={info}
-        isSelectionEmpty={!selectedLocations}
-        isSelected={
-          selectedLocations && selectedLocations.find((id) => id === location.id) ? true : false
-        }
-        config={config}
-      />
-    );
-    if (state.tooltip) {
-      showTooltip(bounds, content);
-      cancelShowTooltipDebounced();
-    } else {
-      showTooltipDebounced(bounds, content);
-    }
-  };
-
-  const handleHover = (info: FlowLayerPickingInfo) => {
-    const { type, object, x, y } = info;
-    switch (type) {
-      case PickingType.FLOW: {
-        if (object) {
-          highlight({
-            type: HighlightType.FLOW,
-            flow: object,
-          });
-          cancelHighlightDebounced();
-          showFlowTooltip([x, y], info as FlowPickingInfo);
-        } else {
-          highlight(undefined);
-          cancelHighlightDebounced();
-          hideTooltip();
-        }
-        break;
-      }
-      case PickingType.LOCATION: {
-        if (object) {
-          highlightDebounced({
-            type: HighlightType.LOCATION,
-            locationId: getLocationId!(object),
-          });
-          showLocationTooltip(info as LocationPickingInfo);
-        } else {
-          highlight(undefined);
-          cancelHighlightDebounced();
-          hideTooltip();
-        }
-        break;
-      }
-      default: {
-        highlight(undefined);
-        cancelHighlightDebounced();
-        hideTooltip();
-      }
-    }
-  };
-
-  if (locationsFetch.loading) {
+  if (!layersData) {
     return <LoadingSpinner />;
   }
-  if (locationsFetch.error || flowsFetch.error) {
+  if (layersData.status === LoadingStatus.ERROR) {
     return (
       <Message>
         {spreadSheetKey
@@ -614,7 +596,7 @@ const FlowMap: React.FC<Props> = (props) => {
       </Message>
     );
   }
-  const searchBoxLocations = getLocationsForSearchBox(state, props);
+  // const searchBoxLocations = getLocationsForSearchBox(state, props);
   const title = config[ConfigPropName.TITLE];
   const description = config[ConfigPropName.DESCRIPTION];
   const sourceUrl = config[ConfigPropName.SOURCE_URL];
@@ -622,7 +604,7 @@ const FlowMap: React.FC<Props> = (props) => {
   const authorUrl = config[ConfigPropName.AUTHOR_URL];
   const authorName = config[ConfigPropName.AUTHOR_NAME];
   const mapboxAccessToken = config[ConfigPropName.MAPBOX_ACCESS_TOKEN];
-  const diffMode = getDiffMode(state, props);
+  // const diffMode = getDiffMode(state, props);
   const darkMode = getDarkMode(state, props);
   const mapboxMapStyle = getMapboxMapStyle(state, props);
 
@@ -707,7 +689,7 @@ const FlowMap: React.FC<Props> = (props) => {
     });
   };
 
-  const locationsTree = getLocationsTree(state, props);
+  // const locationsTree = getLocationsTree(state, props);
 
   const handleTimeRangeChanged = (range: [Date, Date]) => {
     dispatch({
@@ -716,36 +698,37 @@ const FlowMap: React.FC<Props> = (props) => {
     });
   };
 
-  const handleMapFeatureDrawn = (feature: MapDrawingFeature | undefined) => {
-    if (feature != null) {
-      const bbox = getBbox(feature) as [number, number, number, number];
-      const candidates = getLocationsInBbox(locationsTree, bbox);
-      if (candidates) {
-        const inPolygon = candidates.filter((loc) =>
-          booleanPointInPolygon(getLocationCentroid(loc), feature)
-        );
-        if (inPolygon.length > 0) {
-          handleChangeSelectLocations(inPolygon.map(getLocationId));
-          // TODO: support incremental
-        } else {
-          handleChangeSelectLocations(undefined);
-        }
-      }
-    }
-    setMapDrawingEnabled(false);
-    if (deckRef.current && deckRef.current.deck) {
-      // This is a workaround for a deck.gl issue.
-      // Without it the following happens:
-      // 1. When finishing a map drawing and releasing the mouse over a deck.gl layer
-      //    an onClick event is generated.
-      // 2. Deck.gl sets the info of this event to _lastPointerDownInfo
-      //    which holds the last object that was clicked any time before
-      //    starting the map drawing.
-      // 3. The object info is passed to the onClick handler of the corresponding
-      //    layer which leads to selecting the object and altering the map drawing selection.
-      deckRef.current.deck._lastPointerDownInfo = null;
-    }
-  };
+  const handleMapFeatureDrawn = (feature: MapDrawingFeature | undefined) => {};
+  // const handleMapFeatureDrawn = (feature: MapDrawingFeature | undefined) => {
+  //   if (feature != null) {
+  //     const bbox = getBbox(feature) as [number, number, number, number];
+  //     const candidates = getLocationsInBbox(locationsTree, bbox);
+  //     if (candidates) {
+  //       const inPolygon = candidates.filter((loc) =>
+  //         booleanPointInPolygon(getLocationCentroid(loc), feature)
+  //       );
+  //       if (inPolygon.length > 0) {
+  //         handleChangeSelectLocations(inPolygon.map(getLocationId));
+  //         // TODO: support incremental
+  //       } else {
+  //         handleChangeSelectLocations(undefined);
+  //       }
+  //     }
+  //   }
+  //   setMapDrawingEnabled(false);
+  //   if (deckRef.current && deckRef.current.deck) {
+  //     // This is a workaround for a deck.gl issue.
+  //     // Without it the following happens:
+  //     // 1. When finishing a map drawing and releasing the mouse over a deck.gl layer
+  //     //    an onClick event is generated.
+  //     // 2. Deck.gl sets the info of this event to _lastPointerDownInfo
+  //     //    which holds the last object that was clicked any time before
+  //     //    starting the map drawing.
+  //     // 3. The object info is passed to the onClick handler of the corresponding
+  //     //    layer which leads to selecting the object and altering the map drawing selection.
+  //     deckRef.current.deck._lastPointerDownInfo = null;
+  //   }
+  // };
 
   const handleToggleMapDrawing = () => {
     setMapDrawingEnabled(!mapDrawingEnabled);
@@ -793,7 +776,7 @@ const FlowMap: React.FC<Props> = (props) => {
       fadeAmount,
     } = state;
     const layers = [];
-    if (layersData) {
+    if (layersData && layersData.status === LoadingStatus.DONE) {
       const id = [
         'flow-map',
         animationEnabled ? 'animated' : 'arrows',
@@ -803,13 +786,13 @@ const FlowMap: React.FC<Props> = (props) => {
         fadeAmount,
       ].join('-');
 
-      const locationTotals = getLocationTotals(state, props);
-      const highlight = getHighlightForZoom();
-      const locationsById = getLocationsById(state, props);
+      // const locationTotals = getLocationTotals(state, props);
+      // const highlight = getHighlightForZoom();
+      // const locationsById = getLocationsById(state, props);
 
       layers.push(new FlowLinesLayer({
         id: 'lines',
-        data: layersData.lineAttributes,
+        data: layersData.data.lineAttributes,
         drawOutline: true,
         opacity: 1,
         pickable: true,
@@ -834,7 +817,7 @@ const FlowMap: React.FC<Props> = (props) => {
       }));
       layers.push(new FlowCirclesLayer({
         id: 'circles',
-        data: layersData.circleAttributes,
+        data: layersData.data.circleAttributes,
         opacity: 1,
       }));
 
@@ -937,40 +920,40 @@ const FlowMap: React.FC<Props> = (props) => {
           )}
         </DeckGL>
       </DeckGLOuter>
-      {timeExtent && timeGranularity && totalCountsByTime && selectedTimeRange && (
-        <Absolute bottom={20} left={100} right={200}>
-          <Column spacing={10}>
-            <SelectedTimeRangeBox darkMode={darkMode}>
-              {selectedTimeRangeToString(selectedTimeRange, timeGranularity)}
-            </SelectedTimeRangeBox>
-            <TimelineBox darkMode={darkMode}>
-              <Timeline
-                darkMode={darkMode}
-                extent={timeExtent}
-                selectedRange={selectedTimeRange}
-                timeGranularity={timeGranularity}
-                totalCountsByTime={totalCountsByTime}
-                onChange={handleTimeRangeChanged}
-              />
-            </TimelineBox>
-          </Column>
-        </Absolute>
-      )}
-      {flows && (
+      {/*{timeExtent && timeGranularity && totalCountsByTime && selectedTimeRange && (*/}
+      {/*  <Absolute bottom={20} left={100} right={200}>*/}
+      {/*    <Column spacing={10}>*/}
+      {/*      <SelectedTimeRangeBox darkMode={darkMode}>*/}
+      {/*        {selectedTimeRangeToString(selectedTimeRange, timeGranularity)}*/}
+      {/*      </SelectedTimeRangeBox>*/}
+      {/*      <TimelineBox darkMode={darkMode}>*/}
+      {/*        <Timeline*/}
+      {/*          darkMode={darkMode}*/}
+      {/*          extent={timeExtent}*/}
+      {/*          selectedRange={selectedTimeRange}*/}
+      {/*          timeGranularity={timeGranularity}*/}
+      {/*          totalCountsByTime={totalCountsByTime}*/}
+      {/*          onChange={handleTimeRangeChanged}*/}
+      {/*        />*/}
+      {/*      </TimelineBox>*/}
+      {/*    </Column>*/}
+      {/*  </Absolute>*/}
+      {/*)}*/}
+      {layersData?.status === LoadingStatus.DONE && (
         <>
-          {searchBoxLocations && (
-            <Absolute top={10} right={50}>
-              <BoxStyle darkMode={darkMode}>
-                <LocationsSearchBox
-                  locationFilterMode={state.locationFilterMode}
-                  locations={searchBoxLocations}
-                  selectedLocations={state.selectedLocations}
-                  onSelectionChanged={handleChangeSelectLocations}
-                  onLocationFilterModeChange={handleChangeLocationFilterMode}
-                />
-              </BoxStyle>
-            </Absolute>
-          )}
+          {/*{searchBoxLocations && (*/}
+          {/*  <Absolute top={10} right={50}>*/}
+          {/*    <BoxStyle darkMode={darkMode}>*/}
+          {/*      <LocationsSearchBox*/}
+          {/*        locationFilterMode={state.locationFilterMode}*/}
+          {/*        locations={searchBoxLocations}*/}
+          {/*        selectedLocations={state.selectedLocations}*/}
+          {/*        onSelectionChanged={handleChangeSelectLocations}*/}
+          {/*        onLocationFilterModeChange={handleChangeLocationFilterMode}*/}
+          {/*      />*/}
+          {/*    </BoxStyle>*/}
+          {/*  </Absolute>*/}
+          {/*)}*/}
           <Absolute top={10} right={10}>
             <Column spacing={10}>
               <ButtonGroup vertical={true}>
@@ -999,30 +982,30 @@ const FlowMap: React.FC<Props> = (props) => {
               )}
             </Column>
           </Absolute>
-          {state.locationTotalsEnabled && !embed && (
-            <Box bottom={28} right={0} darkMode={darkMode}>
-              <Collapsible darkMode={darkMode} width={160} direction={Direction.RIGHT}>
-                <Column spacing={10} padding={12}>
-                  <LegendTitle>Location totals</LegendTitle>
-                  <LocationTotalsLegend diff={diffMode} colors={flowMapColors} />
-                </Column>
-              </Collapsible>
-            </Box>
-          )}
+          {/*{state.locationTotalsEnabled && !embed && (*/}
+          {/*  <Box bottom={28} right={0} darkMode={darkMode}>*/}
+          {/*    <Collapsible darkMode={darkMode} width={160} direction={Direction.RIGHT}>*/}
+          {/*      <Column spacing={10} padding={12}>*/}
+          {/*        <LegendTitle>Location totals</LegendTitle>*/}
+          {/*        <LocationTotalsLegend diff={diffMode} colors={flowMapColors} />*/}
+          {/*      </Column>*/}
+          {/*    </Collapsible>*/}
+          {/*  </Box>*/}
+          {/*)}*/}
         </>
       )}
-      {!embed && (
-        <Absolute bottom={40} left={10}>
-          <SettingsPopover
-            darkMode={darkMode}
-            state={state}
-            dispatch={dispatch}
-            clusterZoom={getClusterZoom(state, props)}
-            availableClusterZoomLevels={getAvailableClusterZoomLevels(state, props)}
-            onChangeClusteringAuto={handleChangeClusteringAuto}
-          />
-        </Absolute>
-      )}
+      {/*{!embed && (*/}
+      {/*  <Absolute bottom={40} left={10}>*/}
+      {/*    <SettingsPopover*/}
+      {/*      darkMode={darkMode}*/}
+      {/*      state={state}*/}
+      {/*      dispatch={dispatch}*/}
+      {/*      clusterZoom={getClusterZoom(state, props)}*/}
+      {/*      availableClusterZoomLevels={getAvailableClusterZoomLevels(state, props)}*/}
+      {/*      onChangeClusteringAuto={handleChangeClusteringAuto}*/}
+      {/*    />*/}
+      {/*  </Absolute>*/}
+      {/*)}*/}
       {showFullscreenButton && (
         <Absolute bottom={30} right={10}>
           <Button
@@ -1042,16 +1025,16 @@ const FlowMap: React.FC<Props> = (props) => {
                   <Description>{description}</Description>
                 </div>
               )}
-              {flowsSheets && flowsSheets.length > 1 && (
-                <HTMLSelect
-                  value={props.flowsSheet}
-                  onChange={handleSelectFlowsSheet}
-                  options={flowsSheets.map((sheet) => ({
-                    label: sheet,
-                    value: sheet,
-                  }))}
-                />
-              )}
+              {/*{flowsSheets && flowsSheets.length > 1 && (*/}
+              {/*  <HTMLSelect*/}
+              {/*    value={props.flowsSheet}*/}
+              {/*    onChange={handleSelectFlowsSheet}*/}
+              {/*    options={flowsSheets.map((sheet) => ({*/}
+              {/*      label: sheet,*/}
+              {/*      value: sheet,*/}
+              {/*    }))}*/}
+              {/*  />*/}
+              {/*)}*/}
               {authorUrl ? (
                 <div>
                   {`Created by: `}
@@ -1080,24 +1063,24 @@ const FlowMap: React.FC<Props> = (props) => {
                 . You can <Link to="/">publish your own</Link> too.
               </div>
 
-              {totalFilteredCount != null && totalUnfilteredCount != null && (
-                <TotalCount darkMode={darkMode}>
-                  {Math.round(totalFilteredCount) === Math.round(totalUnfilteredCount)
-                    ? config['msg.totalCount.allTrips']?.replace(
-                        '{0}',
-                        formatCount(totalUnfilteredCount)
-                      )
-                    : config['msg.totalCount.countOfTrips']
-                        ?.replace('{0}', formatCount(totalFilteredCount))
-                        .replace('{1}', formatCount(totalUnfilteredCount))}
-                </TotalCount>
-              )}
+              {/*{totalFilteredCount != null && totalUnfilteredCount != null && (*/}
+              {/*  <TotalCount darkMode={darkMode}>*/}
+              {/*    {Math.round(totalFilteredCount) === Math.round(totalUnfilteredCount)*/}
+              {/*      ? config['msg.totalCount.allTrips']?.replace(*/}
+              {/*          '{0}',*/}
+              {/*          formatCount(totalUnfilteredCount)*/}
+              {/*        )*/}
+              {/*      : config['msg.totalCount.countOfTrips']*/}
+              {/*          ?.replace('{0}', formatCount(totalFilteredCount))*/}
+              {/*          .replace('{1}', formatCount(totalUnfilteredCount))}*/}
+              {/*  </TotalCount>*/}
+              {/*)}*/}
             </Column>
           </Collapsible>
         </TitleBox>
       )}
       {tooltip && <Tooltip {...tooltip} />}
-      {flowsFetch.loading && <LoadingSpinner />}
+      {layersData.status === LoadingStatus.LOADING && <LoadingSpinner />}
     </NoScrollContainer>
   );
 };
