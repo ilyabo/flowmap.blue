@@ -80,7 +80,7 @@ import {
   reducer,
   State,
   stateToQueryString,
-} from './FlowMap.state';
+} from '@flowmap.blue/data';
 import {AppToaster} from './AppToaster';
 import useDebounced from './hooks';
 import SharePopover from './SharePopover';
@@ -167,7 +167,8 @@ const FlowMap: React.FC<Props> = (props) => {
   const { inBrowser, embed, config, spreadSheetKey, locationsFetch, flowsFetch } = props;
   const deckRef = useRef<any>();
   const history = useHistory();
-  const initialState = useMemo<State>(() => getInitialState(config, history.location.search), [
+  const initialState = useMemo<State>(() =>
+    getInitialState(config, [window.innerWidth, window.innerHeight], history.location.search), [
     config,
     // history.location.search,  // this leads to initial state being recomputed on every change
   ]);
@@ -388,7 +389,7 @@ const FlowMap: React.FC<Props> = (props) => {
           bearing: 0,
           pitch: 0,
           altitude: 1.5,
-          ...mapTransition(500),
+          ...mapTransition(),
         },
         adjustViewportToLocations: false,
       });

@@ -5,6 +5,4 @@ export * from './FlowMap.selectors';
 export * from './config';
 export * from './colors';
 export * from './time';
-export * from './state';
-
-export const MAX_ZOOM_LEVEL = 20;
+export * from './FlowMap.state';

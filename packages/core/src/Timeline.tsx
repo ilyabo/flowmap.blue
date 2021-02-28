@@ -6,9 +6,7 @@ import {EventManager} from 'mjolnir.js';
 import PlayControl from './PlayControl';
 import {Colors} from '@blueprintjs/core';
 import {useMeasure, useThrottle} from 'react-use';
-import {areRangesEqual, tickMultiFormat, TimeGranularity} from '@flowmap.blue/data';
-import {CountByTime} from '@flowmap.blue/data/dist/types';
-import {ColorScheme} from '@flowmap.blue/data/dist/colors';
+import {areRangesEqual, ColorScheme, CountByTime, tickMultiFormat, TimeGranularity} from '@flowmap.blue/data';
 import {hcl} from 'd3-color';
 
 interface Props {

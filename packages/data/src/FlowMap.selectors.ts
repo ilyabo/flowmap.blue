@@ -1,5 +1,5 @@
 import {createSelector, createSelectorCreator, defaultMemoize, ParametricSelector,} from 'reselect';
-import {BaseState} from './state';
+import {State} from './state';
 import {getFlowColorScale, isDiffColorsRGBA, LocationFilterMode, MAX_ZOOM_LEVEL} from './';
 import {
   Config,
@@ -34,18 +34,18 @@ type Props = any;
 
 export const NUMBER_OF_FLOWS_TO_DISPLAY = 5000;
 
-export type Selector<T> = ParametricSelector<BaseState, Props, T>;
+export type Selector<T> = ParametricSelector<State, Props, T>;
 
-export const getFetchedFlows = (state: BaseState, props: Props) => props.flowsFetch.value;
-export const getFetchedLocations = (state: BaseState, props: Props) => props.locationsFetch.value;
-export const getSelectedLocations = (state: BaseState, props: Props) => state.selectedLocations;
-export const getLocationFilterMode = (state: BaseState, props: Props) => state.locationFilterMode;
-export const getClusteringEnabled = (state: BaseState, props: Props) => state.clusteringEnabled;
-export const getLocationTotalsEnabled = (state: BaseState, props: Props) => state.locationTotalsEnabled;
-export const getZoom = (state: BaseState, props: Props) => state.viewport.zoom;
-export const getConfig = (state: BaseState, props: Props) => props.config;
-export const getViewport = (state: BaseState, props: Props) => state.viewport;
-export const getSelectedTimeRange = (state: BaseState, props: Props) => state.selectedTimeRange;
+export const getFetchedFlows = (state: State, props: Props) => props.flowsFetch.value;
+export const getFetchedLocations = (state: State, props: Props) => props.locationsFetch.value;
+export const getSelectedLocations = (state: State, props: Props) => state.selectedLocations;
+export const getLocationFilterMode = (state: State, props: Props) => state.locationFilterMode;
+export const getClusteringEnabled = (state: State, props: Props) => state.clusteringEnabled;
+export const getLocationTotalsEnabled = (state: State, props: Props) => state.locationTotalsEnabled;
+export const getZoom = (state: State, props: Props) => state.viewport.zoom;
+export const getConfig = (state: State, props: Props) => props.config;
+export const getViewport = (state: State, props: Props) => state.viewport;
+export const getSelectedTimeRange = (state: State, props: Props) => state.selectedTimeRange;
 
 export const getInvalidLocationIds: Selector<string[] | undefined> = createSelector(
   getFetchedLocations,
@@ -281,7 +281,7 @@ const _getClusterZoom: Selector<number | undefined> = createSelector(
   }
 );
 
-export function getClusterZoom(state: BaseState, props: Props) {
+export function getClusterZoom(state: State, props: Props) {
   if (!state.clusteringEnabled) return undefined;
   if (state.clusteringAuto || state.manualClusterZoom == null) {
     return _getClusterZoom(state, props);
@@ -332,15 +332,15 @@ export const getDiffMode: Selector<boolean> = createSelector(getFetchedFlows, (f
   return false;
 });
 
-export const getColorSchemeKey: Selector<string | undefined> = (state: BaseState, props: Props) =>
+export const getColorSchemeKey: Selector<string | undefined> = (state: State, props: Props) =>
   state.colorSchemeKey;
 
-export const getDarkMode: Selector<boolean> = (state: BaseState, props: Props) => state.darkMode;
+export const getDarkMode: Selector<boolean> = (state: State, props: Props) => state.darkMode;
 
-export const getFadeEnabled: Selector<boolean> = (state: BaseState, props: Props) => state.fadeEnabled;
-export const getFadeAmount: Selector<number> = (state: BaseState, props: Props) => state.fadeAmount;
+export const getFadeEnabled: Selector<boolean> = (state: State, props: Props) => state.fadeEnabled;
+export const getFadeAmount: Selector<number> = (state: State, props: Props) => state.fadeAmount;
 
-export const getAnimate: Selector<boolean> = (state: BaseState, props: Props) => state.animationEnabled;
+export const getAnimate: Selector<boolean> = (state: State, props: Props) => state.animationEnabled;
 
 export const getFlowMapColors = createSelector(
   getConfig,
@@ -753,7 +753,7 @@ const _getLocationTotalsForViewportExtent: Selector<[number, number] | undefined
     calcLocationTotalsExtent(locationTotals, locationsInViewport),
 );
 
-export function getLocationTotalsExtent(state: BaseState, props: Props) {
+export function getLocationTotalsExtent(state: State, props: Props) {
   if (state.adaptiveScalesEnabled) {
     return _getLocationTotalsForViewportExtent(state, props);
   } else {

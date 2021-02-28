@@ -1,24 +1,18 @@
-import { FlyToInterpolator } from 'react-map-gl';
 import {
   Config,
   ConfigPropName,
   Flow,
   LocationFilterMode,
   ViewportProps,
-  MAX_ZOOM_LEVEL as _MAX_ZOOM_LEVEL,
-  BaseState
-} from '@flowmap.blue/data';
-import { Props as TooltipProps } from './Tooltip';
+  TooltipProps
+} from './';
 import * as queryString from 'query-string';
-import { viewport } from '@mapbox/geo-viewport';
-import { parseBoolConfigProp, parseNumberConfigProp } from '@flowmap.blue/data';
-import { COLOR_SCHEME_KEYS } from '@flowmap.blue/data';
-import { csvFormatRows, csvParseRows } from 'd3-dsv';
-import { Reducer } from 'react';
-import { easeCubic } from 'd3-ease';
-import { timeFormat, timeParse } from 'd3-time-format';
+import {viewport} from '@mapbox/geo-viewport';
+import {COLOR_SCHEME_KEYS, parseBoolConfigProp, parseNumberConfigProp} from './';
+import {csvFormatRows, csvParseRows} from 'd3-dsv';
+import {timeFormat, timeParse} from 'd3-time-format';
 
-export const MAX_ZOOM_LEVEL = _MAX_ZOOM_LEVEL;
+export const MAX_ZOOM_LEVEL = 20;
 export const MIN_ZOOM_LEVEL = 0;
 export const MIN_PITCH = 0;
 export const MAX_PITCH = +60;
@@ -27,11 +21,11 @@ const TIME_QUERY_FORMAT = '%Y%m%dT%H%M%S';
 const timeToQuery = timeFormat(TIME_QUERY_FORMAT);
 const timeFromQuery = timeParse(TIME_QUERY_FORMAT);
 
-export function mapTransition(duration: number = 500) {
+export function mapTransition() {
   return {
-    transitionDuration: duration,
-    transitionInterpolator: new FlyToInterpolator(),
-    transitionEasing: easeCubic,
+    transitionDuration: 0,
+    // transitionInterpolator: new FlyToInterpolator(),
+    // transitionEasing: easeCubic,
   };
 }
 export enum HighlightType {
@@ -51,7 +45,25 @@ export interface FlowHighlight {
 
 export type Highlight = LocationHighlight | FlowHighlight;
 
-export interface State extends BaseState {
+export interface State {
+  viewport: ViewportProps;
+  adjustViewportToLocations: boolean;
+  selectedLocations: string[] | undefined;
+  selectedTimeRange: [Date, Date] | undefined;
+  locationFilterMode: LocationFilterMode;
+  animationEnabled: boolean;
+  fadeEnabled: boolean;
+  locationTotalsEnabled: boolean;
+  adaptiveScalesEnabled: boolean;
+  clusteringEnabled: boolean;
+  clusteringAuto: boolean;
+  manualClusterZoom?: number;
+  baseMapEnabled: boolean;
+  darkMode: boolean;
+  fadeAmount: number;
+  baseMapOpacity: number;
+  colorSchemeKey: string | undefined;
+  selectedFlowsSheet: string | undefined;
   tooltip?: TooltipProps;
   highlight?: Highlight;
 }
@@ -223,7 +235,7 @@ function mainReducer(state: State, action: Action): State {
           ...viewport,
           bearing: 0,
           pitch: 0,
-          ...mapTransition(500),
+          ...mapTransition(),
         },
       };
     }
@@ -397,7 +409,7 @@ function mainReducer(state: State, action: Action): State {
   return state;
 }
 
-export const reducer: Reducer<State, Action> = (state: State, action: Action) => {
+export const reducer /*: Reducer<State, Action>*/ = (state: State, action: Action) => {
   const nextState = mainReducer(state, action);
   // console.log(action.type, action);
   return nextState;
@@ -511,9 +523,7 @@ export function stateToQueryString(state: State) {
   return parts.join('&');
 }
 
-export function getInitialViewport(bbox: [number, number, number, number]) {
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+export function getInitialViewport([width, height]: [number, number], bbox: [number, number, number, number]) {
   const {
     center: [longitude, latitude],
     zoom,
@@ -534,11 +544,13 @@ export function getInitialViewport(bbox: [number, number, number, number]) {
   };
 }
 
-export const DEFAULT_VIEWPORT = getInitialViewport([-180, -70, 180, 70]);
-
-export function getInitialState(config: Config, queryString: string) {
+export function getInitialState(
+  config: Config,
+  dims: [number, number],
+  queryString: string
+) {
   const draft = {
-    viewport: DEFAULT_VIEWPORT,
+    viewport: getInitialViewport(dims, [-180, -70, 180, 70]);
     adjustViewportToLocations: true,
     selectedLocations: undefined,
     locationTotalsEnabled: true,
@@ -565,7 +577,7 @@ export function getInitialState(config: Config, queryString: string) {
       .map(asNumber)
       .filter((v) => v != null) as number[];
     if (bounds.length === 4) {
-      draft.viewport = getInitialViewport(bounds as [number, number, number, number]);
+      draft.viewport = getInitialViewport(dims, bounds as [number, number, number, number]);
       draft.adjustViewportToLocations = false;
     }
   }
