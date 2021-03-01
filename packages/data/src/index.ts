@@ -7,4 +7,9 @@ export * from './colors';
 export * from './time';
 export * from './FlowMap.state';
 export * from './createDataStore';
+export {
+  LayersData,
+  FlowLinesLayerAttributes,
+  FlowCirclesLayerAttributes,
+} from './prepareLayersData';
 

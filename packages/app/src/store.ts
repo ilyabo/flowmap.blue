@@ -26,9 +26,13 @@ export const store = create<Store>(
       const {locationsStatus, flowsStatus} = get();
       if (locationsStatus === LoadingStatus.DONE && flowsStatus === LoadingStatus.DONE) {
         set({ layersData: { status: LoadingStatus.LOADING }});
-        const layersData = await dataProvider.getLayersData();
-        // TODO: error handling
-        set({ layersData: { status: LoadingStatus.DONE, data: layersData! }});
+        try {
+          const layersData = await dataProvider.getLayersData();
+          // TODO: error handling
+          set({ layersData: { status: LoadingStatus.DONE, data: layersData! }});
+        } catch (err) {
+          set({ layersData: { status: LoadingStatus.ERROR }});
+        }
       } else {
         if (locationsStatus === LoadingStatus.ERROR || flowsStatus === LoadingStatus.ERROR) {
           set({ layersData: { status: LoadingStatus.ERROR }});

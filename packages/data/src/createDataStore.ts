@@ -2,22 +2,22 @@ import create from 'zustand/vanilla';
 import {
   fetchCsv,
   Flow, getColorsRGBA,
-  LayersAttributes,
+  LayersData,
   LoadingState,
   LoadingStatus,
   Location,
-  prepareFlows,
-  prepareLayersData
 } from './';
 import {ColorsRGBA} from '@flowmap.gl/core';
 import getColors from './colors';
+import prepareLayersData from './prepareLayersData';
+import prepareFlows from './prepareFlows';
 
 export type DataStore = {
   locations: LoadingState<Location[]> | undefined;
   flows: LoadingState<Flow[]> | undefined;
   loadLocations: (locationsUrl: string) => void;
   loadFlows: (flowsUrl: string) => void;
-  getLayersData: () => LayersAttributes | undefined;
+  getLayersData: () => LayersData | undefined;
   getFlowMapColorsRGBA(): ColorsRGBA;
 }
 
@@ -65,6 +65,8 @@ export function createDataStore() {
       },
 
       getLayersData() {
+        // There's no point in keeping layersData in the store because it won't be usable in
+        // the worker context after it's transferred to the main thread.
         const {locations, flows, getFlowMapColorsRGBA} = get();
         if (locations?.status === LoadingStatus.DONE && flows?.status === LoadingStatus.DONE) {
           return prepareLayersData(locations.data, flows.data, getFlowMapColorsRGBA());

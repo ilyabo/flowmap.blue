@@ -96,31 +96,6 @@ export interface ViewportProps {
   transitionEasing?: any;
 }
 
-export interface FlowCirclesLayerAttributes {
-  length: number;
-  attributes: {
-    getPosition: { value: Float32Array; size: number };
-    getColor: { value: Uint8Array; size: number };
-    getRadius: { value: Float32Array; size: number };
-  };
-}
-
-export interface FlowLinesLayerAttributes {
-  length: number;
-  attributes: {
-    getSourcePosition: { value: Float32Array; size: number };
-    getTargetPosition: { value: Float32Array; size: number };
-    getThickness: { value: Float32Array; size: number };
-    getColor: {value: Uint8Array, size: number},
-    getEndpointOffsets: { value: Float32Array; size: number };
-  };
-}
-
-export interface LayersAttributes {
-  circleAttributes: FlowCirclesLayerAttributes;
-  lineAttributes: FlowLinesLayerAttributes;
-}
-
 export declare type AsyncState<T> = {
   loading: boolean;
   error?: undefined;

@@ -2,7 +2,7 @@ import {nest} from 'd3-collection';
 import {Flow} from './types';
 import {parseTime} from './time';
 
-export function prepareFlows(rows: any[]) {
+export default function prepareFlows(rows: any[]) {
   let dupes: Flow[] = [];
   // Will sum up duplicate flows (with same origin, dest and time)
   const byOriginDestTime = nest<any, Flow>()
