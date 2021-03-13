@@ -4,7 +4,15 @@ import create from 'zustand/vanilla';
 /* eslint-disable import/no-webpack-loader-syntax */
 import WorkerDataProvider from 'worker-loader!./WorkerDataProvider';
 import {ColorsRGBA} from '@flowmap.gl/core';
-import {LayersAttributes, LoadingState, LoadingStatus} from '@flowmap.blue/data';
+import {
+  Action,
+  DEFAULT_CONFIG, FlowMapState,
+  getInitialState,
+  LayersData,
+  LoadingState,
+  LoadingStatus,
+  mainReducer
+} from '@flowmap.blue/data';
 import {DataProvider} from './DataProvider';
 
 const workerDataProvider = new WorkerDataProvider();
@@ -13,11 +21,13 @@ const dataProvider = Comlink.wrap<DataProvider>(workerDataProvider);
 export type Store = {
   locationsStatus: LoadingStatus | undefined;
   flowsStatus: LoadingStatus | undefined;
-  layersData: LoadingState<LayersAttributes> | undefined;
+  layersData: LoadingState<LayersData> | undefined;
   loadLocations: (locationsUrl: string) => void;
   loadFlows: (locationsUrl: string) => void;
   // getFlowMapColorsRGBA(): ColorsRGBA;
-  // getLayersData(): LayersAttributes | undefined;
+  // getLayersData(): LayersData | undefined;
+  dispatch: (action: Action) => void;
+  flowMapState: FlowMapState;
 };
 
 export const store = create<Store>(
@@ -43,17 +53,23 @@ export const store = create<Store>(
       locationsStatus: undefined,
       flowsStatus: undefined,
       layersData: undefined,
+
+      // TODO: this should be done through dispatch
+      flowMapState: getInitialState(DEFAULT_CONFIG, [0,0], ''),
+      dispatch: async action => {
+        console.log('store.dispatch',action);
+        set(state => ({ flowMapState: mainReducer(state.flowMapState, action) }));
+        await dataProvider.dispatch(action);
+      },
       loadLocations: async (locationsUrl) => {
         set({ layersData: { status: LoadingStatus.LOADING} });
-        const status = await dataProvider.loadLocations(locationsUrl);
-        set({ locationsStatus: status });
-        updateLayersData();
+        set({ locationsStatus: await dataProvider.loadLocations(locationsUrl) });
+        await updateLayersData();
       },
       loadFlows: async (flowsUrl) => {
         set({ layersData: { status: LoadingStatus.LOADING }});
-        const status = await dataProvider.loadFlows(flowsUrl);
-        set({ flowsStatus: status });
-        updateLayersData();
+        set({ flowsStatus: await dataProvider.loadFlows(flowsUrl) });
+        await updateLayersData();
       },
     });
   }

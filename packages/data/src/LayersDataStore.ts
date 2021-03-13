@@ -1,31 +1,39 @@
 import create from 'zustand/vanilla';
 import {
+  Action, DEFAULT_CONFIG,
   fetchCsv,
-  Flow, getColorsRGBA,
+  Flow, getColorsRGBA, getInitialState,
   LayersData,
   LoadingState,
   LoadingStatus,
   Location,
+  mainReducer,
+  FlowMapState,
 } from './';
 import {ColorsRGBA} from '@flowmap.gl/core';
 import getColors from './colors';
 import prepareLayersData from './prepareLayersData';
 import prepareFlows from './prepareFlows';
 
-export type DataStore = {
+export type LayersDataStore = {
   locations: LoadingState<Location[]> | undefined;
   flows: LoadingState<Flow[]> | undefined;
   loadLocations: (locationsUrl: string) => void;
   loadFlows: (flowsUrl: string) => void;
   getLayersData: () => LayersData | undefined;
   getFlowMapColorsRGBA(): ColorsRGBA;
+  dispatch: (action: Action) => void;
+  flowMapState: FlowMapState;
 }
 
-export function createDataStore() {
-  const store = create<DataStore>(
-    (set, get, api): DataStore => ({
+export function createLayersDataStore() {
+  const store = create<LayersDataStore>(
+    (set, get, api): LayersDataStore => ({
       locations: undefined,
       flows: undefined,
+      flowMapState: getInitialState(DEFAULT_CONFIG, [0,0], ''),
+
+      dispatch: action => set(state => ({ flowMapState: mainReducer(state.flowMapState, action) })),
 
       loadLocations: async (locationsUrl) => {
         const result = await fetchCsv(locationsUrl,
@@ -64,6 +72,8 @@ export function createDataStore() {
         );
       },
 
+      // TODO: layers should take the state props affecting flow filtering/clustering/colors/etc
+      //       then call selectors to prepare flows and locations
       getLayersData() {
         // There's no point in keeping layersData in the store because it won't be usable in
         // the worker context after it's transferred to the main thread.

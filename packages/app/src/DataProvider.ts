@@ -1,7 +1,8 @@
-import {LayersAttributes, LoadingStatus} from '@flowmap.blue/data';
+import {Action, LayersData, LoadingStatus} from '@flowmap.blue/data';
 
 export interface DataProvider {
+  dispatch(action: Action): void;
   loadLocations(locationsUrl: string): Promise<LoadingStatus>;
   loadFlows(flowsUrl: string): Promise<LoadingStatus>;
-  getLayersData(): LayersAttributes | undefined;
+  getLayersData(): LayersData | undefined;
 }

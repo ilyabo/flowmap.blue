@@ -23,7 +23,7 @@ import {
   Action,
   ActionType,
   Config,
-  ConfigPropName,
+  ConfigPropName, createLayersDataStore,
   getAvailableClusterZoomLevels,
   getClusterIndex,
   getClusterZoom,
@@ -53,7 +53,7 @@ import {
   getUnknownLocations,
   Highlight,
   HighlightType,
-  LayersAttributes,
+  LayersData,
   LoadingState, LoadingStatus,
   LocationFilterMode,
   mapTransition,
@@ -62,7 +62,6 @@ import {
   MIN_PITCH,
   MIN_ZOOM_LEVEL,
   reducer,
-  State,
   stateToQueryString,
   TargetBounds,
   TimeGranularity,
@@ -98,7 +97,7 @@ export type Props = {
   inBrowser: boolean;
   embed?: boolean;
   config: Config;
-  layersData: LoadingState<LayersAttributes> | undefined;
+  layersData: LoadingState<LayersData> | undefined;
   spreadSheetKey: string | undefined;
   flowsSheet: string | undefined;
   onSetFlowsSheet?: (sheet: string) => void;
@@ -153,6 +152,8 @@ const TotalCount = styled.div<{ darkMode: boolean }>((props) => ({
 }));
 
 export const MAX_NUM_OF_IDS_IN_ERROR = 100;
+
+const layersDataStore = createLayersDataStore();
 
 const FlowMap: React.FC<Props> = (props) => {
   const { inBrowser, embed, config, spreadSheetKey, layersData } = props;

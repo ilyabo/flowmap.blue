@@ -1,13 +1,19 @@
-import {createDataStore} from '@flowmap.blue/data';
+import {Action, createLayersDataStore} from '@flowmap.blue/data';
 import * as Comlink from 'comlink';
 import {DataProvider} from './DataProvider';
 
-const dataStore = createDataStore();
-const { getState, setState, subscribe, destroy } = dataStore;
+const layersDataStore = createLayersDataStore();
+const { getState, setState, subscribe, destroy } = layersDataStore;
 
 
 
 export class WorkerDataProvider implements DataProvider {
+
+  async dispatch(action: Action) {
+    console.log('WorkerDataProvider.dispatch',action);
+    await getState().dispatch(action);
+  }
+
   async loadLocations(locationsUrl: string) {
     await getState().loadLocations(locationsUrl);
     return getState().locations!.status;

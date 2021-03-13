@@ -45,7 +45,7 @@ export interface FlowHighlight {
 
 export type Highlight = LocationHighlight | FlowHighlight;
 
-export interface State {
+export interface FlowMapState {
   viewport: ViewportProps;
   adjustViewportToLocations: boolean;
   selectedLocations: string[] | undefined;
@@ -186,7 +186,7 @@ export type Action =
       colorSchemeKey: string;
     };
 
-function mainReducer(state: State, action: Action): State {
+export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
   switch (action.type) {
     case ActionType.SET_VIEWPORT: {
       const { viewport, adjustViewportToLocations } = action;
@@ -409,7 +409,7 @@ function mainReducer(state: State, action: Action): State {
   return state;
 }
 
-export const reducer /*: Reducer<State, Action>*/ = (state: State, action: Action) => {
+export const reducer /*: Reducer<State, Action>*/ = (state: FlowMapState, action: Action) => {
   const nextState = mainReducer(state, action);
   // console.log(action.type, action);
   return nextState;
@@ -430,7 +430,7 @@ export function asBoolean(v: string | string[] | null | undefined): boolean | un
   return undefined;
 }
 
-export function applyStateFromQueryString(draft: State, query: string) {
+export function applyStateFromQueryString(draft: FlowMapState, query: string) {
   const params = queryString.parse(query.substr(1));
   if (typeof params.s === 'string') {
     const rows = csvParseRows(params.s);
@@ -482,7 +482,7 @@ export function applyStateFromQueryString(draft: State, query: string) {
   }
 }
 
-export function stateToQueryString(state: State) {
+export function stateToQueryString(state: FlowMapState) {
   const parts: string[] = [];
   const {
     viewport: { latitude, longitude, zoom, bearing, pitch },
