@@ -36,6 +36,9 @@ const DEFAULT_FLOW_MIN_COLOR = 'rgba(240,240,240,0.5)';
 const DEFAULT_FLOW_COLOR_SCHEME = [DEFAULT_FLOW_MIN_COLOR, '#137CBD'];
 const DEFAULT_LOCATION_AREA_COLOR = 'rgba(220,220,220,0.5)';
 
+const DEFAULT_FLOW_COLOR_SCHEME_POSITIVE = [DEFAULT_FLOW_MIN_COLOR, '#f6654e'];
+const DEFAULT_FLOW_COLOR_SCHEME_NEGATIVE = [DEFAULT_FLOW_MIN_COLOR, '#00a9cc'];
+
 export type ColorScale = (value: number) => RGBA;
 export type RGBA = [number, number, number, number];
 
@@ -266,6 +269,10 @@ export function getFlowColorScale(
   return (magnitude: number) => scale(magnitude);
 }
 
+export function isDiffColors(colors: DiffColors | Colors): colors is DiffColors {
+  return (colors as DiffColors).positive !== undefined;
+}
+
 export function isDiffColorsRGBA(colors: DiffColorsRGBA | ColorsRGBA): colors is DiffColorsRGBA {
   return (colors as DiffColorsRGBA).positive !== undefined;
 }
@@ -437,5 +444,22 @@ export function getColorsRGBA(colors: Colors | undefined): ColorsRGBA {
   return {
     ...baseColorsRGBA,
     ...getFlowAndCircleColors(colors, DEFAULT_FLOW_COLOR_SCHEME, baseColorsRGBA.darkMode),
+  };
+}
+
+export function getDiffColorsRGBA(colors: DiffColors | undefined): DiffColorsRGBA {
+  const baseColorsRGBA = getBaseColorsRGBA(colors);
+  return {
+    ...baseColorsRGBA,
+    positive: getFlowAndCircleColors(
+      colors && colors.positive,
+      DEFAULT_FLOW_COLOR_SCHEME_POSITIVE,
+      baseColorsRGBA.darkMode
+    ),
+    negative: getFlowAndCircleColors(
+      colors && colors.negative,
+      DEFAULT_FLOW_COLOR_SCHEME_NEGATIVE,
+      baseColorsRGBA.darkMode
+    ),
   };
 }

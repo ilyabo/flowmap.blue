@@ -100,9 +100,14 @@ export const appStore = createVanilla<AppStore>(
 export const useAppStore = create<AppStore>(appStore);
 export const useFlowMapStore = createFlowMapStore();
 useFlowMapStore.subscribe(
-  throttle(async (flowMapState: FlowMapState) => {
-    await dataProvider.setFlowMapState(flowMapState);
-    await appStore.getState().updateLayersData();
-  }, 100),
+  throttle(
+    async (flowMapState: FlowMapState) => {
+      await dataProvider.setFlowMapState(flowMapState);
+      // TODO: don't call if nothing relevant has changed in the state
+      await appStore.getState().updateLayersData();
+    },
+    100,
+    { leading: true, trailing: true }
+  ),
   (state) => state.flowMapState
 );

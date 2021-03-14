@@ -17,13 +17,14 @@ import { UseStore } from 'zustand';
 import Collapsible, { Direction } from './Collapsible';
 import {
   ActionType,
+  colorAsRgba,
   Config,
   ConfigPropName,
   FlowMapStore,
   getAvailableClusterZoomLevels,
   getClusterIndex,
   getClusterZoom,
-  getDarkMode,
+  getFlowMapColors,
   getLocationId,
   getMapboxMapStyle,
   Highlight,
@@ -38,7 +39,6 @@ import {
   TimeGranularity,
   ViewportProps,
 } from '@flowmap.blue/data';
-import Message from './Message';
 import LoadingSpinner from './LoadingSpinner';
 import NoScrollContainer from './NoScrollContainer';
 import styled from '@emotion/styled';
@@ -709,11 +709,14 @@ const FlowMap: React.FC<Props> = (props) => {
       // const highlight = getHighlightForZoom();
       // const locationsById = getLocationsById(state, props);
 
+      const colors = getFlowMapColors(state, props);
+
       layers.push(
         new FlowLinesLayer({
           id: 'lines',
           data: layersData.data.lineAttributes,
           drawOutline: true,
+          outlineColor: colorAsRgba(colors.outlineColor),
           opacity: 1,
           pickable: true,
           ...(!mapDrawingEnabled && {

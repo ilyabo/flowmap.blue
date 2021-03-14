@@ -1,16 +1,21 @@
 import createVanilla from 'zustand/vanilla';
 import {
+  ColorsRGBA,
   DEFAULT_CONFIG,
+  DiffColorsRGBA,
   fetchCsv,
   Flow,
   FlowMapState,
   getColorsRGBA,
+  getDiffColorsRGBA,
+  getFlowMapColors,
   getFlowsForFlowMapLayer,
   getInitialState,
   getLocationCentroid,
   getLocations,
   getLocationsForFlowMapLayer,
   getLocationsHavingFlows,
+  isDiffColors,
   LayersData,
   LoadingState,
   LoadingStatus,
@@ -21,7 +26,6 @@ import {
   MIN_ZOOM_LEVEL,
   ViewportProps,
 } from './';
-import { ColorsRGBA } from '@flowmap.gl/core';
 import getColors from './colors';
 import prepareLayersData from './prepareLayersData';
 import prepareFlows from './prepareFlows';
@@ -33,7 +37,7 @@ export type LayersDataStore = {
   loadLocations: (locationsUrl: string) => void;
   loadFlows: (flowsUrl: string) => void;
   getLayersData: () => LayersData | undefined;
-  getFlowMapColorsRGBA(): ColorsRGBA;
+  getFlowMapColorsRGBA(): DiffColorsRGBA | ColorsRGBA;
   // dispatch: (action: Action) => void;
   flowMapState: FlowMapState;
   getViewportForLocations: ([width, height]: [number, number]) => ViewportProps | undefined;
@@ -50,7 +54,10 @@ export function createLayersDataStore() {
             flows: flows.data,
           };
         } else {
-          return undefined;
+          return {
+            locations: undefined,
+            flows: undefined,
+          };
         }
       }
 
@@ -84,11 +91,11 @@ export function createLayersDataStore() {
         },
 
         getFlowMapColorsRGBA() {
-          // const flowMapColors = getFlowMapColors(state, props);
-          // return isDiffColors(flowMapColors)
-          //     ? getDiffColorsRGBA(flowMapColors)
-          //     : getColorsRGBA(flowMapColors);
-          return getColorsRGBA(getColors(false, undefined, false, false, 0, false));
+          const { flowMapState } = get();
+          const flowMapColors = getFlowMapColors(flowMapState, getPropsForSelectors());
+          return isDiffColors(flowMapColors)
+            ? getDiffColorsRGBA(flowMapColors)
+            : getColorsRGBA(flowMapColors);
         },
 
         getViewportForLocations([width, height]) {
@@ -144,16 +151,14 @@ export function createLayersDataStore() {
           // There's no point in keeping layersData in the store because it won't be usable in
           // the worker context after it's transferred to the main thread.
           const { getFlowMapColorsRGBA, flowMapState } = get();
-          const props = getPropsForSelectors();
-          if (!props) {
+          // TODO: start a new worker here and terminate it in case a new getLayersData request arrives
+          const locations = getLocationsForFlowMapLayer(flowMapState, getPropsForSelectors());
+          const flows = getFlowsForFlowMapLayer(flowMapState, getPropsForSelectors());
+          if (locations && flows) {
+            return prepareLayersData(locations, flows, getFlowMapColorsRGBA());
+          } else {
             return undefined;
           }
-          // TODO: start a new worker here and terminate it in case a new getLayersData request arrives
-          return prepareLayersData(
-            getLocationsForFlowMapLayer(flowMapState, props)!,
-            getFlowsForFlowMapLayer(flowMapState, props)!,
-            getFlowMapColorsRGBA()
-          );
         },
       };
     }
