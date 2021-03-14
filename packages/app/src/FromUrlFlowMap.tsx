@@ -39,7 +39,8 @@ const FromUrlFlowMap: FC<{}> = (props: {}) => {
 
   const history = useHistory();
   const setFlowMapState = useFlowMapStore(state => state.setFlowMapState);
-  const dispatch = useFlowMapStore(state => state.dispatch);
+  const adjustViewportToLocations = useFlowMapStore(state => state.flowMapState.adjustViewportToLocations);
+  // const dispatch = useFlowMapStore(state => state.dispatch);
   const getViewportForLocations = useAppStore(state => state.getViewportForLocations);
   const layersData = useAppStore(state => state.layersData);
   const loadLocations = useAppStore(state => state.loadLocations);
@@ -60,24 +61,18 @@ const FromUrlFlowMap: FC<{}> = (props: {}) => {
 
 
   useEffect(() => {
-    const initialState = getInitialState(config, [window.innerWidth, window.innerHeight], history.location.search);
-    setFlowMapState(initialState);
-  }, []);
-
-  useEffect(() => {
-    if (layersData?.status === LoadingStatus.DONE) {
+    if (layersData?.status === LoadingStatus.DONE && adjustViewportToLocations) {
       (async function() {
-        const viewport = await getViewportForLocations();
-        if (viewport)  {
-          dispatch({
-            type: ActionType.SET_VIEWPORT,
-            viewport,
-            adjustViewportToLocations: false,
-          });
-        }
+        const dims: [number, number] = [window.innerWidth, window.innerHeight];
+        const viewport = await getViewportForLocations(dims);
+        setFlowMapState({
+          ...getInitialState(config, dims, history.location.search),
+          viewport: viewport!,
+          adjustViewportToLocations: false,
+        });
       })();
     }
-  }, [layersData?.status]);
+  }, [layersData?.status, adjustViewportToLocations]);
 
   if (layersData?.status === LoadingStatus.ERROR) {
     return <ErrorFallback error="Failed to fetch data" />;

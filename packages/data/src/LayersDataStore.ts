@@ -30,7 +30,7 @@ export type LayersDataStore = {
   getFlowMapColorsRGBA(): ColorsRGBA;
   // dispatch: (action: Action) => void;
   flowMapState: FlowMapState;
-  getViewportForLocations: () => ViewportProps | undefined;
+  getViewportForLocations: ([width, height]: [number, number]) => ViewportProps | undefined;
 }
 
 export function createLayersDataStore() {
@@ -95,7 +95,7 @@ export function createLayersDataStore() {
         },
 
 
-        getViewportForLocations() {
+        getViewportForLocations([width,height]) {
           const props = getPropsForSelectors();
           if (!props) {
             return undefined;
@@ -105,8 +105,6 @@ export function createLayersDataStore() {
           if (!adjustViewportToLocations) {
             return undefined;
           }
-
-          const {width, height} = viewport;
 
           const allLocations = getLocations(flowMapState, props);
 

@@ -28,8 +28,8 @@ export class WorkerDataProvider implements DataProvider {
     return getState().flows!.status;
   }
 
-  async getViewportForLocations() {
-    return await getState().getViewportForLocations();
+  async getViewportForLocations(dims:[number,number]) {
+    return await getState().getViewportForLocations(dims);
   }
 
   getLayersData() {

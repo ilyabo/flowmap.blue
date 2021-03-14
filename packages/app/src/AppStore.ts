@@ -31,7 +31,7 @@ export type AppStore = {
   // flowMapState: FlowMapState | undefined;
   // setFlowMapState: (flowMapState: FlowMapState) => void;
   updateLayersData: () => void;
-  getViewportForLocations: () => Promise<ViewportProps | undefined>;
+  getViewportForLocations: ([width, height]: [number, number]) => Promise<ViewportProps | undefined>;
 };
 
 export const appStore = createVanilla<AppStore>(
@@ -92,7 +92,7 @@ export const appStore = createVanilla<AppStore>(
         await updateLayersData();
       },
 
-      getViewportForLocations: async () => dataProvider.getViewportForLocations(),
+      getViewportForLocations: async (dims) => dataProvider.getViewportForLocations(dims),
     });
   }
 )

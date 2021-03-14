@@ -6,5 +6,5 @@ export interface DataProvider {
   loadLocations(locationsUrl: string): Promise<LoadingStatus>;
   loadFlows(flowsUrl: string): Promise<LoadingStatus>;
   getLayersData(): LayersData | undefined;
-  getViewportForLocations: () => Promise<ViewportProps | undefined>;
+  getViewportForLocations: ([width,height]:[number,number]) => Promise<ViewportProps | undefined>;
 }
