@@ -4,20 +4,18 @@ import create from 'zustand';
 import throttle from 'lodash.throttle';
 
 /* eslint-disable import/no-webpack-loader-syntax */
-import WorkerDataProvider from 'worker-loader!./WorkerDataProvider';
+import WorkerDataProvider from 'worker-loader!@flowmap.blue/data/dist/WorkerDataProvider';
 import {
   createFlowMapStore,
+  DataProvider,
   FlowMapState,
   LayersData,
   LoadingState,
   LoadingStatus,
   ViewportProps
 } from '@flowmap.blue/data';
-import {DataProvider} from '@flowmap.blue/data';
 
-
-const workerDataProvider = new WorkerDataProvider();
-const dataProvider = Comlink.wrap<DataProvider>(workerDataProvider);
+const dataProvider = Comlink.wrap<DataProvider>(new WorkerDataProvider());
 
 export type AppStore = {
   locationsStatus: LoadingStatus | undefined;
