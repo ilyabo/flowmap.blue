@@ -14,7 +14,7 @@ import {
   ActionType,
   Config,
   ConfigPropName,
-  FlowMapStore,
+  FlowMapStore, getAvailableClusterZoomLevels,
   getClusterIndex,
   getClusterZoom,
   getDarkMode,
@@ -41,6 +41,7 @@ import Away from './Away';
 import useDebounced from './hooks';
 import SharePopover from './SharePopover';
 import MapDrawingEditor, {MapDrawingFeature, MapDrawingMode} from './MapDrawingEditor';
+import SettingsPopover from './SettingsPopover';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -121,7 +122,6 @@ const FlowMap: React.FC<Props> = (props) => {
   const deckRef = useRef<any>();
   const dispatch = useFlowMapStore((state: FlowMapStore) => state.dispatch);
   const state = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
-
 
   const outerRef = useRef<HTMLDivElement>(null);
 
@@ -525,7 +525,7 @@ const FlowMap: React.FC<Props> = (props) => {
   const authorName = config[ConfigPropName.AUTHOR_NAME];
   const mapboxAccessToken = config[ConfigPropName.MAPBOX_ACCESS_TOKEN];
   // const diffMode = getDiffMode(state, props);
-  const darkMode = getDarkMode(state, props);
+  const {darkMode} = state;
   const mapboxMapStyle = getMapboxMapStyle(config, darkMode);
 
   const getHighlightForZoom = () => {
@@ -914,18 +914,18 @@ const FlowMap: React.FC<Props> = (props) => {
           {/*)}*/}
         </>
       )}
-      {/*{!embed && (*/}
-      {/*  <Absolute bottom={40} left={10}>*/}
-      {/*    <SettingsPopover*/}
-      {/*      darkMode={darkMode}*/}
-      {/*      state={state}*/}
-      {/*      dispatch={dispatch}*/}
-      {/*      clusterZoom={getClusterZoom(state, props)}*/}
-      {/*      availableClusterZoomLevels={getAvailableClusterZoomLevels(state, props)}*/}
-      {/*      onChangeClusteringAuto={handleChangeClusteringAuto}*/}
-      {/*    />*/}
-      {/*  </Absolute>*/}
-      {/*)}*/}
+      {!embed && (
+        <Absolute bottom={40} left={10}>
+          <SettingsPopover
+            darkMode={darkMode}
+            state={state}
+            dispatch={dispatch}
+            clusterZoom={getClusterZoom(state, props)}
+            availableClusterZoomLevels={getAvailableClusterZoomLevels(state, props)}
+            onChangeClusteringAuto={handleChangeClusteringAuto}
+          />
+        </Absolute>
+      )}
       {showFullscreenButton && (
         <Absolute bottom={30} right={10}>
           <Button
