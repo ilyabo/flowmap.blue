@@ -1,6 +1,6 @@
 import React from 'react';
 import * as ReactDOM from 'react-dom';
-import {ConfigPropName, ColorScheme, DEFAULT_CONFIG, Flow, Location} from '@flowmap.blue/data';
+import {ConfigPropName, ColorScheme, DEFAULT_CONFIG, Flow, Location, createFlowMapStore} from '@flowmap.blue/data';
 import FlowMap from './FlowMap';
 import MapContainer from './MapContainer';
 import {AppToaster, Fallback} from './index';
@@ -120,12 +120,14 @@ export function init(
   },
 ) {
   AppToaster.init(container);
+  const useFlowMapStore = createFlowMapStore();
   ReactDOM.render(
     <Router history={history}>
       <ErrorBoundary>
         <Global styles={globalStyles} />
         <MapContainer embed={true}>
           <FlowMap
+            useFlowMapStore={useFlowMapStore}
             inBrowser={true}
             embed={true}
             layersData={undefined}

@@ -1,4 +1,4 @@
-import {csvParse, DSVRowString} from "d3-dsv";
+import {csvParse, DSVRowString} from 'd3-dsv';
 
 export enum LoadingStatus {
   LOADING = 'LOADING',
@@ -7,7 +7,7 @@ export enum LoadingStatus {
 }
 
 export type LoadingState<T> =
-  | { status: LoadingStatus.LOADING }
+  | { status: LoadingStatus.LOADING; data?: T }
   | { status: LoadingStatus.ERROR }
   | { status: LoadingStatus.DONE; data: T };
 

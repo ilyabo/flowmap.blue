@@ -18,7 +18,6 @@ import {
 import * as Cluster from '@flowmap.gl/cluster';
 import {ClusterNode, findAppropriateZoomLevel, isCluster} from '@flowmap.gl/cluster';
 import getColors from './colors';
-import {DEFAULT_MAP_STYLE_DARK, DEFAULT_MAP_STYLE_LIGHT, parseBoolConfigProp} from './config';
 import {nest} from 'd3-collection';
 import {bounds} from '@mapbox/geo-viewport';
 import KDBush from 'kdbush';
@@ -28,20 +27,22 @@ import {getTimeGranularityByOrder, getTimeGranularityForDate, TimeGranularity} f
 import {FlowAccessors} from '@flowmap.gl/core';
 
 // TODO move necessary props to State
-type Props = any;
+export interface Props {
+  flows: Flow[] | undefined;
+  locations: Location[] | undefined;
+}
 
 export const NUMBER_OF_FLOWS_TO_DISPLAY = 5000;
 
 export type Selector<T> = ParametricSelector<FlowMapState, Props, T>;
 
-export const getFetchedFlows = (state: FlowMapState, props: Props) => props.flowsFetch.value;
-export const getFetchedLocations = (state: FlowMapState, props: Props) => props.locationsFetch.value;
+export const getFetchedFlows = (state: FlowMapState, props: Props) => props.flows;
+export const getFetchedLocations = (state: FlowMapState, props: Props) => props.locations;
 export const getSelectedLocations = (state: FlowMapState, props: Props) => state.selectedLocations;
 export const getLocationFilterMode = (state: FlowMapState, props: Props) => state.locationFilterMode;
 export const getClusteringEnabled = (state: FlowMapState, props: Props) => state.clusteringEnabled;
 export const getLocationTotalsEnabled = (state: FlowMapState, props: Props) => state.locationTotalsEnabled;
 export const getZoom = (state: FlowMapState, props: Props) => state.viewport.zoom;
-export const getConfig = (state: FlowMapState, props: Props) => props.config;
 export const getViewport = (state: FlowMapState, props: Props) => state.viewport;
 export const getSelectedTimeRange = (state: FlowMapState, props: Props) => state.selectedTimeRange;
 
@@ -349,16 +350,6 @@ export const getFlowMapColors = createSelector(
   getAnimate,
   getColors
 );
-
-export const getMapboxMapStyle = createSelector(getConfig, getDarkMode, (config, darkMode) => {
-  const configMapStyle = config[ConfigPropName.MAPBOX_MAP_STYLE];
-  if (configMapStyle) {
-    if (darkMode === parseBoolConfigProp(config[ConfigPropName.COLORS_DARK_MODE])) {
-      return configMapStyle;
-    }
-  }
-  return darkMode ? DEFAULT_MAP_STYLE_DARK : DEFAULT_MAP_STYLE_LIGHT;
-});
 
 export const getUnknownLocations: Selector<Set<string> | undefined> = createSelector(
   getLocationIds,

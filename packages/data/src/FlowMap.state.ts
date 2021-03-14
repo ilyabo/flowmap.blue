@@ -26,6 +26,8 @@ export function mapTransition() {
     transitionDuration: 0,
     // transitionInterpolator: new FlyToInterpolator(),
     // transitionEasing: easeCubic,
+    transitionInterpolator: undefined,
+    transitionEasing: undefined,
   };
 }
 export enum HighlightType {
@@ -195,6 +197,7 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
         viewport: {
           ...viewport,
           zoom: Math.min(MAX_ZOOM_LEVEL, Math.max(MIN_ZOOM_LEVEL, viewport.zoom)),
+          ...mapTransition(),
         },
         tooltip: undefined,
         highlight: undefined,
@@ -210,6 +213,7 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
         viewport: {
           ...viewport,
           zoom: Math.min(MAX_ZOOM_LEVEL, viewport.zoom * 1.1),
+          ...mapTransition(),
         },
         tooltip: undefined,
         highlight: undefined,
@@ -222,6 +226,7 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
         viewport: {
           ...viewport,
           zoom: Math.max(MIN_ZOOM_LEVEL, viewport.zoom / 1.1),
+          ...mapTransition(),
         },
         tooltip: undefined,
         highlight: undefined,

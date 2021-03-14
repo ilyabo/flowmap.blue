@@ -1,68 +1,33 @@
 import {DeckGL} from '@deck.gl/react';
 import {MapController, MapView} from '@deck.gl/core';
 import * as React from 'react';
-import {ReactNode, Reducer, useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {_MapContext as MapContext, StaticMap} from 'react-map-gl';
-import {
-  FlowCirclesLayer,
-  FlowLayerPickingInfo,
-  FlowLinesLayer,
-  FlowPickingInfo,
-  LocationPickingInfo,
-  PickingType,
-} from '@flowmap.gl/core';
-import {Button, ButtonGroup, Classes, Colors, HTMLSelect, Intent} from '@blueprintjs/core';
-import {getViewStateForLocations, LocationTotalsLegend} from '@flowmap.gl/react';
-import WebMercatorViewport from '@math.gl/web-mercator';
-import {Absolute, Box, BoxStyle, Column, Description, LegendTitle, Title, TitleBox, ToastContent} from './Boxes';
-import {FlowTooltipContent, formatCount, LocationTooltipContent} from './TooltipContent';
+import {FlowCirclesLayer, FlowLayerPickingInfo, FlowLinesLayer, PickingType,} from '@flowmap.gl/core';
+import {Button, ButtonGroup, Classes, Colors} from '@blueprintjs/core';
+import {Absolute, BoxStyle, Column, Description, Title, TitleBox} from './Boxes';
 import Tooltip from './Tooltip';
-import {Link, useHistory} from 'react-router-dom';
+import {Link} from 'react-router-dom';
+import {UseStore} from 'zustand';
 import Collapsible, {Direction} from './Collapsible';
 import {
-  Action,
   ActionType,
   Config,
-  ConfigPropName, createLayersDataStore,
-  getAvailableClusterZoomLevels,
+  ConfigPropName,
+  FlowMapStore,
   getClusterIndex,
   getClusterZoom,
   getDarkMode,
-  getDiffMode,
-  getFetchedFlows,
-  getFlowsForFlowMapLayer,
-  getFlowsSheets,
-  getInitialState,
-  getInvalidLocationIds,
-  getLocationCentroid,
   getLocationId,
-  getLocations,
-  getLocationsById,
-  getLocationsForSearchBox,
-  getLocationsHavingFlows,
-  getLocationsInBbox,
-  getLocationsTree,
-  getLocationTotals,
   getMapboxMapStyle,
-  getSortedFlowsForKnownLocations,
-  getTimeExtent,
-  getTimeGranularity,
-  getTotalCountsByTime,
-  getTotalFilteredCount,
-  getTotalUnfilteredCount,
-  getUnknownLocations,
   Highlight,
   HighlightType,
   LayersData,
-  LoadingState, LoadingStatus,
+  LoadingState,
+  LoadingStatus,
   LocationFilterMode,
-  mapTransition,
-  MAX_PITCH,
   MAX_ZOOM_LEVEL,
-  MIN_PITCH,
   MIN_ZOOM_LEVEL,
-  reducer,
-  stateToQueryString,
   TargetBounds,
   TimeGranularity,
   ViewportProps
@@ -72,17 +37,10 @@ import LoadingSpinner from './LoadingSpinner';
 import NoScrollContainer from './NoScrollContainer';
 import styled from '@emotion/styled';
 import {IconNames} from '@blueprintjs/icons';
-import LocationsSearchBox from './LocationSearchBox';
 import Away from './Away';
-import {AppToaster} from './AppToaster';
 import useDebounced from './hooks';
 import SharePopover from './SharePopover';
-import SettingsPopover from './SettingsPopover';
 import MapDrawingEditor, {MapDrawingFeature, MapDrawingMode} from './MapDrawingEditor';
-import getBbox from '@turf/bbox';
-import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
-import Timeline from './Timeline';
-import {findAppropriateZoomLevel} from '@flowmap.gl/cluster';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -101,6 +59,7 @@ export type Props = {
   spreadSheetKey: string | undefined;
   flowsSheet: string | undefined;
   onSetFlowsSheet?: (sheet: string) => void;
+  useFlowMapStore: UseStore<FlowMapStore>;
 };
 
 /* This is temporary until mixBlendMode style prop works in <DeckGL> as before v8 */
@@ -153,21 +112,19 @@ const TotalCount = styled.div<{ darkMode: boolean }>((props) => ({
 
 export const MAX_NUM_OF_IDS_IN_ERROR = 100;
 
-const layersDataStore = createLayersDataStore();
 
 const FlowMap: React.FC<Props> = (props) => {
-  const { inBrowser, embed, config, spreadSheetKey, layersData } = props;
+  const {
+    inBrowser, embed, config, spreadSheetKey, layersData,
+    useFlowMapStore
+  } = props;
   const deckRef = useRef<any>();
-  const history = useHistory();
-  const initialState = useMemo<State>(() =>
-    getInitialState(config, [window.innerWidth, window.innerHeight], history.location.search), [
-    config,
-    // history.location.search,  // this leads to initial state being recomputed on every change
-  ]);
+  const dispatch = useFlowMapStore((state: FlowMapStore) => state.dispatch);
+  const state = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
+
 
   const outerRef = useRef<HTMLDivElement>(null);
 
-  const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, initialState);
   const [mapDrawingEnabled, setMapDrawingEnabled] = useState(false);
   // const { selectedTimeRange } = state;
   // const timeGranularity = getTimeGranularity(state, props);
@@ -469,6 +426,10 @@ const FlowMap: React.FC<Props> = (props) => {
     });
     cancelShowTooltipDebounced();
   };
+
+  if (!viewport) return null;
+
+
   //
   // const showFlowTooltip = (pos: [number, number], info: FlowPickingInfo) => {
   //   const [x, y] = pos;
@@ -567,37 +528,39 @@ const FlowMap: React.FC<Props> = (props) => {
   //   }
   // };
 
-  if (!layersData) {
-    return <LoadingSpinner />;
-  }
-  if (layersData.status === LoadingStatus.ERROR) {
-    return (
-      <Message>
-        {spreadSheetKey
-          ? <>
-            <p>
-              Oops… Couldn't fetch data from{` `}
-              <a href={`https://docs.google.com/spreadsheets/d/${spreadSheetKey}`}>this spreadsheet</a>.
-              {` `}
-            </p>
-            <p>
-              If you are the owner of this spreadsheet, make sure you have shared it by doing the
-              following:
-              <ol>
-                <li>Click the “Share” button in the spreadsheet</li>
-                <li>
-                  Change the selection from “Restricted” to “Anyone with the link” in the drop-down
-                  under “Get link”
-                </li>
-              </ol>
-            </p>
-          </>
-          : <p>Oops… Couldn't fetch data</p>
-        }
-      </Message>
-    );
-  }
+  // if (!layersData) {
+  //   return <LoadingSpinner />;
+  // }
+  // if (layersData.status === LoadingStatus.ERROR) {
+  //   return (
+  //     <Message>
+  //       {spreadSheetKey
+  //         ? <>
+  //           <p>
+  //             Oops… Couldn't fetch data from{` `}
+  //             <a href={`https://docs.google.com/spreadsheets/d/${spreadSheetKey}`}>this spreadsheet</a>.
+  //             {` `}
+  //           </p>
+  //           <p>
+  //             If you are the owner of this spreadsheet, make sure you have shared it by doing the
+  //             following:
+  //             <ol>
+  //               <li>Click the “Share” button in the spreadsheet</li>
+  //               <li>
+  //                 Change the selection from “Restricted” to “Anyone with the link” in the drop-down
+  //                 under “Get link”
+  //               </li>
+  //             </ol>
+  //           </p>
+  //         </>
+  //         : <p>Oops… Couldn't fetch data</p>
+  //       }
+  //     </Message>
+  //   );
+  // }
+
   // const searchBoxLocations = getLocationsForSearchBox(state, props);
+
   const title = config[ConfigPropName.TITLE];
   const description = config[ConfigPropName.DESCRIPTION];
   const sourceUrl = config[ConfigPropName.SOURCE_URL];
@@ -607,7 +570,7 @@ const FlowMap: React.FC<Props> = (props) => {
   const mapboxAccessToken = config[ConfigPropName.MAPBOX_ACCESS_TOKEN];
   // const diffMode = getDiffMode(state, props);
   const darkMode = getDarkMode(state, props);
-  const mapboxMapStyle = getMapboxMapStyle(state, props);
+  const mapboxMapStyle = getMapboxMapStyle(config, darkMode);
 
   const getHighlightForZoom = () => {
     const { highlight, clusteringEnabled } = state;
@@ -1081,7 +1044,7 @@ const FlowMap: React.FC<Props> = (props) => {
         </TitleBox>
       )}
       {tooltip && <Tooltip {...tooltip} />}
-      {layersData.status === LoadingStatus.LOADING && <LoadingSpinner />}
+      {!layersData || layersData.status === LoadingStatus.LOADING && <LoadingSpinner />}
     </NoScrollContainer>
   );
 };
@@ -1115,5 +1078,6 @@ function selectedTimeRangeToString(
 
   return `${startStr} – ${endStr}`;
 }
+
 
 export default FlowMap;

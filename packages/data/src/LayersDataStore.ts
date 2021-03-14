@@ -1,4 +1,4 @@
-import create from 'zustand/vanilla';
+import createVanilla from 'zustand/vanilla';
 import {
   Action, DEFAULT_CONFIG,
   fetchCsv,
@@ -8,7 +8,7 @@ import {
   LoadingStatus,
   Location,
   mainReducer,
-  FlowMapState,
+  FlowMapState, getLocationsForFlowMapLayer, getFlowsForFlowMapLayer, Config,
 } from './';
 import {ColorsRGBA} from '@flowmap.gl/core';
 import getColors from './colors';
@@ -22,18 +22,18 @@ export type LayersDataStore = {
   loadFlows: (flowsUrl: string) => void;
   getLayersData: () => LayersData | undefined;
   getFlowMapColorsRGBA(): ColorsRGBA;
-  dispatch: (action: Action) => void;
+  // dispatch: (action: Action) => void;
   flowMapState: FlowMapState;
 }
 
 export function createLayersDataStore() {
-  const store = create<LayersDataStore>(
+  const store = createVanilla<LayersDataStore>(
     (set, get, api): LayersDataStore => ({
       locations: undefined,
       flows: undefined,
       flowMapState: getInitialState(DEFAULT_CONFIG, [0,0], ''),
 
-      dispatch: action => set(state => ({ flowMapState: mainReducer(state.flowMapState, action) })),
+      // dispatch: action => set(state => ({ flowMapState: mainReducer(state.flowMapState, action) })),
 
       loadLocations: async (locationsUrl) => {
         const result = await fetchCsv(locationsUrl,
@@ -77,9 +77,13 @@ export function createLayersDataStore() {
       getLayersData() {
         // There's no point in keeping layersData in the store because it won't be usable in
         // the worker context after it's transferred to the main thread.
-        const {locations, flows, getFlowMapColorsRGBA} = get();
+        const {locations, flows, getFlowMapColorsRGBA, flowMapState} = get();
         if (locations?.status === LoadingStatus.DONE && flows?.status === LoadingStatus.DONE) {
-          return prepareLayersData(locations.data, flows.data, getFlowMapColorsRGBA());
+          const props = { locations: locations.data, flows: flows.data };
+          return prepareLayersData(
+            getLocationsForFlowMapLayer(flowMapState, props)!,
+            getFlowsForFlowMapLayer(flowMapState, props)!,
+            getFlowMapColorsRGBA());
         }
         return undefined;
       }

@@ -7,7 +7,7 @@ import { Route, Switch, useHistory } from 'react-router-dom';
 import { dsvFormat } from 'd3-dsv';
 import { Location as HistoryLocation } from 'history';
 import FlowMap, { MapContainer, prepareFlows } from '@flowmap.blue/core';
-import {DEFAULT_CONFIG, Flow, Location} from '@flowmap.blue/data';
+import {createFlowMapStore, DEFAULT_CONFIG, Flow, Location} from '@flowmap.blue/data';
 
 import { PromiseState } from 'react-refetch';
 
@@ -18,11 +18,14 @@ interface Props {
   }>;
 }
 
+const useFlowMapStore = createFlowMapStore();
+
 const FlowMapContainer = (props: Props) => {
   const { flows, locations } = props.location.state;
   return (
     <MapContainer>
       <FlowMap
+        useFlowMapStore={useFlowMapStore}
         inBrowser={true}
         layersData={undefined}
         config={DEFAULT_CONFIG}
