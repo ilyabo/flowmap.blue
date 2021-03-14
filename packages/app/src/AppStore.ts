@@ -13,7 +13,7 @@ import {
   LoadingStatus,
   ViewportProps
 } from '@flowmap.blue/data';
-import {DataProvider} from './DataProvider';
+import {DataProvider} from '@flowmap.blue/data';
 
 
 const workerDataProvider = new WorkerDataProvider();
@@ -23,14 +23,15 @@ export type AppStore = {
   locationsStatus: LoadingStatus | undefined;
   flowsStatus: LoadingStatus | undefined;
   layersData: LoadingState<LayersData> | undefined;
-  loadLocations: (locationsUrl: string) => void;
-  loadFlows: (locationsUrl: string) => void;
+  loadLocations: (locationsUrl: string) => Promise<void>;
+  loadFlows: (locationsUrl: string) => Promise<void>;
   // getFlowMapColorsRGBA(): ColorsRGBA;
   // getLayersData(): LayersData | undefined;
   // dispatch: (action: Action) => void;
   // flowMapState: FlowMapState | undefined;
   // setFlowMapState: (flowMapState: FlowMapState) => void;
   updateLayersData: () => void;
+  getViewportForLocations: () => Promise<ViewportProps | undefined>;
 };
 
 export const appStore = createVanilla<AppStore>(
@@ -90,6 +91,8 @@ export const appStore = createVanilla<AppStore>(
         });
         await updateLayersData();
       },
+
+      getViewportForLocations: async () => dataProvider.getViewportForLocations(),
     });
   }
 )
@@ -100,5 +103,5 @@ export const useFlowMapStore = createFlowMapStore();
 useFlowMapStore.subscribe(throttle(async (flowMapState: FlowMapState) => {
   await dataProvider.setFlowMapState(flowMapState)
   await appStore.getState().updateLayersData();
-}, 200), state => state.flowMapState);
+}, 100), state => state.flowMapState);
 

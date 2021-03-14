@@ -1,10 +1,18 @@
 // http://localhost:7000/from-url?colors.darkMode=no&flows=https://gist.githubusercontent.com/ilyabo/a7b9701424257146b571149d92a14926/raw/2e9e1e9bcf64cf0090781b451037229ccb78e1b1/flows.csv&locations=https://gist.githubusercontent.com/ilyabo/a7b9701424257146b571149d92a14926/raw/2e9e1e9bcf64cf0090781b451037229ccb78e1b1/locations.csv
 // http://localhost:7000/from-url?v=46.735655191986154,8.172725132201116,6.657&colors.darkMode=no&flows=https://gist.githubusercontent.com/ilyabo/a7b9701424257146b571149d92a14926/raw/2e9e1e9bcf64cf0090781b451037229ccb78e1b1/flows.csv&locations=https://gist.githubusercontent.com/ilyabo/a7b9701424257146b571149d92a14926/raw/2e9e1e9bcf64cf0090781b451037229ccb78e1b1/locations.csv
-
+// Personenverkehr in der Schweiz - PW  http://localhost:7000/from-url?colors.darkMode=no&flows=https%3A//docs.google.com/spreadsheets/d/e/2PACX-1vRYROhHQxi_WCFs0spjfJ3do4z2eD61dXhM4Lml0Ty3YN4pqCWfDitMCnYgKc8Zt2B6ge4xGg-xUdqB/pub%3Fgid%3D1812990135%26single%3Dtrue%26output%3Dcsv&locations=https%3A//docs.google.com/spreadsheets/d/e/2PACX-1vRYROhHQxi_WCFs0spjfJ3do4z2eD61dXhM4Lml0Ty3YN4pqCWfDitMCnYgKc8Zt2B6ge4xGg-xUdqB/pub%3Fgid%3D877058976%26single%3Dtrue%26output%3Dcsv
+// Personenverkehr in der Schweiz - Velo  http://localhost:7000/from-url?colors.darkMode=no&flows=https%3A//docs.google.com/spreadsheets/d/e/2PACX-1vRYROhHQxi_WCFs0spjfJ3do4z2eD61dXhM4Lml0Ty3YN4pqCWfDitMCnYgKc8Zt2B6ge4xGg-xUdqB/pub%3Fgid%3D229626141%26single%3Dtrue%26output%3Dcsv&locations=https%3A//docs.google.com/spreadsheets/d/e/2PACX-1vRYROhHQxi_WCFs0spjfJ3do4z2eD61dXhM4Lml0Ty3YN4pqCWfDitMCnYgKc8Zt2B6ge4xGg-xUdqB/pub%3Fgid%3D877058976%26single%3Dtrue%26output%3Dcsv
 
 import React, {FC, useEffect, useMemo} from 'react';
 import FlowMap, {LoadingSpinner, MapContainer} from '@flowmap.blue/core';
-import {ConfigPropName, DEFAULT_CONFIG, FlowMapStore, getInitialState, LoadingStatus} from '@flowmap.blue/data';
+import {
+  ActionType,
+  ConfigPropName,
+  DEFAULT_CONFIG,
+  FlowMapStore,
+  getInitialState,
+  LoadingStatus
+} from '@flowmap.blue/data';
 import {useHistory, useLocation} from 'react-router-dom';
 import * as queryString from 'query-string';
 import ErrorFallback from './ErrorFallback';
@@ -28,11 +36,16 @@ const FromUrlFlowMap: FC<{}> = (props: {}) => {
   const locationsUrl = params.locations as string;
   const flowsUrl = params.flows as string;
 
+
+  const history = useHistory();
+  const setFlowMapState = useFlowMapStore(state => state.setFlowMapState);
+  const dispatch = useFlowMapStore(state => state.dispatch);
+  const getViewportForLocations = useAppStore(state => state.getViewportForLocations);
+  const layersData = useAppStore(state => state.layersData);
   const loadLocations = useAppStore(state => state.loadLocations);
   const loadFlows = useAppStore(state => state.loadFlows);
   useEffect(() => { loadLocations(locationsUrl); }, [locationsUrl]);
   useEffect(() => { loadFlows(flowsUrl); }, [flowsUrl]);
-  const layersData = useAppStore(state => state.layersData);
 
   const config = useMemo(() => {
     const config = { ...DEFAULT_CONFIG };
@@ -46,21 +59,29 @@ const FromUrlFlowMap: FC<{}> = (props: {}) => {
   }, [params]);
 
 
-  const history = useHistory();
-  const setFlowMapState = useFlowMapStore((state: FlowMapStore) => state.setFlowMapState);
-
   useEffect(() => {
     const initialState = getInitialState(config, [window.innerWidth, window.innerHeight], history.location.search);
     setFlowMapState(initialState);
   }, []);
 
+  useEffect(() => {
+    if (layersData?.status === LoadingStatus.DONE) {
+      (async function() {
+        const viewport = await getViewportForLocations();
+        if (viewport)  {
+          dispatch({
+            type: ActionType.SET_VIEWPORT,
+            viewport,
+            adjustViewportToLocations: false,
+          });
+        }
+      })();
+    }
+  }, [layersData?.status]);
 
-  // if (!layersData || layersData?.status === LoadingStatus.LOADING) {
-  //   return <LoadingSpinner />;
-  // }
-  // if (layersData?.status === LoadingStatus.ERROR) {
-  //   return <ErrorFallback error="Couldn't load data" />;
-  // }
+  if (layersData?.status === LoadingStatus.ERROR) {
+    return <ErrorFallback error="Failed to fetch data" />;
+  }
 
   return (
     <MapContainer>

@@ -8,6 +8,7 @@ export * from './colors';
 export * from './time';
 export * from './FlowMap.state';
 export * from './LayersDataStore';
+export * from './DataProvider';
 export {
   LayersData,
   FlowLinesLayerAttributes,

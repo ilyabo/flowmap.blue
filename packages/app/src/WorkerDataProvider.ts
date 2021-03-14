@@ -1,6 +1,6 @@
-import {Action, createLayersDataStore, FlowMapState} from '@flowmap.blue/data';
+import {Action, createLayersDataStore, FlowMapState, ViewportProps} from '@flowmap.blue/data';
 import * as Comlink from 'comlink';
-import {DataProvider} from './DataProvider';
+import {DataProvider} from '@flowmap.blue/data';
 
 const layersDataStore = createLayersDataStore();
 const { getState, setState, subscribe, destroy } = layersDataStore;
@@ -26,6 +26,10 @@ export class WorkerDataProvider implements DataProvider {
   async loadFlows(flowsUrl: string) {
     await getState().loadFlows(flowsUrl);
     return getState().flows!.status;
+  }
+
+  async getViewportForLocations() {
+    return await getState().getViewportForLocations();
   }
 
   getLayersData() {

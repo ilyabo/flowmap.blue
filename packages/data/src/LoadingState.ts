@@ -16,18 +16,19 @@ export const fetchCsv = async<Row> (
   url: string,
   transformRow: (rawRow: DSVRowString, index: number, columns: string) => Row | undefined | null
 ): Promise<LoadingState<Row[]>> => {
-  const response = await fetch(url);
-  if (response.ok) {
-    try {
-      const text = await response.text();
-      const data = csvParse<Row>(text,
-        // @ts-ignore
-        transformRow);
-      return ({ status: LoadingStatus.DONE, data });
-    } catch {
-      return ({ status: LoadingStatus.ERROR });
+  try {
+    const response = await fetch(url);
+    if (response.ok) {
+        const text = await response.text();
+        const data = csvParse<Row>(text,
+          // @ts-ignore
+          transformRow);
+        return ({ status: LoadingStatus.DONE, data });
+    } else {
+      return ({ status: LoadingStatus.ERROR })
     }
-  } else {
-    return ({ status: LoadingStatus.ERROR })
+  } catch (err) {
+    console.error(err);
+    return ({ status: LoadingStatus.ERROR });
   }
 };

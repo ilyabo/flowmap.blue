@@ -22,6 +22,7 @@ type Props = {};
 
 type State = {
   error: any;
+  sentryEventId: string | undefined;
 };
 
 const makeGSheetsFlowMap = (embed: boolean) => ({
@@ -38,6 +39,7 @@ const makeGSheetsFlowMap = (embed: boolean) => ({
 export default class App extends React.Component<Props, State> {
   state = {
     error: null,
+    sentryEventId: undefined,
   };
 
   componentDidCatch(error: any, errorInfo: any) {
@@ -47,7 +49,7 @@ export default class App extends React.Component<Props, State> {
         Object.keys(errorInfo).forEach(key => {
           scope.setExtra(key, errorInfo[key]);
         });
-        Sentry.captureException(error);
+        this.setState({sentryEventId: Sentry.captureException(error)});
       });
     }
   }
@@ -57,7 +59,7 @@ export default class App extends React.Component<Props, State> {
       // render fallback UI
       return (
         <Router history={history}>
-          <ErrorFallback/>
+          <ErrorFallback sentryEventId={this.state.sentryEventId}/>
         </Router>
       );
     } else {

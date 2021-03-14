@@ -298,50 +298,6 @@ const FlowMap: React.FC<Props> = (props) => {
   //   }
   // }, [unknownLocations, showErrorToast, allFlows, flowsForKnownLocations]);
   //
-  // const { adjustViewportToLocations } = state;
-  //
-  // useEffect(() => {
-  //   if (!adjustViewportToLocations) {
-  //     return;
-  //   }
-  //
-  //   const width = window.innerWidth;
-  //   const height = window.innerHeight;
-  //   if (allLocations != null) {
-  //     let draft = getViewStateForLocations(
-  //       locationsHavingFlows ?? allLocations,
-  //       getLocationCentroid,
-  //       [width, height],
-  //       { pad: 0.1 }
-  //     );
-  //
-  //     if (!draft.zoom) {
-  //       draft = {
-  //         zoom: 1,
-  //         latitude: 0,
-  //         longitude: 0,
-  //       };
-  //     }
-  //
-  //     dispatch({
-  //       type: ActionType.SET_VIEWPORT,
-  //       viewport: {
-  //         width,
-  //         height,
-  //         ...draft,
-  //         minZoom: MIN_ZOOM_LEVEL,
-  //         maxZoom: MAX_ZOOM_LEVEL,
-  //         minPitch: MIN_PITCH,
-  //         maxPitch: MAX_PITCH,
-  //         bearing: 0,
-  //         pitch: 0,
-  //         altitude: 1.5,
-  //         ...mapTransition(),
-  //       },
-  //       adjustViewportToLocations: false,
-  //     });
-  //   }
-  // }, [allLocations, locationsHavingFlows, adjustViewportToLocations]);
 
   const handleChangeClusteringAuto = (value: boolean) => {};
   // const clusterIndex = getClusterIndex(state, props);
