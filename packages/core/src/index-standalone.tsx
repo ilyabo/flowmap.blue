@@ -1,25 +1,32 @@
 import React from 'react';
 import * as ReactDOM from 'react-dom';
-import {ConfigPropName, ColorScheme, DEFAULT_CONFIG, Flow, Location, createFlowMapStore} from '@flowmap.blue/data';
+import {
+  ConfigPropName,
+  ColorScheme,
+  DEFAULT_CONFIG,
+  Flow,
+  Location,
+  createFlowMapStore,
+} from '@flowmap.blue/data';
 import FlowMap from './FlowMap';
 import MapContainer from './MapContainer';
-import {AppToaster, Fallback} from './index';
-import {Router} from 'react-router-dom';
-import {createBrowserHistory} from 'history';
+import { AppToaster, Fallback } from './index';
+import { Router } from 'react-router-dom';
+import { createBrowserHistory } from 'history';
 
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import {css, Global} from '@emotion/core';
-import {Classes, Colors, FocusStyleManager} from '@blueprintjs/core';
+import { css, Global } from '@emotion/core';
+import { Classes, Colors, FocusStyleManager } from '@blueprintjs/core';
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
 const history = createBrowserHistory();
 
 const globalStyles = css`
-  @import url("https://fonts.googleapis.com/css?family=Sarabun:400,700");
+  @import url('https://fonts.googleapis.com/css?family=Sarabun:400,700');
 
   html,
   body,
@@ -29,11 +36,12 @@ const globalStyles = css`
     background-color: ${'#2d3a4c'};
     font-size: 13pt;
   }
-               
-  body, * {
+
+  body,
+  * {
     font-family: 'Sarabun', sans-serif;
   }
-             
+
   a,
   a:visited {
     color: ${ColorScheme.primary};
@@ -63,12 +71,12 @@ const globalStyles = css`
 `;
 
 class ErrorBoundary extends React.Component<{}, {}> {
-  state = {hasError: false, error: null};
+  state = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: any) {
     return {
       hasError: true,
-      error
+      error,
     };
   }
 
@@ -80,45 +88,43 @@ class ErrorBoundary extends React.Component<{}, {}> {
     if (this.state.hasError) {
       const { error } = this.state;
       return (
-      <Fallback>
-        <>
-          Oops… Sorry, but something went wrong.
-          {error && (
-            <div
-              style={{
-                margin: '10px 0',
-              }}
-            >
-              {JSON.stringify(error)}
-            </div>
-          )}
-        </>
-      </Fallback>
+        <Fallback>
+          <>
+            Oops… Sorry, but something went wrong.
+            {error && (
+              <div
+                style={{
+                  margin: '10px 0',
+                }}
+              >
+                {JSON.stringify(error)}
+              </div>
+            )}
+          </>
+        </Fallback>
       );
     }
     return this.props.children;
   }
 }
 
-export function init(
-  {
-    locations,
-    flows,
-    container,
-    mapboxAccessToken,
-    clustering = true,
-    animation = false,
-    darkMode = false,
-  }: {
-    locations: Location[],
-    flows: Flow[],
-    container: HTMLElement,
-    mapboxAccessToken?: string,
-    clustering?: boolean,
-    animation?: boolean,
-    darkMode?: boolean,
-  },
-) {
+export function init({
+  locations,
+  flows,
+  container,
+  mapboxAccessToken,
+  clustering = true,
+  animation = false,
+  darkMode = false,
+}: {
+  locations: Location[];
+  flows: Flow[];
+  container: HTMLElement;
+  mapboxAccessToken?: string;
+  clustering?: boolean;
+  animation?: boolean;
+  darkMode?: boolean;
+}) {
   AppToaster.init(container);
   const useFlowMapStore = createFlowMapStore();
   ReactDOM.render(

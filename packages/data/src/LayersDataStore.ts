@@ -9,17 +9,23 @@ import {
   getInitialState,
   getLocationCentroid,
   getLocations,
-  getLocationsForFlowMapLayer, getLocationsHavingFlows,
+  getLocationsForFlowMapLayer,
+  getLocationsHavingFlows,
   LayersData,
   LoadingState,
   LoadingStatus,
-  Location, MAX_PITCH, MAX_ZOOM_LEVEL, MIN_PITCH, MIN_ZOOM_LEVEL, ViewportProps,
+  Location,
+  MAX_PITCH,
+  MAX_ZOOM_LEVEL,
+  MIN_PITCH,
+  MIN_ZOOM_LEVEL,
+  ViewportProps,
 } from './';
-import {ColorsRGBA} from '@flowmap.gl/core';
+import { ColorsRGBA } from '@flowmap.gl/core';
 import getColors from './colors';
 import prepareLayersData from './prepareLayersData';
 import prepareFlows from './prepareFlows';
-import {getViewStateForLocations} from './getViewStateForFeatures';
+import { getViewStateForLocations } from './getViewStateForFeatures';
 
 export type LayersDataStore = {
   locations: LoadingState<Location[]> | undefined;
@@ -31,18 +37,17 @@ export type LayersDataStore = {
   // dispatch: (action: Action) => void;
   flowMapState: FlowMapState;
   getViewportForLocations: ([width, height]: [number, number]) => ViewportProps | undefined;
-}
+};
 
 export function createLayersDataStore() {
   const store = createVanilla<LayersDataStore>(
     (set, get, api): LayersDataStore => {
-
       function getPropsForSelectors() {
-        const {locations, flows} = get();
+        const { locations, flows } = get();
         if (locations?.status === LoadingStatus.DONE && flows?.status === LoadingStatus.DONE) {
           return {
             locations: locations.data,
-            flows: flows.data
+            flows: flows.data,
           };
         } else {
           return undefined;
@@ -57,29 +62,25 @@ export function createLayersDataStore() {
         // dispatch: action => set(state => ({ flowMapState: mainReducer(state.flowMapState, action) })),
 
         loadLocations: async (locationsUrl) => {
-          const result = await fetchCsv(locationsUrl,
-            (row) => ({
-              id: `${row.id}`,
-              name: `${row.name || row.id}`,
-              lat: Number(row.lat),
-              lon: Number(row.lon),
-            })
-          );
+          const result = await fetchCsv(locationsUrl, (row) => ({
+            id: `${row.id}`,
+            name: `${row.name || row.id}`,
+            lat: Number(row.lat),
+            lon: Number(row.lon),
+          }));
           console.log(result);
-          set({locations: result});
+          set({ locations: result });
         },
 
         loadFlows: async (flowsUrl) => {
-          const result = await fetchCsv(flowsUrl,
-            (row: any) => ({
-              ...row,
-              count: +row.count,
-            })
-          );
+          const result = await fetchCsv(flowsUrl, (row: any) => ({
+            ...row,
+            count: +row.count,
+          }));
           if (result.status === LoadingStatus.DONE) {
-            set({flows: {...result, data: prepareFlows(result.data)}});
+            set({ flows: { ...result, data: prepareFlows(result.data) } });
           }
-          set({flows: result});
+          set({ flows: result });
         },
 
         getFlowMapColorsRGBA() {
@@ -87,21 +88,16 @@ export function createLayersDataStore() {
           // return isDiffColors(flowMapColors)
           //     ? getDiffColorsRGBA(flowMapColors)
           //     : getColorsRGBA(flowMapColors);
-          return getColorsRGBA(
-            getColors(
-              false, undefined, false, false, 0, false
-            )
-          );
+          return getColorsRGBA(getColors(false, undefined, false, false, 0, false));
         },
 
-
-        getViewportForLocations([width,height]) {
+        getViewportForLocations([width, height]) {
           const props = getPropsForSelectors();
           if (!props) {
             return undefined;
           }
-          const {flowMapState} = get();
-          const {adjustViewportToLocations, viewport} = flowMapState;
+          const { flowMapState } = get();
+          const { adjustViewportToLocations, viewport } = flowMapState;
           if (!adjustViewportToLocations) {
             return undefined;
           }
@@ -114,7 +110,7 @@ export function createLayersDataStore() {
               locationsHavingFlows ?? allLocations,
               getLocationCentroid,
               [width, height],
-              {pad: 0.1}
+              { pad: 0.1 }
             );
 
             if (!draft.zoom) {
@@ -147,7 +143,7 @@ export function createLayersDataStore() {
         getLayersData() {
           // There's no point in keeping layersData in the store because it won't be usable in
           // the worker context after it's transferred to the main thread.
-          const {getFlowMapColorsRGBA, flowMapState} = get();
+          const { getFlowMapColorsRGBA, flowMapState } = get();
           const props = getPropsForSelectors();
           if (!props) {
             return undefined;
@@ -158,9 +154,9 @@ export function createLayersDataStore() {
             getFlowsForFlowMapLayer(flowMapState, props)!,
             getFlowMapColorsRGBA()
           );
-        }
+        },
       };
-    },
+    }
   );
   // const {getState, setState, subscribe, destroy} = store;
   return store;

@@ -14,4 +14,3 @@ export {
   FlowLinesLayerAttributes,
   FlowCirclesLayerAttributes,
 } from './prepareLayersData';
-

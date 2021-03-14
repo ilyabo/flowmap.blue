@@ -1,11 +1,11 @@
 import React from 'react';
-import {Flow, parseTime} from '@flowmap.blue/data';
-import {nest} from 'd3-collection';
-import {AppToaster} from './AppToaster';
-import {Intent} from '@blueprintjs/core';
-import {IconNames} from '@blueprintjs/icons';
-import {ToastContent} from './Boxes';
-import {ErrorsLocationsBlock, MAX_NUM_OF_IDS_IN_ERROR} from './FlowMap';
+import { Flow, parseTime } from '@flowmap.blue/data';
+import { nest } from 'd3-collection';
+import { AppToaster } from './AppToaster';
+import { Intent } from '@blueprintjs/core';
+import { IconNames } from '@blueprintjs/icons';
+import { ToastContent } from './Boxes';
+import { ErrorsLocationsBlock, MAX_NUM_OF_IDS_IN_ERROR } from './FlowMap';
 
 export function prepareFlows(rows: any[]) {
   let dupes: Flow[] = [];

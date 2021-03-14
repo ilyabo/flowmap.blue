@@ -1,20 +1,26 @@
-import {DeckGL} from '@deck.gl/react';
-import {MapController, MapView} from '@deck.gl/core';
+import { DeckGL } from '@deck.gl/react';
+import { MapController, MapView } from '@deck.gl/core';
 import * as React from 'react';
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {_MapContext as MapContext, StaticMap} from 'react-map-gl';
-import {FlowCirclesLayer, FlowLayerPickingInfo, FlowLinesLayer, PickingType,} from '@flowmap.gl/core';
-import {Button, ButtonGroup, Classes, Colors} from '@blueprintjs/core';
-import {Absolute, BoxStyle, Column, Description, Title, TitleBox} from './Boxes';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { _MapContext as MapContext, StaticMap } from 'react-map-gl';
+import {
+  FlowCirclesLayer,
+  FlowLayerPickingInfo,
+  FlowLinesLayer,
+  PickingType,
+} from '@flowmap.gl/core';
+import { Button, ButtonGroup, Classes, Colors } from '@blueprintjs/core';
+import { Absolute, BoxStyle, Column, Description, Title, TitleBox } from './Boxes';
 import Tooltip from './Tooltip';
-import {Link} from 'react-router-dom';
-import {UseStore} from 'zustand';
-import Collapsible, {Direction} from './Collapsible';
+import { Link } from 'react-router-dom';
+import { UseStore } from 'zustand';
+import Collapsible, { Direction } from './Collapsible';
 import {
   ActionType,
   Config,
   ConfigPropName,
-  FlowMapStore, getAvailableClusterZoomLevels,
+  FlowMapStore,
+  getAvailableClusterZoomLevels,
   getClusterIndex,
   getClusterZoom,
   getDarkMode,
@@ -30,17 +36,17 @@ import {
   MIN_ZOOM_LEVEL,
   TargetBounds,
   TimeGranularity,
-  ViewportProps
+  ViewportProps,
 } from '@flowmap.blue/data';
 import Message from './Message';
 import LoadingSpinner from './LoadingSpinner';
 import NoScrollContainer from './NoScrollContainer';
 import styled from '@emotion/styled';
-import {IconNames} from '@blueprintjs/icons';
+import { IconNames } from '@blueprintjs/icons';
 import Away from './Away';
 import useDebounced from './hooks';
 import SharePopover from './SharePopover';
-import MapDrawingEditor, {MapDrawingFeature, MapDrawingMode} from './MapDrawingEditor';
+import MapDrawingEditor, { MapDrawingFeature, MapDrawingMode } from './MapDrawingEditor';
 import SettingsPopover from './SettingsPopover';
 
 const CONTROLLER_OPTIONS = {
@@ -113,12 +119,8 @@ const TotalCount = styled.div<{ darkMode: boolean }>((props) => ({
 
 export const MAX_NUM_OF_IDS_IN_ERROR = 100;
 
-
 const FlowMap: React.FC<Props> = (props) => {
-  const {
-    inBrowser, embed, config, spreadSheetKey, layersData,
-    useFlowMapStore
-  } = props;
+  const { inBrowser, embed, config, spreadSheetKey, layersData, useFlowMapStore } = props;
   const deckRef = useRef<any>();
   const dispatch = useFlowMapStore((state: FlowMapStore) => state.dispatch);
   const state = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
@@ -326,9 +328,7 @@ const FlowMap: React.FC<Props> = (props) => {
 
   useEffect(() => {
     function handleFullScreenChange() {
-      setShowFullscreenButton(
-        embed && document.fullscreenEnabled && !document.fullscreenElement
-      );
+      setShowFullscreenButton(embed && document.fullscreenEnabled && !document.fullscreenElement);
     }
     document.addEventListener('fullscreenchange', handleFullScreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
@@ -384,7 +384,6 @@ const FlowMap: React.FC<Props> = (props) => {
   };
 
   if (!viewport) return null;
-
 
   //
   // const showFlowTooltip = (pos: [number, number], info: FlowPickingInfo) => {
@@ -525,7 +524,7 @@ const FlowMap: React.FC<Props> = (props) => {
   const authorName = config[ConfigPropName.AUTHOR_NAME];
   const mapboxAccessToken = config[ConfigPropName.MAPBOX_ACCESS_TOKEN];
   // const diffMode = getDiffMode(state, props);
-  const {darkMode} = state;
+  const { darkMode } = state;
   const mapboxMapStyle = getMapboxMapStyle(config, darkMode);
 
   const getHighlightForZoom = () => {
@@ -710,37 +709,40 @@ const FlowMap: React.FC<Props> = (props) => {
       // const highlight = getHighlightForZoom();
       // const locationsById = getLocationsById(state, props);
 
-      layers.push(new FlowLinesLayer({
-        id: 'lines',
-        data: layersData.data.lineAttributes,
-        drawOutline: true,
-        opacity: 1,
-        pickable: true,
-        ...(!mapDrawingEnabled && {
-          onHover: (info: any) => {
-            // const flow = info.index != -1 && flows ? flows[info.index] : undefined;
-            // console.log(info.index, info.object)
-            // handleHover({
-            //   ...info,
-            //   type: PickingType.FLOW,
-            //   object: flow,
-            //   ...flow && {
-            //     origin: locationsById?.get(flow.origin),
-            //     dest: locationsById?.get(flow.dest),
-            //   },
-            // });
-          },
-        }),
-        updateTriggers: {
-          onHover: handleHover, // to avoid stale closure in the handler
-        } as any,
-      }));
-      layers.push(new FlowCirclesLayer({
-        id: 'circles',
-        data: layersData.data.circleAttributes,
-        opacity: 1,
-      }));
-
+      layers.push(
+        new FlowLinesLayer({
+          id: 'lines',
+          data: layersData.data.lineAttributes,
+          drawOutline: true,
+          opacity: 1,
+          pickable: true,
+          ...(!mapDrawingEnabled && {
+            onHover: (info: any) => {
+              // const flow = info.index != -1 && flows ? flows[info.index] : undefined;
+              // console.log(info.index, info.object)
+              // handleHover({
+              //   ...info,
+              //   type: PickingType.FLOW,
+              //   object: flow,
+              //   ...flow && {
+              //     origin: locationsById?.get(flow.origin),
+              //     dest: locationsById?.get(flow.dest),
+              //   },
+              // });
+            },
+          }),
+          updateTriggers: {
+            onHover: handleHover, // to avoid stale closure in the handler
+          } as any,
+        })
+      );
+      layers.push(
+        new FlowCirclesLayer({
+          id: 'circles',
+          data: layersData.data.circleAttributes,
+          opacity: 1,
+        })
+      );
 
       // layers.push(
       //   new FlowMapLayer({
@@ -797,7 +799,6 @@ const FlowMap: React.FC<Props> = (props) => {
     return layers;
   };
 
-
   return (
     <NoScrollContainer
       ref={outerRef}
@@ -816,7 +817,7 @@ const FlowMap: React.FC<Props> = (props) => {
           ref={deckRef}
           controller={CONTROLLER_OPTIONS}
           viewState={viewport}
-          views={[new MapView({id: 'map', repeat: true})]}
+          views={[new MapView({ id: 'map', repeat: true })]}
           onViewStateChange={handleViewStateChange}
           layers={getLayers()}
           ContextProvider={MapContext.Provider}
@@ -1000,7 +1001,7 @@ const FlowMap: React.FC<Props> = (props) => {
         </TitleBox>
       )}
       {tooltip && <Tooltip {...tooltip} />}
-      {!layersData || layersData.status === LoadingStatus.LOADING && <LoadingSpinner />}
+      {!layersData || (layersData.status === LoadingStatus.LOADING && <LoadingSpinner />)}
     </NoScrollContainer>
   );
 };
@@ -1034,6 +1035,5 @@ function selectedTimeRangeToString(
 
   return `${startStr} – ${endStr}`;
 }
-
 
 export default FlowMap;

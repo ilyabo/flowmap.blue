@@ -1,13 +1,19 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from '@emotion/styled';
-import {scaleLinear, scaleTime} from 'd3-scale';
-import {max} from 'd3-array';
-import {EventManager} from 'mjolnir.js';
+import { scaleLinear, scaleTime } from 'd3-scale';
+import { max } from 'd3-array';
+import { EventManager } from 'mjolnir.js';
 import PlayControl from './PlayControl';
-import {Colors} from '@blueprintjs/core';
-import {useMeasure, useThrottle} from 'react-use';
-import {areRangesEqual, ColorScheme, CountByTime, tickMultiFormat, TimeGranularity} from '@flowmap.blue/data';
-import {hcl} from 'd3-color';
+import { Colors } from '@blueprintjs/core';
+import { useMeasure, useThrottle } from 'react-use';
+import {
+  areRangesEqual,
+  ColorScheme,
+  CountByTime,
+  tickMultiFormat,
+  TimeGranularity,
+} from '@flowmap.blue/data';
+import { hcl } from 'd3-color';
 
 interface Props {
   selectedRange: [Date, Date];
@@ -336,23 +342,24 @@ const TimelineChart: React.FC<TimelineChartProps> = (props) => {
           const xPos = timeScale(t);
           if (xPos == null) return null;
           return (
-              <g key={i} transform={`translate(${xPos},${0})`}>
-                <TickLine y1={0} y2={TOTAL_COUNT_CHART_HEIGHT + AXIS_AREA_HEIGHT} />
-                {xPos < chartWidth &&
+            <g key={i} transform={`translate(${xPos},${0})`}>
+              <TickLine y1={0} y2={TOTAL_COUNT_CHART_HEIGHT + AXIS_AREA_HEIGHT} />
+              {xPos < chartWidth && (
                 <TickText darkMode={darkMode} x={3} y={12}>
                   {
                     // timeGranularity.format(t)
                     tickLabelFormat(t)
                   }
                 </TickText>
-                }
-              </g>
-          )
+              )}
+            </g>
+          );
         })}
         <AxisPath d={`M0,0 ${chartWidth},0`} />
         <AxisPath
           transform={`translate(0,${TOTAL_COUNT_CHART_HEIGHT + AXIS_AREA_HEIGHT})`}
-          d={`M0,0 ${chartWidth},0`} />
+          d={`M0,0 ${chartWidth},0`}
+        />
         <g transform={`translate(0,${AXIS_AREA_HEIGHT})`}>
           {totalCountsByTime.map(({ time, count }) => (
             <Bar

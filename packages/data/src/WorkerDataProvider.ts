@@ -1,4 +1,4 @@
-import {createLayersDataStore, FlowMapState, LayersData, LoadingStatus, ViewportProps} from './';
+import { createLayersDataStore, FlowMapState, LayersData, LoadingStatus, ViewportProps } from './';
 import * as Comlink from 'comlink';
 
 const layersDataStore = createLayersDataStore();
@@ -10,19 +10,19 @@ export interface DataProvider {
   loadLocations(locationsUrl: string): Promise<LoadingStatus>;
   loadFlows(flowsUrl: string): Promise<LoadingStatus>;
   getLayersData(): LayersData | undefined;
-  getViewportForLocations: ([width,height]:[number,number]) => Promise<ViewportProps | undefined>;
+  getViewportForLocations: ([width, height]: [number, number]) => Promise<
+    ViewportProps | undefined
+  >;
 }
 
-
 export class WorkerDataProvider implements DataProvider {
-
   // async dispatch(action: Action) {
   //   console.log('WorkerDataProvider.dispatch',action);
   //   await getState().dispatch(action);
   // }
 
   async setFlowMapState(flowMapState: FlowMapState) {
-    await setState({flowMapState});
+    await setState({ flowMapState });
   }
 
   async loadLocations(locationsUrl: string) {
@@ -35,7 +35,7 @@ export class WorkerDataProvider implements DataProvider {
     return getState().flows!.status;
   }
 
-  async getViewportForLocations(dims:[number,number]) {
+  async getViewportForLocations(dims: [number, number]) {
     return await getState().getViewportForLocations(dims);
   }
 
@@ -47,13 +47,10 @@ export class WorkerDataProvider implements DataProvider {
       //  ArrayBuffer from your main app to a worker script, the original ArrayBuffer is cleared and no
       //  longer usable. Its content is (quite literally) transferred to the worker context.
       const transfers = [
-        ...Object.values(layersData.circleAttributes.attributes).map(v => v.value.buffer),
-        ...Object.values(layersData.lineAttributes.attributes).map(v => v.value.buffer),
+        ...Object.values(layersData.circleAttributes.attributes).map((v) => v.value.buffer),
+        ...Object.values(layersData.lineAttributes.attributes).map((v) => v.value.buffer),
       ];
-      return Comlink.transfer(
-        layersData,
-        transfers
-      );
+      return Comlink.transfer(layersData, transfers);
     }
     return layersData;
   }

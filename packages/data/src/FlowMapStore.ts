@@ -1,7 +1,7 @@
-import {Action, FlowMapState} from './';
+import { Action, FlowMapState } from './';
 import create from 'zustand';
-import {getInitialState, mainReducer} from './FlowMap.state';
-import {DEFAULT_CONFIG} from './config';
+import { getInitialState, mainReducer } from './FlowMap.state';
+import { DEFAULT_CONFIG } from './config';
 
 export type FlowMapStore = {
   setFlowMapState: (state: FlowMapState) => void;
@@ -12,15 +12,15 @@ export type FlowMapStore = {
 export function createFlowMapStore() {
   return create<FlowMapStore>(
     (set, get): FlowMapStore => {
-      return ({
+      return {
         // TODO: this should be done through dispatch
         flowMapState: getInitialState(DEFAULT_CONFIG, [0, 0], ''),
-        setFlowMapState: nextState => set({ flowMapState: nextState }),
-        dispatch: async action => {
-          set(state => ({flowMapState: mainReducer(state.flowMapState, action)}));
+        setFlowMapState: (nextState) => set({ flowMapState: nextState }),
+        dispatch: async (action) => {
+          set((state) => ({ flowMapState: mainReducer(state.flowMapState, action) }));
           // await dataProvider.dispatch(action);
         },
-      });
+      };
     }
   );
 }

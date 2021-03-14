@@ -1,16 +1,9 @@
-import {
-  Config,
-  ConfigPropName,
-  Flow,
-  LocationFilterMode,
-  ViewportProps,
-  TooltipProps
-} from './';
+import { Config, ConfigPropName, Flow, LocationFilterMode, ViewportProps, TooltipProps } from './';
 import * as queryString from 'query-string';
-import {viewport} from '@mapbox/geo-viewport';
-import {COLOR_SCHEME_KEYS, parseBoolConfigProp, parseNumberConfigProp} from './';
-import {csvFormatRows, csvParseRows} from 'd3-dsv';
-import {timeFormat, timeParse} from 'd3-time-format';
+import { viewport } from '@mapbox/geo-viewport';
+import { COLOR_SCHEME_KEYS, parseBoolConfigProp, parseNumberConfigProp } from './';
+import { csvFormatRows, csvParseRows } from 'd3-dsv';
+import { timeFormat, timeParse } from 'd3-time-format';
 
 export const MAX_ZOOM_LEVEL = 20;
 export const MIN_ZOOM_LEVEL = 0;
@@ -528,7 +521,10 @@ export function stateToQueryString(state: FlowMapState) {
   return parts.join('&');
 }
 
-export function getInitialViewport([width, height]: [number, number], bbox: [number, number, number, number]) {
+export function getInitialViewport(
+  [width, height]: [number, number],
+  bbox: [number, number, number, number]
+) {
   const {
     center: [longitude, latitude],
     zoom,
@@ -549,11 +545,7 @@ export function getInitialViewport([width, height]: [number, number], bbox: [num
   };
 }
 
-export function getInitialState(
-  config: Config,
-  dims: [number, number],
-  queryString: string
-) {
+export function getInitialState(config: Config, dims: [number, number], queryString: string) {
   const draft = {
     viewport: getInitialViewport(dims, [-180, -70, 180, 70]),
     adjustViewportToLocations: true,

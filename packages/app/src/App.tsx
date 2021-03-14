@@ -16,7 +16,7 @@ const ODMatrixConverter = React.lazy(() => import('./ODMatrixConverter'));
 const Geocoding = React.lazy(() => import('./Geocoding'));
 
 const history = createBrowserHistory();
-history.listen(location => AppToaster.clear());
+history.listen((location) => AppToaster.clear());
 
 type Props = {};
 
@@ -27,14 +27,13 @@ type State = {
 
 const makeGSheetsFlowMap = (embed: boolean) => ({
   match,
-}: RouteComponentProps<{ sheetKey: string, flowsSheetKey: string }>) => (
+}: RouteComponentProps<{ sheetKey: string; flowsSheetKey: string }>) => (
   <GSheetsFlowMap
     spreadSheetKey={match.params.sheetKey}
     flowsSheetKey={match.params.flowsSheetKey}
-    embed={embed} />
+    embed={embed}
+  />
 );
-
-
 
 export default class App extends React.Component<Props, State> {
   state = {
@@ -45,11 +44,11 @@ export default class App extends React.Component<Props, State> {
   componentDidCatch(error: any, errorInfo: any) {
     this.setState({ error });
     if (process.env.REACT_APP_SENTRY_DSN) {
-      Sentry.withScope(scope => {
-        Object.keys(errorInfo).forEach(key => {
+      Sentry.withScope((scope) => {
+        Object.keys(errorInfo).forEach((key) => {
           scope.setExtra(key, errorInfo[key]);
         });
-        this.setState({sentryEventId: Sentry.captureException(error)});
+        this.setState({ sentryEventId: Sentry.captureException(error) });
       });
     }
   }
@@ -59,7 +58,7 @@ export default class App extends React.Component<Props, State> {
       // render fallback UI
       return (
         <Router history={history}>
-          <ErrorFallback sentryEventId={this.state.sentryEventId}/>
+          <ErrorFallback sentryEventId={this.state.sentryEventId} />
         </Router>
       );
     } else {

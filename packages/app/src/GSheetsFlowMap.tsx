@@ -8,12 +8,7 @@ import FlowMap, {
   prepareFlows,
   Props as FlowMapProps,
 } from '@flowmap.blue/core';
-import {
-  ConfigProp,
-  ConfigPropName,
-  DEFAULT_CONFIG,
-  getFlowsSheets,
-} from '@flowmap.blue/data';
+import { ConfigProp, ConfigPropName, DEFAULT_CONFIG, getFlowsSheets } from '@flowmap.blue/data';
 import { Location } from '@flowmap.blue/data';
 import { Helmet } from 'react-helmet';
 import sendEvent from './ga';
@@ -24,7 +19,7 @@ import { IconNames } from '@blueprintjs/icons';
 import { compose, withProps } from 'recompose';
 import md5 from 'blueimp-md5';
 import { useHistory } from 'react-router-dom';
-import styled from "@emotion/styled";
+import styled from '@emotion/styled';
 
 interface Props {
   spreadSheetKey: string;
@@ -37,8 +32,7 @@ const ToastContent = styled.div`
 `;
 
 const FlowMapWithData = compose<any, any>(
-  sheetFetcher('json')<any>(
-  ({ spreadSheetKey, config, flowsSheet = 'flows' }: FlowMapProps) => ({
+  sheetFetcher('json')<any>(({ spreadSheetKey, config, flowsSheet = 'flows' }: FlowMapProps) => ({
     locationsFetch: {
       url: makeSheetQueryUrl(spreadSheetKey!, 'locations', 'SELECT A,B,C,D', 'json'),
       then: (rows: any[]) => ({
@@ -61,18 +55,16 @@ const FlowMapWithData = compose<any, any>(
       }),
     } as any,
   })),
-  withProps(
-    (props: any) => ({
-      locationsFetch: {
-        ...props.locationsFetch,
-        loading: props.locationsFetch.pending || props.locationsFetch.refreshing,
-      },
-      flowsFetch: {
-        ...props.flowsFetch,
-        loading: props.flowsFetch.pending || props.flowsFetch.refreshing,
-      },
-    })
-  ),
+  withProps((props: any) => ({
+    locationsFetch: {
+      ...props.locationsFetch,
+      loading: props.locationsFetch.pending || props.locationsFetch.refreshing,
+    },
+    flowsFetch: {
+      ...props.flowsFetch,
+      loading: props.flowsFetch.pending || props.flowsFetch.refreshing,
+    },
+  }))
 )(FlowMap as any);
 
 const getFlowsSheetKey = (name: string) => md5(name).substr(0, 7);
@@ -90,7 +82,7 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
       });
     }
     setFlowsSheet(name);
-  }
+  };
 
   const configFetch = useAsync(async () => {
     const response = await fetch(url);
@@ -111,7 +103,7 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
     if (flowsSheets && flowsSheets.length > 0) {
       let name = undefined;
       if (flowsSheetKey) {
-        name = flowsSheets.find(fs => getFlowsSheetKey(fs) === flowsSheetKey)
+        name = flowsSheets.find((fs) => getFlowsSheetKey(fs) === flowsSheetKey);
       } else {
         name = flowsSheets[0];
       }

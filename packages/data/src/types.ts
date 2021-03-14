@@ -1,5 +1,5 @@
 import * as Cluster from '@flowmap.gl/cluster';
-import {ClusterNode} from '@flowmap.gl/cluster';
+import { ClusterNode } from '@flowmap.gl/cluster';
 
 export interface Location {
   id: string;
@@ -66,9 +66,8 @@ export const getLocationCentroid = (location: Location | ClusterNode): [number, 
     ? location.centroid
     : [(location as Location).lon, (location as Location).lat];
 
-
 export function isLocationCluster(l: Location | ClusterNode): l is Cluster.Cluster {
-  const {zoom} = l as Cluster.Cluster;
+  const { zoom } = l as Cluster.Cluster;
   return zoom !== undefined;
 }
 
@@ -96,26 +95,29 @@ export interface ViewportProps {
   transitionEasing?: any;
 }
 
-export declare type AsyncState<T> = {
-  loading: boolean;
-  error?: undefined;
-  value?: undefined;
-} | {
-  loading?: false;
-  error: Error;
-  value?: undefined;
-} | {
-  loading?: false;
-  error?: undefined;
-  value: T;
-};
+export declare type AsyncState<T> =
+  | {
+      loading: boolean;
+      error?: undefined;
+      value?: undefined;
+    }
+  | {
+      loading?: false;
+      error: Error;
+      value?: undefined;
+    }
+  | {
+      loading?: false;
+      error?: undefined;
+      value: T;
+    };
 
 export interface TargetBounds {
   left: number;
   top: number;
   width: number;
   height: number;
-};
+}
 
 export interface TooltipProps {
   target: TargetBounds;

@@ -31,15 +31,17 @@ const ButtonArea = styled.div({
   },
 });
 const globalStyles = css`
-  @import url("https://fonts.googleapis.com/css?family=Sarabun:400,700");
+  @import url('https://fonts.googleapis.com/css?family=Sarabun:400,700');
 
-  html, body {
+  html,
+  body {
     margin: 0;
     background-color: ${'rgb(35, 48, 66)'};
     font-size: 13pt;
   }
-  
-  body, * {
+
+  body,
+  * {
     font-family: 'Sarabun', sans-serif;
   }
 

@@ -1,8 +1,8 @@
-import {ColorScheme} from '@flowmap.blue/data';
-import {Link} from 'react-router-dom';
+import { ColorScheme } from '@flowmap.blue/data';
+import { Link } from 'react-router-dom';
 import * as React from 'react';
 import styled from '@emotion/styled';
-import {Row} from './Boxes';
+import { Row } from './Boxes';
 
 type Props = {
   embed?: boolean;
@@ -27,20 +27,10 @@ const LogoText = styled.div<Props>(({ fontSize, collapseWidth }: Props) => ({
 
 const Logo = ({ fontSize = 25, collapseWidth = 525, embed }: Props) => {
   const size = Math.ceil(fontSize * 1.5);
-  const content =
+  const content = (
     <Row spacing={fontSize / 5}>
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 402 402"
-      >
-        <g
-          transform="translate(1 1)"
-          stroke="none"
-          strokeWidth={1}
-          fill="none"
-          fillRule="evenodd"
-        >
+      <svg width={size} height={size} viewBox="0 0 402 402">
+        <g transform="translate(1 1)" stroke="none" strokeWidth={1} fill="none" fillRule="evenodd">
           <circle stroke="#979797" fill="#1A70A7" cx={200} cy={200} r={200} />
           <path
             d="M265.5 199.045h42.545L216.5 320.411V84.5h49v114.545zM135.5 202.955H92.955L184.5 81.589V317.5h-49V202.955z"
@@ -55,7 +45,7 @@ const Logo = ({ fontSize = 25, collapseWidth = 525, embed }: Props) => {
         flowmap.blue
       </LogoText>
     </Row>
-  ;
+  );
   if (embed) {
     return (
       <a
@@ -69,10 +59,7 @@ const Logo = ({ fontSize = 25, collapseWidth = 525, embed }: Props) => {
     );
   }
   return (
-    <Link
-      to="/"
-      style={{ textDecoration: 'none' }}
-    >
+    <Link to="/" style={{ textDecoration: 'none' }}>
       {content}
     </Link>
   );

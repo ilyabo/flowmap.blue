@@ -2,8 +2,8 @@ import * as React from 'react';
 import { Popper } from 'react-popper';
 import { Placement } from 'popper.js';
 import styled from '@emotion/styled';
-import {Props} from '@flowmap.gl/core';
-import {TargetBounds, TooltipProps} from '@flowmap.blue/data';
+import { Props } from '@flowmap.gl/core';
+import { TargetBounds, TooltipProps } from '@flowmap.blue/data';
 
 // export interface Props {
 //   target: TargetBounds;

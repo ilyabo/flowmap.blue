@@ -1,4 +1,4 @@
-import {csvParse, DSVRowString} from 'd3-dsv';
+import { csvParse, DSVRowString } from 'd3-dsv';
 
 export enum LoadingStatus {
   LOADING = 'LOADING',
@@ -11,24 +11,25 @@ export type LoadingState<T> =
   | { status: LoadingStatus.ERROR }
   | { status: LoadingStatus.DONE; data: T };
 
-
-export const fetchCsv = async<Row> (
+export const fetchCsv = async <Row>(
   url: string,
   transformRow: (rawRow: DSVRowString, index: number, columns: string) => Row | undefined | null
 ): Promise<LoadingState<Row[]>> => {
   try {
     const response = await fetch(url);
     if (response.ok) {
-        const text = await response.text();
-        const data = csvParse<Row>(text,
-          // @ts-ignore
-          transformRow);
-        return ({ status: LoadingStatus.DONE, data });
+      const text = await response.text();
+      const data = csvParse<Row>(
+        text,
+        // @ts-ignore
+        transformRow
+      );
+      return { status: LoadingStatus.DONE, data };
     } else {
-      return ({ status: LoadingStatus.ERROR })
+      return { status: LoadingStatus.ERROR };
     }
   } catch (err) {
     console.error(err);
-    return ({ status: LoadingStatus.ERROR });
+    return { status: LoadingStatus.ERROR };
   }
 };

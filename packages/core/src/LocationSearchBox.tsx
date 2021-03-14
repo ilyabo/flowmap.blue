@@ -66,7 +66,7 @@ function getLocationsBySelectionStatus(
   }
 
   const { selected, unselected } = nest<Location | Cluster, LocationsBySelectionStatus>()
-    .key(location => (selectedIds.has(location.id) ? 'selected' : 'unselected'))
+    .key((location) => (selectedIds.has(location.id) ? 'selected' : 'unselected'))
     .object(locations);
 
   return {
@@ -139,7 +139,7 @@ class LocationsSearchBox extends React.PureComponent<Props> {
 
   private tagRenderer = (location: Location | Cluster) => {
     const { selectedLocations } = this.props;
-    const selection = selectedLocations && selectedLocations.find(id => id === location.id);
+    const selection = selectedLocations && selectedLocations.find((id) => id === location.id);
     if (!selection) {
       return null;
     }

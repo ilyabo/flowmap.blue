@@ -25,10 +25,10 @@ import {
   schemeYlOrRd,
 } from 'd3-scale-chromatic';
 import { range } from 'd3-array';
-import {scalePow, scaleSequential, scaleSequentialPow} from 'd3-scale';
+import { scalePow, scaleSequential, scaleSequentialPow } from 'd3-scale';
 import { interpolateRgbBasis } from 'd3-interpolate';
 import { Config } from './types';
-import {color as d3color, hcl} from 'd3-color';
+import { color as d3color, hcl } from 'd3-color';
 
 const DEFAULT_OUTLINE_COLOR = '#fff';
 const DEFAULT_DIMMED_OPACITY = 0.4;
@@ -62,7 +62,12 @@ export function colorAsRgba(color: string): RGBA {
     return FALLBACK_COLOR_RGBA;
   }
   const rgbColor = col.rgb();
-  return [Math.floor(rgbColor.r), Math.floor(rgbColor.g), Math.floor(rgbColor.b), opacityFloatToInteger(col.opacity)];
+  return [
+    Math.floor(rgbColor.r),
+    Math.floor(rgbColor.g),
+    Math.floor(rgbColor.b),
+    opacityFloatToInteger(col.opacity),
+  ];
 }
 
 function colorAsRgbaOr(color: string | undefined, defaultColor: RGBA | string): RGBA {
@@ -87,8 +92,9 @@ export const DEFAULT_COLOR_SCHEME = [FLOW_MIN_COLOR, ColorScheme.primary];
 
 const SCALE_NUM_STEPS = 20;
 const getColorSteps = (interpolate: (x: number) => string) =>
-    range(0,SCALE_NUM_STEPS + 1)
-      .map(i => interpolate(i/SCALE_NUM_STEPS)).reverse();
+  range(0, SCALE_NUM_STEPS + 1)
+    .map((i) => interpolate(i / SCALE_NUM_STEPS))
+    .reverse();
 
 export const COLOR_SCHEMES: { [key: string]: string[] } = {
   Default: DEFAULT_COLOR_SCHEME,
@@ -233,19 +239,19 @@ export default function getColors(
 export function createFlowColorScale(
   domain: [number, number],
   scheme: string[],
-  animate: boolean | undefined,
+  animate: boolean | undefined
 ): ColorScale {
   const scale = scaleSequentialPow(interpolateRgbBasis(scheme))
-  // @ts-ignore
-  .exponent(animate ? 1 / 2 : 1 / 3)
-  .domain(domain);
+    // @ts-ignore
+    .exponent(animate ? 1 / 2 : 1 / 3)
+    .domain(domain);
   return (value: number) => colorAsRgba(scale(value));
 }
 
 export function getFlowColorScale(
   colors: ColorsRGBA | DiffColorsRGBA,
   magnitudeExtent: [number, number] | undefined,
-  animate: boolean | undefined,
+  animate: boolean | undefined
 ) {
   const minMagnitude = magnitudeExtent ? magnitudeExtent[0] : 0;
   const maxMagnitude = magnitudeExtent ? magnitudeExtent[1] : 0;
@@ -260,13 +266,14 @@ export function getFlowColorScale(
   return (magnitude: number) => scale(magnitude);
 }
 
-
 export function isDiffColorsRGBA(colors: DiffColorsRGBA | ColorsRGBA): colors is DiffColorsRGBA {
   return (colors as DiffColorsRGBA).positive !== undefined;
 }
 
-
-function getLocationAreaColorsRGBA(colors: LocationAreaColors | undefined, darkMode: boolean): LocationAreaColorsRGBA {
+function getLocationAreaColorsRGBA(
+  colors: LocationAreaColors | undefined,
+  darkMode: boolean
+): LocationAreaColorsRGBA {
   const normalColor = (colors && colors.normal) || DEFAULT_LOCATION_AREA_COLOR;
   const normalColorHcl = hcl(normalColor);
   const locationAreasNormal = colorAsRgba(normalColor);
@@ -275,19 +282,18 @@ function getLocationAreaColorsRGBA(colors: LocationAreaColors | undefined, darkM
     connected: colorAsRgbaOr(colors && colors.connected, locationAreasNormal),
     highlighted: colorAsRgbaOr(
       colors && colors.highlighted,
-      opacifyHex(normalColorHcl[darkMode ? 'brighter' : 'darker'](1).toString(), 0.5),
+      opacifyHex(normalColorHcl[darkMode ? 'brighter' : 'darker'](1).toString(), 0.5)
     ),
     selected: colorAsRgbaOr(
       colors && colors.selected,
-      opacifyHex(normalColorHcl[darkMode ? 'brighter' : 'darker'](2).toString(), 0.8),
+      opacifyHex(normalColorHcl[darkMode ? 'brighter' : 'darker'](2).toString(), 0.8)
     ),
     outline: colorAsRgbaOr(
       colors && colors.outline,
-      colorAsRgba(normalColorHcl[darkMode ? 'brighter' : 'darker'](4).toString()),
+      colorAsRgba(normalColorHcl[darkMode ? 'brighter' : 'darker'](4).toString())
     ),
   };
 }
-
 
 export interface FlowColors {
   scheme?: string[];
@@ -379,13 +385,14 @@ export interface DiffColorsRGBA extends BaseColorsRGBA {
 function getFlowAndCircleColors(
   inputColors: FlowAndCircleColors | undefined,
   defaultFlowColorScheme: string[],
-  darkMode: boolean,
+  darkMode: boolean
 ): FlowAndCircleColorsRGBA {
-  const flowColorScheme = (inputColors && inputColors.flows && inputColors.flows.scheme) || defaultFlowColorScheme;
+  const flowColorScheme =
+    (inputColors && inputColors.flows && inputColors.flows.scheme) || defaultFlowColorScheme;
   const maxFlowColorHcl = hcl(flowColorScheme[flowColorScheme.length - 1]);
   const flowColorHighlighted = colorAsRgbaOr(
     inputColors && inputColors.flows && inputColors.flows.highlighted,
-    colorAsRgba(maxFlowColorHcl[darkMode ? 'brighter' : 'darker'](0.7).toString()),
+    colorAsRgba(maxFlowColorHcl[darkMode ? 'brighter' : 'darker'](0.7).toString())
   );
 
   return {
@@ -396,19 +403,19 @@ function getFlowAndCircleColors(
     locationCircles: {
       inner: colorAsRgbaOr(
         inputColors && inputColors.locationCircles && inputColors.locationCircles.inner,
-        maxFlowColorHcl.toString(),
+        maxFlowColorHcl.toString()
       ),
       outgoing: colorAsRgbaOr(
         inputColors && inputColors.locationCircles && inputColors.locationCircles.outgoing,
-        darkMode ? '#000' : '#fff',
+        darkMode ? '#000' : '#fff'
       ),
       incoming: colorAsRgbaOr(
         inputColors && inputColors.locationCircles && inputColors.locationCircles.incoming,
-        maxFlowColorHcl[darkMode ? 'brighter' : 'darker'](1.25).toString(),
+        maxFlowColorHcl[darkMode ? 'brighter' : 'darker'](1.25).toString()
       ),
       highlighted: colorAsRgbaOr(
         inputColors && inputColors.locationCircles && inputColors.locationCircles.highlighted,
-        flowColorHighlighted,
+        flowColorHighlighted
       ),
     },
   };
@@ -420,7 +427,8 @@ function getBaseColorsRGBA(colors: Colors | DiffColors | undefined): BaseColorsR
     darkMode,
     locationAreas: getLocationAreaColorsRGBA(colors && colors.locationAreas, darkMode),
     outlineColor: colorAsRgba((colors && colors.outlineColor) || DEFAULT_OUTLINE_COLOR),
-    dimmedOpacity: colors && colors.dimmedOpacity != null ? colors.dimmedOpacity : DEFAULT_DIMMED_OPACITY,
+    dimmedOpacity:
+      colors && colors.dimmedOpacity != null ? colors.dimmedOpacity : DEFAULT_DIMMED_OPACITY,
   };
 }
 
