@@ -2,21 +2,19 @@ import { wrap } from 'comlink';
 import createVanilla from 'zustand/vanilla';
 import create from 'zustand';
 import throttle from 'lodash.throttle';
-
-/* eslint-disable import/no-webpack-loader-syntax */
-import WorkerDataProvider from 'worker-loader!./WorkerDataProvider';
 import {
   createFlowMapStore,
-  // DataProvider,
   FlowMapState,
   LayersData,
   LoadingState,
   LoadingStatus,
   ViewportProps,
+  WorkerDataProvider,
 } from '@flowmap.blue/data';
-import { DataProvider } from './WorkerDataProvider';
+/* eslint-disable import/no-webpack-loader-syntax */
+import AppWorkerDataProvider from 'worker-loader!./AppWorkerDataProvider';
 
-const dataProvider = wrap<DataProvider>(new WorkerDataProvider());
+const workerDataProvider = wrap<WorkerDataProvider>(new AppWorkerDataProvider());
 
 export type AppStore = {
   locationsStatus: LoadingStatus | undefined;
@@ -42,7 +40,7 @@ export const appStore = createVanilla<AppStore>(
       if (locationsStatus === LoadingStatus.DONE && flowsStatus === LoadingStatus.DONE) {
         // set({ layersData: { status: LoadingStatus.LOADING }});
         try {
-          const layersData = await dataProvider.getLayersData();
+          const layersData = await workerDataProvider.getLayersData();
           // TODO: error handling
           set({ layersData: { status: LoadingStatus.DONE, data: layersData! } });
         } catch (err) {
@@ -66,7 +64,7 @@ export const appStore = createVanilla<AppStore>(
       //     viewport: pickViewportProps(flowMapState.viewport),
       //   };
       //   console.log(next);
-      //   await dataProvider.setFlowMapState(next);
+      //   await workerDataProvider.setFlowMapState(next);
       //   await updateLayersData();
       // },
 
@@ -74,13 +72,13 @@ export const appStore = createVanilla<AppStore>(
       // dispatch: async action => {
       //   console.log('store.dispatch',action);
       //   set(state => ({ flowMapState: mainReducer(state.flowMapState, action) }));
-      //   await dataProvider.dispatch(action);
+      //   await workerDataProvider.dispatch(action);
       // },
       loadLocations: async (locationsUrl) => {
         const { layersData } = get();
         set({
           layersData: { ...layersData, status: LoadingStatus.LOADING },
-          locationsStatus: await dataProvider.loadLocations(locationsUrl),
+          locationsStatus: await workerDataProvider.loadLocations(locationsUrl),
         });
         await updateLayersData();
       },
@@ -88,12 +86,12 @@ export const appStore = createVanilla<AppStore>(
         const { layersData } = get();
         set({
           layersData: { ...layersData, status: LoadingStatus.LOADING },
-          flowsStatus: await dataProvider.loadFlows(flowsUrl),
+          flowsStatus: await workerDataProvider.loadFlows(flowsUrl),
         });
         await updateLayersData();
       },
 
-      getViewportForLocations: async (dims) => dataProvider.getViewportForLocations(dims),
+      getViewportForLocations: async (dims) => workerDataProvider.getViewportForLocations(dims),
     };
   }
 );
@@ -103,7 +101,7 @@ export const useFlowMapStore = createFlowMapStore();
 useFlowMapStore.subscribe(
   throttle(
     async (flowMapState: FlowMapState) => {
-      await dataProvider.setFlowMapState(flowMapState);
+      await workerDataProvider.setFlowMapState(flowMapState);
       // TODO: don't call if nothing relevant has changed in the state
       await appStore.getState().updateLayersData();
     },

@@ -5,23 +5,12 @@ import {
   LoadingStatus,
   ViewportProps,
 } from '@flowmap.blue/data';
-import { expose, transfer } from 'comlink';
+import { transfer } from 'comlink';
 
 const layersDataStore = createLayersDataStore();
 const { getState, setState, subscribe, destroy } = layersDataStore;
 
-export interface DataProvider {
-  // dispatch(action: Action): void;
-  setFlowMapState(flowMapState: FlowMapState): Promise<void>;
-  loadLocations(locationsUrl: string): Promise<LoadingStatus>;
-  loadFlows(flowsUrl: string): Promise<LoadingStatus>;
-  getLayersData(): LayersData | undefined;
-  getViewportForLocations: ([width, height]: [number, number]) => Promise<
-    ViewportProps | undefined
-  >;
-}
-
-export class WorkerDataProvider implements DataProvider {
+export default class WorkerDataProvider {
   // async dispatch(action: Action) {
   //   console.log('WorkerDataProvider.dispatch',action);
   //   await getState().dispatch(action);
@@ -61,5 +50,3 @@ export class WorkerDataProvider implements DataProvider {
     return layersData;
   }
 }
-
-expose(new WorkerDataProvider());

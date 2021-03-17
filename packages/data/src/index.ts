@@ -13,3 +13,4 @@ export {
   FlowLinesLayerAttributes,
   FlowCirclesLayerAttributes,
 } from './prepareLayersData';
+export { default as WorkerDataProvider } from './WorkerDataProvider';
