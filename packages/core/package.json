@@ -11,7 +11,7 @@
     "dist-umd"
   ],
   "scripts": {
-    "dev": "tsc --watch & tsc --watch --project tsconfig.json",
+    "dev": "tsc --watch --project tsconfig.json",
     "dev:umd": "node -r dotenv/config ../../node_modules/.bin/webpack-dev-server --config ./webpack.config.umd.js --progress --mode=development --hot --env.dev dotenv_config_path=../../.env",
     "build:esm": "rm -rf dist && tsc --project tsconfig.json",
     "build:umd": "rm -rf dist-umd && node -r dotenv/config ../../node_modules/.bin/webpack --config ./webpack.config.umd.js --progress --mode=production --env.prod dotenv_config_path=../../.env",

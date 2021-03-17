@@ -10,7 +10,7 @@
     "dev:core": "cd packages/core && yarn dev",
     "dev:app": "cd packages/app && yarn dev",
     "shots": "cd packages/app && yarn shots",
-    "dev": "npm run dev:data & npm run dev:core & npm run dev:app",
+    "dev": "yarn dev:data & yarn dev:core & yarn dev:app",
     "build": "yarn build:data && yarn build:core && yarn build:app",
     "version-bump": "lerna version --no-push --force-publish",
     "publish-prerelease": "lerna publish --dist-tag next from-package",

@@ -10,7 +10,7 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsc --watch & tsc --watch --project tsconfig.json",
+    "dev": "tsc --watch --project tsconfig.json",
     "build:esm": "rm -rf dist && tsc --project tsconfig.json",
     "build": "yarn build:esm",
     "typecheck": "tsc --noEmit",
