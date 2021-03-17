@@ -1,5 +1,11 @@
-import { createLayersDataStore, FlowMapState, LayersData, LoadingStatus, ViewportProps } from './';
-import * as Comlink from 'comlink';
+import {
+  createLayersDataStore,
+  FlowMapState,
+  LayersData,
+  LoadingStatus,
+  ViewportProps,
+} from '@flowmap.blue/data';
+import { expose, transfer } from 'comlink';
 
 const layersDataStore = createLayersDataStore();
 const { getState, setState, subscribe, destroy } = layersDataStore;
@@ -50,10 +56,10 @@ export class WorkerDataProvider implements DataProvider {
         ...Object.values(layersData.circleAttributes.attributes).map((v) => v.value.buffer),
         ...Object.values(layersData.lineAttributes.attributes).map((v) => v.value.buffer),
       ];
-      return Comlink.transfer(layersData, transfers);
+      return transfer(layersData, transfers);
     }
     return layersData;
   }
 }
 
-Comlink.expose(new WorkerDataProvider());
+expose(new WorkerDataProvider());
