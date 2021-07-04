@@ -1,15 +1,21 @@
 import * as React from 'react';
-import {useEffect, useState} from 'react';
-import {AppToaster, LoadingSpinner, MapContainer,} from '@flowmap.blue/core';
-import {ConfigProp, ConfigPropName, DEFAULT_CONFIG, getFlowsSheets, makeSheetQueryUrl} from '@flowmap.blue/data';
-import {Helmet} from 'react-helmet';
+import { useEffect, useState } from 'react';
+import { AppToaster, LoadingSpinner, MapContainer } from '@flowmap.blue/core';
+import {
+  ConfigProp,
+  ConfigPropName,
+  DEFAULT_CONFIG,
+  getFlowsSheets,
+  makeSheetQueryUrl,
+} from '@flowmap.blue/data';
+import { Helmet } from 'react-helmet';
 import sendEvent from './ga';
-import {useAsync} from 'react-use';
-import {csvParse} from 'd3-dsv';
-import {Intent} from '@blueprintjs/core';
-import {IconNames} from '@blueprintjs/icons';
+import { useAsync } from 'react-use';
+import { csvParse } from 'd3-dsv';
+import { Intent } from '@blueprintjs/core';
+import { IconNames } from '@blueprintjs/icons';
 import md5 from 'blueimp-md5';
-import {useHistory} from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import styled from '@emotion/styled';
 import FromUrlFlowMap from './FromUrlFlowMap';
 
@@ -22,42 +28,6 @@ interface Props {
 const ToastContent = styled.div`
   font-size: 12px;
 `;
-
-// const FlowMapWithData = compose<any, any>(
-//   sheetFetcher('json')<any>(({ spreadSheetKey, config, flowsSheet = 'flows' }: FlowMapProps) => ({
-//     locationsFetch: {
-//       url: makeSheetQueryUrl(spreadSheetKey!, 'locations', 'SELECT A,B,C,D', 'json'),
-//       then: (rows: any[]) => ({
-//         value: rows.map(
-//           ({ id, name, lon, lat }: any) =>
-//             ({
-//               id: `${id}`,
-//               name: name ?? id,
-//               lon: +lon,
-//               lat: +lat,
-//             } as Location)
-//         ),
-//       }),
-//     } as any,
-//     flowsFetch: {
-//       url: makeSheetQueryUrl(spreadSheetKey!, flowsSheet, 'SELECT *', 'json'),
-//       refreshing: true,
-//       then: (rows: any[]) => ({
-//         value: prepareFlows(rows),
-//       }),
-//     } as any,
-//   })),
-//   withProps((props: any) => ({
-//     locationsFetch: {
-//       ...props.locationsFetch,
-//       loading: props.locationsFetch.pending || props.locationsFetch.refreshing,
-//     },
-//     flowsFetch: {
-//       ...props.flowsFetch,
-//       loading: props.flowsFetch.pending || props.flowsFetch.refreshing,
-//     },
-//   }))
-// )(FlowMap as any);
 
 const getFlowsSheetKey = (name: string) => md5(name).substr(0, 7);
 
