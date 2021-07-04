@@ -53,12 +53,18 @@ export const BoxStyle = styled.div<BoxProps>(getBoxStyle);
 
 export const Box = styled(Absolute)<BoxProps>(getBoxStyle);
 
-export const TitleBox = styled(Box)`
+export const TitleBox = styled(Box)(
+  ({ darkMode }) => `
   line-height: 1.3;
   font-size: 13px;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
-`;
+  a,
+  a:visited {
+    color: ${darkMode ? Colors.GRAY5 : Colors.GRAY2};
+  }
+`
+);
 
 export const Title = styled.div`
   font-weight: bold;

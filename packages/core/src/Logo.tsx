@@ -29,7 +29,7 @@ const Logo = ({ fontSize = 25, collapseWidth = 525, embed }: Props) => {
   const size = Math.ceil(fontSize * 1.5);
   const content = (
     <Row spacing={fontSize / 5}>
-      <svg width={size} height={size} viewBox="0 0 402 402">
+      <svg width={size} height={size} viewBox="-20 -20 432 432">
         <g transform="translate(1 1)" stroke="none" strokeWidth={1} fill="none" fillRule="evenodd">
           <circle stroke="#979797" fill="#1A70A7" cx={200} cy={200} r={200} />
           <path

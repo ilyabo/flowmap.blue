@@ -19,6 +19,7 @@ export interface Flow {
   dest: string;
   count: number;
   time?: Date;
+  color?: string;
 }
 
 export enum LocationFilterMode {

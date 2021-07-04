@@ -1,6 +1,6 @@
 {
   "name": "@flowmap.blue/app",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.1-alpha.2",
   "private": true,
   "dependencies": {
     "@blueprintjs/core": "^3.23.1",

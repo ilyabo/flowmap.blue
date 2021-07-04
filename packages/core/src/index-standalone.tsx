@@ -19,15 +19,14 @@ import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { css, Global } from '@emotion/core';
-import { Classes, Colors, FocusStyleManager } from '@blueprintjs/core';
+import { FocusStyleManager } from '@blueprintjs/core';
+import globalStyles from './globalStyles';
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
 const history = createBrowserHistory();
 
-const globalStyles = css`
-  @import url('https://fonts.googleapis.com/css?family=Sarabun:400,700');
-
+const customGlobalStyles = css`
   html,
   body,
   button,
@@ -36,37 +35,8 @@ const globalStyles = css`
     background-color: ${'#2d3a4c'};
     font-size: 13pt;
   }
-
-  body,
-  * {
-    font-family: 'Sarabun', sans-serif;
-  }
-
-  a,
-  a:visited {
-    color: ${ColorScheme.primary};
-  }
-  .${Classes.DARK} {
-    a,
-    a:visited {
-      color: ${Colors.BLUE5};
-    }
-  }
-
-  .mapboxgl-control-container {
-    a,
-    a:visited {
-      color: ${Colors.DARK_GRAY1};
-    }
-  }
-
   section {
     margin-bottom: 4em;
-  }
-  #no-token-warning {
-    bottom: 30px;
-    top: unset !important;
-    left: 10px !important;
   }
 `;
 
@@ -113,17 +83,25 @@ export function init({
   flows,
   container,
   mapboxAccessToken,
+  mapStyle,
   clustering = true,
   animation = false,
   darkMode = false,
+  colorScheme,
+  fadeAmount,
+  baseMapOpacity,
 }: {
   locations: Location[];
   flows: Flow[];
   container: HTMLElement;
   mapboxAccessToken?: string;
+  mapStyle?: string;
   clustering?: boolean;
   animation?: boolean;
   darkMode?: boolean;
+  colorScheme?: string;
+  fadeAmount?: number;
+  baseMapOpacity?: number;
 }) {
   AppToaster.init(container);
   const useFlowMapStore = createFlowMapStore();
@@ -131,6 +109,7 @@ export function init({
     <Router history={history}>
       <ErrorBoundary>
         <Global styles={globalStyles} />
+        <Global styles={customGlobalStyles} />
         <MapContainer embed={true}>
           <FlowMap
             useFlowMapStore={useFlowMapStore}
@@ -140,9 +119,14 @@ export function init({
             config={{
               ...DEFAULT_CONFIG,
               [ConfigPropName.MAPBOX_ACCESS_TOKEN]: mapboxAccessToken,
+              [ConfigPropName.MAPBOX_MAP_STYLE]: mapStyle,
               [ConfigPropName.CLUSTER_ON_ZOOM]: clustering ? 'true' : 'false',
               [ConfigPropName.ANIMATE_FLOWS]: animation ? 'true' : 'false',
               [ConfigPropName.COLORS_DARK_MODE]: darkMode ? 'true' : 'false',
+              [ConfigPropName.COLORS_SCHEME]: colorScheme,
+              [ConfigPropName.FADE_AMOUNT]: fadeAmount != undefined ? `${fadeAmount}` : undefined,
+              [ConfigPropName.BASE_MAP_OPACITY]:
+                baseMapOpacity != undefined ? `${baseMapOpacity}` : undefined,
             }}
             spreadSheetKey={undefined}
             flowsSheet={undefined}

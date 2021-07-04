@@ -3,15 +3,15 @@ import 'react-app-polyfill/stable';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import App from './App';
-import { Global, css } from '@emotion/core';
+import { css, Global } from '@emotion/core';
 import * as Sentry from '@sentry/browser';
 
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/select/lib/css/blueprint-select.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { AppToaster } from '@flowmap.blue/core';
 import { ColorScheme } from '@flowmap.blue/data';
+import { AppToaster } from '@flowmap.blue/core';
 import { Button, Classes, Colors, FocusStyleManager, Intent } from '@blueprintjs/core';
 import { IconNames } from '@blueprintjs/icons';
 import styled from '@emotion/styled';

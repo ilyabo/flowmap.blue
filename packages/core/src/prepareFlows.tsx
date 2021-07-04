@@ -6,6 +6,7 @@ import { Intent } from '@blueprintjs/core';
 import { IconNames } from '@blueprintjs/icons';
 import { ToastContent } from './Boxes';
 import { ErrorsLocationsBlock, MAX_NUM_OF_IDS_IN_ERROR } from './FlowMap';
+import * as d3color from 'd3-color';
 
 export function prepareFlows(rows: any[]) {
   let dupes: Flow[] = [];
@@ -15,11 +16,12 @@ export function prepareFlows(rows: any[]) {
     .key((d: any) => d.dest)
     .key((d: any) => parseTime(d.time)?.toISOString() || 'unknown')
     .rollup((dd) => {
-      const { origin, dest, time } = dd[0];
+      const { origin, dest, time, color } = dd[0];
       if (dd.length > 1) {
         dupes.push(dd[0]);
       }
-      return {
+
+      const rv: Flow = {
         origin,
         dest,
         time: parseTime(time),
@@ -31,6 +33,11 @@ export function prepareFlows(rows: any[]) {
           return m;
         }, 0),
       };
+      if (color) {
+        const c = d3color.color(color);
+        if (c) rv.color = c.toString();
+      }
+      return rv;
     })
     .entries(rows);
   const rv: Flow[] = [];

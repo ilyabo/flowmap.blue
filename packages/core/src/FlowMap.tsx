@@ -1,15 +1,20 @@
-import {DeckGL} from '@deck.gl/react';
-import {MapController, MapView} from '@deck.gl/core';
+import { DeckGL } from '@deck.gl/react';
+import { MapController, MapView } from '@deck.gl/core';
 import * as React from 'react';
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {_MapContext as MapContext, StaticMap} from 'react-map-gl';
-import {FlowCirclesLayer, FlowLayerPickingInfo, FlowLinesLayer, PickingType,} from '@flowmap.gl/core';
-import {Button, ButtonGroup, Classes, Colors} from '@blueprintjs/core';
-import {Absolute, BoxStyle, Column, Description, Title, TitleBox} from './Boxes';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { _MapContext as MapContext, StaticMap } from 'react-map-gl';
+import {
+  FlowCirclesLayer,
+  FlowLayerPickingInfo,
+  FlowLinesLayer,
+  PickingType,
+} from '@flowmap.gl/core';
+import { Button, ButtonGroup, Classes, Colors } from '@blueprintjs/core';
+import { Absolute, BoxStyle, Column, Description, Title, TitleBox } from './Boxes';
 import Tooltip from './Tooltip';
-import {Link} from 'react-router-dom';
-import {UseStore} from 'zustand';
-import Collapsible, {Direction} from './Collapsible';
+import { Link } from 'react-router-dom';
+import { UseStore } from 'zustand';
+import Collapsible, { Direction } from './Collapsible';
 import {
   ActionType,
   colorAsRgba,
@@ -32,11 +37,11 @@ import {
 import LoadingSpinner from './LoadingSpinner';
 import NoScrollContainer from './NoScrollContainer';
 import styled from '@emotion/styled';
-import {IconNames} from '@blueprintjs/icons';
+import { IconNames } from '@blueprintjs/icons';
 import Away from './Away';
 import useDebounced from './hooks';
 import SharePopover from './SharePopover';
-import MapDrawingEditor, {MapDrawingFeature, MapDrawingMode} from './MapDrawingEditor';
+import MapDrawingEditor, { MapDrawingFeature, MapDrawingMode } from './MapDrawingEditor';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -930,7 +935,7 @@ const FlowMap: React.FC<Props> = (props) => {
         </Absolute>
       )}
       {spreadSheetKey && !embed && (
-        <TitleBox top={60} left={0} darkMode={darkMode}>
+        <TitleBox top={52} left={0} darkMode={darkMode}>
           <Collapsible darkMode={darkMode} width={300} direction={Direction.LEFT}>
             <Column spacing={10} padding="12px 20px">
               {title && (

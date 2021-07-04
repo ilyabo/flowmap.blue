@@ -300,6 +300,11 @@
       "query": "v=8.729650,11.252848,1.22,0,0&a=0&b=1&bo=75&c=1&d=1&lt=1&lfm=ALL&col=Emrld&f=50"
     },
     {
+      "key": "14wDs-nZ6GQV4bNtxCcW2s_98402f9gK9BOqC5uLst68",
+      "name": "Top football transfers 2000–2018",
+      "query": "v=47.110989,2.251806,4.17,0,0&a=0&as=1&b=1&bo=75&c=1&ca=1&d=1&fe=1&lt=1&lfm=ALL&t=20000101T000000,20190101T000000&col=Magma&f=50"
+    },
+    {
       "key": "1upuL1_mCgXjjIp2OI_PekFS5r_Vtyr46Fayt1aWnnjc",
       "name": "International migrant stock 2019"
     },
@@ -330,6 +335,11 @@
       "key": "1BHy69x6MbVZZSqmF53MnOe2X_B_AGGdNUqsXmmmFt0Q",
       "name": "Commuters to Salzburg 2011",
       "query": "v=47.780392,13.055787,10.31&a=0&b=1&c=1&d=1&lt=1&f=45"
+    },
+    {
+      "key": "1gZCPCLpQjkGFJWL0sTv1dLBuR1zBkeNqVOvDGA46uLM",
+      "name": "Hungary hourly mobility 2019",
+      "query": "v=47.162326,19.108898,7.67,0,0&a=0&as=1&b=1&bo=75&c=1&ca=0&cz=7&d=1&fe=1&lt=1&lfm=ALL&t=20190528T010000,20190529T000000&col=Default&f=50"
     },
     {
       "key": "1V8g6xe7hWLEUUIJDnSwq4XcHUuXZnlFCchRMLxkXJ3k",
@@ -391,7 +401,7 @@
     {
       "key": "1_SFSYKWgyo7BF1SK1TTyqFewr2nUDPfBOGnJTNh3s3k",
       "name": "Commuters in Switzerland, Swisstopo basemap",
-      "query": "v=47.038717,8.158928,8.46,0,0&a=0&b=1&bo=100&c=1&d=0&lt=1&lfm=ALL&col=Burg&f=50"
+      "query": "v=46.910705,8.192031,7.28,0,0&a=0&as=1&b=1&bo=41&c=1&ca=1&d=0&fe=1&lt=1&lfm=ALL&col=DarkMint&f=63"
     }
   ]
 }

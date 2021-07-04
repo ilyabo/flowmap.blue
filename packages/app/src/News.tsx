@@ -30,13 +30,20 @@ const NewsItem = styled.div`
 export default () => (
   <Outer>
     <NewsItem>
+      <NewsDate>Jul 01, 2020</NewsDate>
+      <NewsText>
+        <Away href="https://github.com/FlowmapBlue/flowmapblue.R">
+          Flowmap.blue R widget released
+        </Away>
+      </NewsText>
+    </NewsItem>
+    <NewsItem>
       <NewsDate>Apr 26, 2020</NewsDate>
       <NewsText>
         <Away href="https://tinyletter.com/flowmap-blue/letters/flowmap-blue-news-april-2020-timeline-support">
           Timeline support, splitting datasets in parts, customising tooltips, fetching data from
           another server
         </Away>
-        .
       </NewsText>
     </NewsItem>
     <NewsItem>
@@ -45,7 +52,6 @@ export default () => (
         <Away href="https://tinyletter.com/flowmap-blue/letters/flowmap-blue-news-feb-2020-new-features">
           Lasso selection, camera rotation and tilting, new location/flow filtering modes
         </Away>
-        .
       </NewsText>
     </NewsItem>
     <NewsItem>
@@ -55,7 +61,6 @@ export default () => (
         <Away href="https://twitter.com/ilyabo/status/1213968896182669312">
           automatically adapt to the viewport
         </Away>
-        .
       </NewsText>
     </NewsItem>
     <NewsItem>
@@ -71,26 +76,25 @@ export default () => (
         <Away href="https://twitter.com/infobeautyaward/status/1197248080640380929">
           won Bronze at the Information is Beautiful Awards
         </Away>
-        .
       </NewsText>
     </NewsItem>
     <NewsItem>
       <NewsDate>Nov 11, 2019</NewsDate>
       <NewsText>
-        Added the <Link to="/in-browser">In-browser flow map</Link>.
+        Added the <Link to="/in-browser">In-browser flow map</Link>
       </NewsText>
     </NewsItem>
     <NewsItem>
       <NewsDate>Nov 10, 2019</NewsDate>
       <NewsText>
-        Added the <Link to="/geocoding">Geocoding</Link> data preparation helper tool.
+        Added the <Link to="/geocoding">Geocoding</Link> data preparation helper tool
       </NewsText>
     </NewsItem>
     <NewsItem>
       <NewsDate>Nov 08, 2019</NewsDate>
       <NewsText>
         Added the <Link to="/od-matrix-converter">OD-matrix converter</Link> data preparation helper
-        tool.
+        tool
       </NewsText>
     </NewsItem>
     <NewsItem>
@@ -104,14 +108,14 @@ export default () => (
         <Away href="https://www.meetup.com/ondataanddesign-Switzerland/events/265947767/">
           “On data and design” meetup
         </Away>{' '}
-        in Basel.
+        in Basel
       </NewsText>
     </NewsItem>
     <NewsItem>
       <NewsDate>Oct 28, 2019</NewsDate>
       <NewsText>
         Added the fade slider to manually adjust the brightness of the arrows for better map
-        visibility.
+        visibility
       </NewsText>
     </NewsItem>
     <NewsItem>
@@ -127,7 +131,7 @@ export default () => (
         <Away href="http://informationisbeautifulawards.com/showcase/3815-flowmap-blue">
           made it to the shortlist
         </Away>{' '}
-        of the Information is Beautiful Awards.
+        of the Information is Beautiful Awards
       </NewsText>
     </NewsItem>
     <NewsItem>
@@ -142,20 +146,20 @@ export default () => (
         <Away href="https://www.citylab-berlin.org/events/mobilitysymposium_en/">
           Urban Mobility Symposium
         </Away>{' '}
-        in Berlin.
+        in Berlin
       </NewsText>
     </NewsItem>
     <NewsItem>
       <NewsDate>Sep 15, 2019</NewsDate>
-      <NewsText>Added color scheme and dark mode support.</NewsText>
+      <NewsText>Added color scheme and dark mode support</NewsText>
     </NewsItem>
     <NewsItem>
       <NewsDate>Mar 26, 2019</NewsDate>
-      <NewsText>Adding support for map styles.</NewsText>
+      <NewsText>Adding support for map styles</NewsText>
     </NewsItem>
     <NewsItem>
       <NewsDate>Mar 24, 2019</NewsDate>
-      <NewsText>Automatic clustering.</NewsText>
+      <NewsText>Automatic clustering</NewsText>
     </NewsItem>
     <NewsItem>
       <NewsDate>Mar 03, 2019</NewsDate>
@@ -165,16 +169,16 @@ export default () => (
         </Away>{' '}
         at the workshop on{' '}
         <Away href="https://clisel.eu/Ascona">Environmental Changes and Human Mobility</Away> in
-        Ascona.
+        Ascona
       </NewsText>
     </NewsItem>
     <NewsItem>
       <NewsDate>Feb 08, 2019</NewsDate>
-      <NewsText>Added animation toggle.</NewsText>
+      <NewsText>Added animation toggle</NewsText>
     </NewsItem>
     <NewsItem>
       <NewsDate>Jan 03, 2019</NewsDate>
-      <NewsText>First published online.</NewsText>
+      <NewsText>First published online</NewsText>
     </NewsItem>
   </Outer>
 );

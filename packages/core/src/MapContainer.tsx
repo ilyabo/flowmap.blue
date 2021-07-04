@@ -4,6 +4,8 @@ import NoScrollContainer from './NoScrollContainer';
 import { Absolute } from './Boxes';
 import Logo from './Logo';
 import { Fallback } from './index';
+import styled from '@emotion/styled';
+import { ColorScheme } from '@flowmap.blue/data';
 
 interface Props {
   embed?: boolean;
@@ -12,14 +14,30 @@ interface Props {
 
 const supportsWebGl = checkWebglSupport();
 
+const LogoOuter = styled(Absolute)`
+  filter: grayscale(1);
+  svg {
+    circle {
+      fill: #fff;
+      stroke: ${ColorScheme.primary};
+      stroke-width: 10px;
+    }
+    path {
+      fill: #000;
+      stroke-width: 10px;
+      stroke: ${ColorScheme.primary};
+    }
+  }
+`;
+
 const MapContainer: React.FC<Props> = ({ embed, children }) => (
   <NoScrollContainer>
     {supportsWebGl ? (
       <>
         {children}
-        <Absolute top={10} left={10}>
-          <Logo embed={embed} />
-        </Absolute>
+        <LogoOuter top={10} left={10}>
+          <Logo embed={embed} fontSize={20} />
+        </LogoOuter>
       </>
     ) : (
       <Fallback>

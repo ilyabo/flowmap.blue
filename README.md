@@ -1,9 +1,5 @@
 # Flowmap.blue
 
-  
-[![Netlify Status](https://api.netlify.com/api/v1/badges/8b9d3eee-7aa8-4b1f-9e37-2f78307e91d7/deploy-status)](https://app.netlify.com/sites/flowmap-blue/deploys)
-
-
 
 
 [Flowmap.blue](http://flowmap.blue/) is a free tool for representing aggregated numbers of movements between geographic locations as flow maps. It is used to visualize urban mobility, commuting behavior, bus, subway and air travels, bicycle sharing, human and bird migration, refugee flows, freight transportation, trade, supply chains, scientific collaboration, epidemiological and historical data and many other topics.

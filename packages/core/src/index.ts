@@ -9,6 +9,6 @@ export { default as Logo } from './Logo';
 export { default as checkWebglSupport } from './checkWebglSupport';
 export { default as MapContainer } from './MapContainer';
 export { default as Fallback } from './Fallback';
-
+export { default as globalStyles } from './globalStyles';
 import { default as FlowMap } from './FlowMap';
 export default FlowMap;

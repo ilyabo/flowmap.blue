@@ -1,6 +1,6 @@
 {
   "name": "@flowmap.blue/core",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.1-alpha.2",
   "description": "Flowmap.blue core package",
   "main": "dist/index.js",
   "module": "dist/index.js",

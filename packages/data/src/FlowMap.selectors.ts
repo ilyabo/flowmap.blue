@@ -389,7 +389,8 @@ function aggregateFlows(flows: Flow[]) {
     .rollup((ff: Flow[]) => {
       const origin = getFlowOriginId(ff[0]);
       const dest = getFlowDestId(ff[0]);
-      return {
+      const color = ff[0].color;
+      const rv: Flow = {
         origin,
         dest,
         count: ff.reduce((m, f) => {
@@ -401,6 +402,8 @@ function aggregateFlows(flows: Flow[]) {
         }, 0),
         time: undefined,
       };
+      if (color) rv.color = color;
+      return rv;
     })
     .entries(flows);
   const rv: Flow[] = [];
