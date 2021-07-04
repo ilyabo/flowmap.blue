@@ -15,20 +15,15 @@
     "version-bump": "lerna version --no-push --force-publish",
     "publish-prerelease": "lerna publish --dist-tag next from-package",
     "lint": "tslint --fix '{packages/*}/{src}/**/*.{ts,tsx}'",
-    "typecheck": "lerna run --stream typecheck"
+    "typecheck": "lerna run --stream typecheck",
+    "prepare": "husky install"
   },
   "workspaces": [
     "packages/*"
   ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "packages/**/src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
   },
   "prettier": {
@@ -38,7 +33,8 @@
     "singleQuote": true,
     "printWidth": 100
   },
-  "dependencies": {
-    "husky": "^5.1.3"
+  "devDependencies": {
+    "husky": "^7.0.0",
+    "lint-staged": "^11.0.0"
   }
 }

@@ -20,8 +20,6 @@
     "blueimp-md5": "^2.13.0",
     "comlink": "^4.3.0",
     "d3-dsv": "^2.0.0",
-    "husky": "^4.2.2",
-    "lint-staged": "^10.1.2",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
     "prettier": "^2.0.4",
