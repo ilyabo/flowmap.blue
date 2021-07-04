@@ -1,9 +1,9 @@
 import createVanilla from 'zustand/vanilla';
 import {
-  ColorsRGBA,
+  ColorsRGBA, DataFormat,
   DEFAULT_CONFIG,
   DiffColorsRGBA,
-  fetchCsv,
+  fetchCsv, fetchGsheet,
   Flow,
   FlowMapState,
   getColorsRGBA,
@@ -34,8 +34,8 @@ import { getViewStateForLocations } from './getViewStateForFeatures';
 export type LayersDataStore = {
   locations: LoadingState<Location[]> | undefined;
   flows: LoadingState<Flow[]> | undefined;
-  loadLocations: (locationsUrl: string) => void;
-  loadFlows: (flowsUrl: string) => void;
+  loadLocations: (locationsUrl: string, dataFormat: DataFormat) => void;
+  loadFlows: (flowsUrl: string, dataFormat: DataFormat) => void;
   getLayersData: () => LayersData | undefined;
   getFlowMapColorsRGBA(): DiffColorsRGBA | ColorsRGBA;
   // dispatch: (action: Action) => void;
@@ -68,26 +68,32 @@ export function createLayersDataStore() {
 
         // dispatch: action => set(state => ({ flowMapState: mainReducer(state.flowMapState, action) })),
 
-        loadLocations: async (locationsUrl) => {
-          const result = await fetchCsv(locationsUrl, (row) => ({
-            id: `${row.id}`,
-            name: `${row.name || row.id}`,
-            lat: Number(row.lat),
-            lon: Number(row.lon),
-          }));
-          console.log(result);
-          set({ locations: result });
+        loadLocations: async (locationsUrl, dataFormat) => {
+          const fetchFn = getFetchFunction(dataFormat);
+          if (!fetchFn) return;
+          const result = await fetchFn(locationsUrl);
+          if (result.status === LoadingStatus.DONE) {
+            set({
+              locations: {
+                ...result,
+                data: result.data.map((row: any) => ({
+                  id: `${row.id}`,
+                  name: `${row.name || row.id}`,
+                  lat: Number(row.lat),
+                  lon: Number(row.lon),
+                } as Location))
+              }
+            });
+          }
         },
 
-        loadFlows: async (flowsUrl) => {
-          const result = await fetchCsv(flowsUrl, (row: any) => ({
-            ...row,
-            count: +row.count,
-          }));
+        loadFlows: async (flowsUrl, dataFormat) => {
+          const fetchFn = getFetchFunction(dataFormat);
+          if (!fetchFn) return;
+          const result = await fetchFn(flowsUrl);
           if (result.status === LoadingStatus.DONE) {
             set({ flows: { ...result, data: prepareFlows(result.data) } });
           }
-          set({ flows: result });
         },
 
         getFlowMapColorsRGBA() {
@@ -165,4 +171,17 @@ export function createLayersDataStore() {
   );
   // const {getState, setState, subscribe, destroy} = store;
   return store;
+}
+
+
+function getFetchFunction(dataFormat: DataFormat) {
+  switch (dataFormat) {
+    case 'csv':
+      return fetchCsv;
+    case 'gsheets':
+      return fetchGsheet;
+    default:
+      console.error(`Unsupported data format: ${dataFormat}`);
+      return undefined;
+  }
 }

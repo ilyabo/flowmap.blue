@@ -1,25 +1,17 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
-import sheetFetcher, { makeSheetQueryUrl } from './sheetFetcher';
-import FlowMap, {
-  AppToaster,
-  LoadingSpinner,
-  MapContainer,
-  prepareFlows,
-  Props as FlowMapProps,
-} from '@flowmap.blue/core';
-import { ConfigProp, ConfigPropName, DEFAULT_CONFIG, getFlowsSheets } from '@flowmap.blue/data';
-import { Location } from '@flowmap.blue/data';
-import { Helmet } from 'react-helmet';
+import {useEffect, useState} from 'react';
+import {AppToaster, LoadingSpinner, MapContainer,} from '@flowmap.blue/core';
+import {ConfigProp, ConfigPropName, DEFAULT_CONFIG, getFlowsSheets, makeSheetQueryUrl} from '@flowmap.blue/data';
+import {Helmet} from 'react-helmet';
 import sendEvent from './ga';
-import { useAsync } from 'react-use';
-import { csvParse } from 'd3-dsv';
-import { Intent } from '@blueprintjs/core';
-import { IconNames } from '@blueprintjs/icons';
-import { compose, withProps } from 'recompose';
+import {useAsync} from 'react-use';
+import {csvParse} from 'd3-dsv';
+import {Intent} from '@blueprintjs/core';
+import {IconNames} from '@blueprintjs/icons';
 import md5 from 'blueimp-md5';
-import { useHistory } from 'react-router-dom';
+import {useHistory} from 'react-router-dom';
 import styled from '@emotion/styled';
+import FromUrlFlowMap from './FromUrlFlowMap';
 
 interface Props {
   spreadSheetKey: string;
@@ -31,47 +23,47 @@ const ToastContent = styled.div`
   font-size: 12px;
 `;
 
-const FlowMapWithData = compose<any, any>(
-  sheetFetcher('json')<any>(({ spreadSheetKey, config, flowsSheet = 'flows' }: FlowMapProps) => ({
-    locationsFetch: {
-      url: makeSheetQueryUrl(spreadSheetKey!, 'locations', 'SELECT A,B,C,D', 'json'),
-      then: (rows: any[]) => ({
-        value: rows.map(
-          ({ id, name, lon, lat }: any) =>
-            ({
-              id: `${id}`,
-              name: name ?? id,
-              lon: +lon,
-              lat: +lat,
-            } as Location)
-        ),
-      }),
-    } as any,
-    flowsFetch: {
-      url: makeSheetQueryUrl(spreadSheetKey!, flowsSheet, 'SELECT *', 'json'),
-      refreshing: true,
-      then: (rows: any[]) => ({
-        value: prepareFlows(rows),
-      }),
-    } as any,
-  })),
-  withProps((props: any) => ({
-    locationsFetch: {
-      ...props.locationsFetch,
-      loading: props.locationsFetch.pending || props.locationsFetch.refreshing,
-    },
-    flowsFetch: {
-      ...props.flowsFetch,
-      loading: props.flowsFetch.pending || props.flowsFetch.refreshing,
-    },
-  }))
-)(FlowMap as any);
+// const FlowMapWithData = compose<any, any>(
+//   sheetFetcher('json')<any>(({ spreadSheetKey, config, flowsSheet = 'flows' }: FlowMapProps) => ({
+//     locationsFetch: {
+//       url: makeSheetQueryUrl(spreadSheetKey!, 'locations', 'SELECT A,B,C,D', 'json'),
+//       then: (rows: any[]) => ({
+//         value: rows.map(
+//           ({ id, name, lon, lat }: any) =>
+//             ({
+//               id: `${id}`,
+//               name: name ?? id,
+//               lon: +lon,
+//               lat: +lat,
+//             } as Location)
+//         ),
+//       }),
+//     } as any,
+//     flowsFetch: {
+//       url: makeSheetQueryUrl(spreadSheetKey!, flowsSheet, 'SELECT *', 'json'),
+//       refreshing: true,
+//       then: (rows: any[]) => ({
+//         value: prepareFlows(rows),
+//       }),
+//     } as any,
+//   })),
+//   withProps((props: any) => ({
+//     locationsFetch: {
+//       ...props.locationsFetch,
+//       loading: props.locationsFetch.pending || props.locationsFetch.refreshing,
+//     },
+//     flowsFetch: {
+//       ...props.flowsFetch,
+//       loading: props.flowsFetch.pending || props.flowsFetch.refreshing,
+//     },
+//   }))
+// )(FlowMap as any);
 
 const getFlowsSheetKey = (name: string) => md5(name).substr(0, 7);
 
 const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed }) => {
   const url = makeSheetQueryUrl(spreadSheetKey, 'properties', 'SELECT A,B', 'csv');
-  const [flowsSheet, setFlowsSheet] = useState<string>();
+  const [flowsSheet, setFlowsSheet] = useState<string>('flows');
   const history = useHistory();
 
   const handleChangeFlowsSheet = (name: string, replaceUrl: boolean) => {
@@ -133,15 +125,17 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
 
   return (
     <MapContainer embed={embed}>
-      {configFetch.loading ? (
+      {configFetch.loading || flowsSheet == null ? (
         <LoadingSpinner />
       ) : (
-        <FlowMapWithData
-          spreadSheetKey={spreadSheetKey}
-          embed={embed}
+        <FromUrlFlowMap
+          // spreadSheetKey={spreadSheetKey}
+          // embed={embed}
+          dataFormat={'gsheets'}
+          locationsUrl={makeSheetQueryUrl(spreadSheetKey!, 'locations', 'SELECT A,B,C,D', 'json')}
+          flowsUrl={makeSheetQueryUrl(spreadSheetKey!, flowsSheet, 'SELECT *', 'json')}
           config={configFetch.value ? configFetch.value : DEFAULT_CONFIG}
-          flowsSheet={flowsSheet}
-          onSetFlowsSheet={(name: string) => handleChangeFlowsSheet(name, true)}
+          // onSetFlowsSheet={(name: string) => handleChangeFlowsSheet(name, true)}
         />
       )}
       {configFetch.value && configFetch.value[ConfigPropName.TITLE] && (

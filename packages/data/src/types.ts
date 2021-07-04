@@ -53,6 +53,8 @@ export interface ConfigProp {
   value: string | undefined;
 }
 
+export type DataFormat = 'csv' | 'gsheets';
+
 export type Config = Record<string | ConfigPropName, string | undefined>;
 
 export const getFlowTime = (flow: Flow) => flow.time;

@@ -4,6 +4,7 @@ import create from 'zustand';
 import throttle from 'lodash.throttle';
 import {
   createFlowMapStore,
+  DataFormat,
   FlowMapState,
   LayersData,
   LoadingState,
@@ -20,8 +21,8 @@ export type AppStore = {
   locationsStatus: LoadingStatus | undefined;
   flowsStatus: LoadingStatus | undefined;
   layersData: LoadingState<LayersData> | undefined;
-  loadLocations: (locationsUrl: string) => Promise<void>;
-  loadFlows: (locationsUrl: string) => Promise<void>;
+  loadLocations: (locationsUrl: string, dataFormat?: DataFormat) => Promise<void>;
+  loadFlows: (locationsUrl: string, dataFormat?: DataFormat) => Promise<void>;
   // getFlowMapColorsRGBA(): ColorsRGBA;
   // getLayersData(): LayersData | undefined;
   // dispatch: (action: Action) => void;
@@ -74,19 +75,19 @@ export const appStore = createVanilla<AppStore>(
       //   set(state => ({ flowMapState: mainReducer(state.flowMapState, action) }));
       //   await workerDataProvider.dispatch(action);
       // },
-      loadLocations: async (locationsUrl) => {
+      loadLocations: async (locationsUrl, dataFormat = 'csv') => {
         const { layersData } = get();
         set({
           layersData: { ...layersData, status: LoadingStatus.LOADING },
-          locationsStatus: await workerDataProvider.loadLocations(locationsUrl),
+          locationsStatus: await workerDataProvider.loadLocations(locationsUrl, dataFormat),
         });
         await updateLayersData();
       },
-      loadFlows: async (flowsUrl) => {
+      loadFlows: async (flowsUrl, dataFormat = 'csv') => {
         const { layersData } = get();
         set({
           layersData: { ...layersData, status: LoadingStatus.LOADING },
-          flowsStatus: await workerDataProvider.loadFlows(flowsUrl),
+          flowsStatus: await workerDataProvider.loadFlows(flowsUrl, dataFormat),
         });
         await updateLayersData();
       },

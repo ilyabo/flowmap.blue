@@ -3,38 +3,22 @@
 // Personenverkehr in der Schweiz - PW  http://localhost:7000/from-url?colors.darkMode=no&flows=https%3A//docs.google.com/spreadsheets/d/e/2PACX-1vRYROhHQxi_WCFs0spjfJ3do4z2eD61dXhM4Lml0Ty3YN4pqCWfDitMCnYgKc8Zt2B6ge4xGg-xUdqB/pub%3Fgid%3D1812990135%26single%3Dtrue%26output%3Dcsv&locations=https%3A//docs.google.com/spreadsheets/d/e/2PACX-1vRYROhHQxi_WCFs0spjfJ3do4z2eD61dXhM4Lml0Ty3YN4pqCWfDitMCnYgKc8Zt2B6ge4xGg-xUdqB/pub%3Fgid%3D877058976%26single%3Dtrue%26output%3Dcsv
 // Personenverkehr in der Schweiz - Velo  http://localhost:7000/from-url?colors.darkMode=no&flows=https%3A//docs.google.com/spreadsheets/d/e/2PACX-1vRYROhHQxi_WCFs0spjfJ3do4z2eD61dXhM4Lml0Ty3YN4pqCWfDitMCnYgKc8Zt2B6ge4xGg-xUdqB/pub%3Fgid%3D229626141%26single%3Dtrue%26output%3Dcsv&locations=https%3A//docs.google.com/spreadsheets/d/e/2PACX-1vRYROhHQxi_WCFs0spjfJ3do4z2eD61dXhM4Lml0Ty3YN4pqCWfDitMCnYgKc8Zt2B6ge4xGg-xUdqB/pub%3Fgid%3D877058976%26single%3Dtrue%26output%3Dcsv
 
-import React, { FC, useEffect, useMemo } from 'react';
-import FlowMap, { LoadingSpinner, MapContainer } from '@flowmap.blue/core';
-import {
-  ActionType,
-  ConfigPropName,
-  DEFAULT_CONFIG,
-  FlowMapStore,
-  getInitialState,
-  LoadingStatus,
-} from '@flowmap.blue/data';
-import { useHistory, useLocation } from 'react-router-dom';
-import * as queryString from 'query-string';
+import React, {FC, useEffect} from 'react';
+import FlowMap, {MapContainer} from '@flowmap.blue/core';
+import {Config, getInitialState, LoadingStatus,} from '@flowmap.blue/data';
+import {useHistory} from 'react-router-dom';
 import ErrorFallback from './ErrorFallback';
-import { useAppStore, useFlowMapStore } from './AppStore';
+import {useAppStore, useFlowMapStore} from './AppStore';
 
-// A custom hook that builds on useLocation to parse
-// the query string for you.
-function useQuery() {
-  return queryString.parse(useLocation().search);
+export type Props = {
+  locationsUrl: string;
+  flowsUrl: string;
+  config: Config | undefined;
+  dataFormat: 'csv' | 'gsheets';
 }
 
-const FromUrlFlowMap: FC<{}> = (props: {}) => {
-  const params = useQuery();
-  if (typeof params.locations !== 'string') {
-    throw new Error(`Invalid locations URL`);
-  }
-  if (typeof params.flows !== 'string') {
-    throw new Error(`Invalid flows URL`);
-  }
-  const locationsUrl = params.locations as string;
-  const flowsUrl = params.flows as string;
-
+const FromUrlFlowMap: FC<Props> = (props) => {
+  const {config, locationsUrl, flowsUrl, dataFormat} = props;
   const history = useHistory();
   const setFlowMapState = useFlowMapStore((state) => state.setFlowMapState);
   const adjustViewportToLocations = useFlowMapStore(
@@ -46,25 +30,14 @@ const FromUrlFlowMap: FC<{}> = (props: {}) => {
   const loadLocations = useAppStore((state) => state.loadLocations);
   const loadFlows = useAppStore((state) => state.loadFlows);
   useEffect(() => {
-    loadLocations(locationsUrl);
+    loadLocations(locationsUrl, dataFormat);
   }, [locationsUrl]);
   useEffect(() => {
-    loadFlows(flowsUrl);
+    loadFlows(flowsUrl, dataFormat);
   }, [flowsUrl]);
 
-  const config = useMemo(() => {
-    const config = { ...DEFAULT_CONFIG };
-    for (const prop of Object.values(ConfigPropName)) {
-      const val = params[prop];
-      if (typeof val === 'string' && val.length > 0) {
-        config[prop] = val;
-      }
-    }
-    return config;
-  }, [params]);
-
   useEffect(() => {
-    if (layersData?.status === LoadingStatus.DONE && adjustViewportToLocations) {
+    if (config && layersData?.status === LoadingStatus.DONE && adjustViewportToLocations) {
       (async function () {
         const dims: [number, number] = [window.innerWidth, window.innerHeight];
         const viewport = await getViewportForLocations(dims);
@@ -75,7 +48,7 @@ const FromUrlFlowMap: FC<{}> = (props: {}) => {
         });
       })();
     }
-  }, [layersData?.status, adjustViewportToLocations]);
+  }, [config, layersData?.status, adjustViewportToLocations]);
 
   if (layersData?.status === LoadingStatus.ERROR) {
     return <ErrorFallback error="Failed to fetch data" />;
@@ -83,7 +56,7 @@ const FromUrlFlowMap: FC<{}> = (props: {}) => {
 
   return (
     <MapContainer>
-      {layersData && (
+      {config && layersData && (
         <FlowMap
           inBrowser={true}
           flowsSheet={undefined}
@@ -97,4 +70,6 @@ const FromUrlFlowMap: FC<{}> = (props: {}) => {
   );
 };
 
+
 export default FromUrlFlowMap;
+

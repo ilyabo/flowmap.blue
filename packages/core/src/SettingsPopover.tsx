@@ -4,7 +4,7 @@ import { IconNames } from '@blueprintjs/icons';
 import * as React from 'react';
 import { Dispatch, SyntheticEvent } from 'react';
 import styled from '@emotion/styled';
-import { Action, ActionType, State } from '@flowmap.blue/data';
+import { Action, ActionType, FlowMapState } from '@flowmap.blue/data';
 import ColorSchemeSelector from './ColorSchemeSelector';
 
 const SettingsOuter = styled.div`
@@ -19,7 +19,7 @@ const StyledSwitch = styled(Switch)`
 `;
 
 interface Props {
-  state: State;
+  state: FlowMapState;
   darkMode: boolean;
   dispatch: Dispatch<Action>;
   clusterZoom: number | undefined;

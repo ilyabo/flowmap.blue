@@ -1,11 +1,5 @@
-import {
-  createLayersDataStore,
-  FlowMapState,
-  LayersData,
-  LoadingStatus,
-  ViewportProps,
-} from '@flowmap.blue/data';
-import { transfer } from 'comlink';
+import {createLayersDataStore, FlowMapState, DataFormat} from './';
+import {transfer} from 'comlink';
 
 const layersDataStore = createLayersDataStore();
 const { getState, setState, subscribe, destroy } = layersDataStore;
@@ -20,13 +14,13 @@ export default class WorkerDataProvider {
     await setState({ flowMapState });
   }
 
-  async loadLocations(locationsUrl: string) {
-    await getState().loadLocations(locationsUrl);
+  async loadLocations(locationsUrl: string, dataFormat: DataFormat) {
+    await getState().loadLocations(locationsUrl, dataFormat);
     return getState().locations!.status;
   }
 
-  async loadFlows(flowsUrl: string) {
-    await getState().loadFlows(flowsUrl);
+  async loadFlows(flowsUrl: string, dataFormat: DataFormat) {
+    await getState().loadFlows(flowsUrl, dataFormat);
     return getState().flows!.status;
   }
 

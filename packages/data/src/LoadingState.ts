@@ -1,4 +1,5 @@
 import { csvParse, DSVRowString } from 'd3-dsv';
+import {getSheetDataAsArray, parseGsheetsJson, SheetData} from './gsheets';
 
 export enum LoadingStatus {
   LOADING = 'LOADING',
@@ -13,7 +14,7 @@ export type LoadingState<T> =
 
 export const fetchCsv = async <Row>(
   url: string,
-  transformRow: (rawRow: DSVRowString, index: number, columns: string) => Row | undefined | null
+  transformRow?: (rawRow: DSVRowString, index: number, columns: string) => Row | undefined | null
 ): Promise<LoadingState<Row[]>> => {
   try {
     const response = await fetch(url);

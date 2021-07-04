@@ -1,34 +1,24 @@
-import { DeckGL } from '@deck.gl/react';
-import { MapController, MapView } from '@deck.gl/core';
+import {DeckGL} from '@deck.gl/react';
+import {MapController, MapView} from '@deck.gl/core';
 import * as React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { _MapContext as MapContext, StaticMap } from 'react-map-gl';
-import {
-  FlowCirclesLayer,
-  FlowLayerPickingInfo,
-  FlowLinesLayer,
-  PickingType,
-} from '@flowmap.gl/core';
-import { Button, ButtonGroup, Classes, Colors } from '@blueprintjs/core';
-import { Absolute, BoxStyle, Column, Description, Title, TitleBox } from './Boxes';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import {_MapContext as MapContext, StaticMap} from 'react-map-gl';
+import {FlowCirclesLayer, FlowLayerPickingInfo, FlowLinesLayer, PickingType,} from '@flowmap.gl/core';
+import {Button, ButtonGroup, Classes, Colors} from '@blueprintjs/core';
+import {Absolute, BoxStyle, Column, Description, Title, TitleBox} from './Boxes';
 import Tooltip from './Tooltip';
-import { Link } from 'react-router-dom';
-import { UseStore } from 'zustand';
-import Collapsible, { Direction } from './Collapsible';
+import {Link} from 'react-router-dom';
+import {UseStore} from 'zustand';
+import Collapsible, {Direction} from './Collapsible';
 import {
   ActionType,
   colorAsRgba,
   Config,
   ConfigPropName,
   FlowMapStore,
-  getAvailableClusterZoomLevels,
-  getClusterIndex,
-  getClusterZoom,
-  getFlowMapColors,
   getLocationId,
   getMapboxMapStyle,
   Highlight,
-  HighlightType,
   LayersData,
   LoadingState,
   LoadingStatus,
@@ -42,12 +32,11 @@ import {
 import LoadingSpinner from './LoadingSpinner';
 import NoScrollContainer from './NoScrollContainer';
 import styled from '@emotion/styled';
-import { IconNames } from '@blueprintjs/icons';
+import {IconNames} from '@blueprintjs/icons';
 import Away from './Away';
 import useDebounced from './hooks';
 import SharePopover from './SharePopover';
-import MapDrawingEditor, { MapDrawingFeature, MapDrawingMode } from './MapDrawingEditor';
-import SettingsPopover from './SettingsPopover';
+import MapDrawingEditor, {MapDrawingFeature, MapDrawingMode} from './MapDrawingEditor';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -527,47 +516,47 @@ const FlowMap: React.FC<Props> = (props) => {
   const { darkMode } = state;
   const mapboxMapStyle = getMapboxMapStyle(config, darkMode);
 
-  const getHighlightForZoom = () => {
-    const { highlight, clusteringEnabled } = state;
-    if (!highlight || !clusteringEnabled) {
-      return highlight;
-    }
-    const clusterTree = getClusterIndex(state, props);
-    const clusterZoom = getClusterZoom(state, props);
-    if (!clusterTree || clusterZoom === undefined) {
-      return undefined;
-    }
-
-    const isValidForClusterZoom = (itemId: string) => {
-      const cluster = clusterTree.getClusterById(itemId);
-      if (cluster) {
-        return cluster.zoom === clusterZoom;
-      } else {
-        const minZoom = clusterTree.getMinZoomForLocation(itemId);
-        if (minZoom === undefined || clusterZoom >= minZoom) {
-          return true;
-        }
-      }
-      return false;
-    };
-
-    switch (highlight.type) {
-      case HighlightType.LOCATION:
-        const { locationId } = highlight;
-        return isValidForClusterZoom(locationId) ? highlight : undefined;
-
-      case HighlightType.FLOW:
-        const {
-          flow: { origin, dest },
-        } = highlight;
-        if (isValidForClusterZoom(origin) && isValidForClusterZoom(dest)) {
-          return highlight;
-        }
-        return undefined;
-    }
-
-    return undefined;
-  };
+  // const getHighlightForZoom = () => {
+  //   const { highlight, clusteringEnabled } = state;
+  //   if (!highlight || !clusteringEnabled) {
+  //     return highlight;
+  //   }
+  //   const clusterTree = getClusterIndex(state, props);
+  //   const clusterZoom = getClusterZoom(state, props);
+  //   if (!clusterTree || clusterZoom === undefined) {
+  //     return undefined;
+  //   }
+  //
+  //   const isValidForClusterZoom = (itemId: string) => {
+  //     const cluster = clusterTree.getClusterById(itemId);
+  //     if (cluster) {
+  //       return cluster.zoom === clusterZoom;
+  //     } else {
+  //       const minZoom = clusterTree.getMinZoomForLocation(itemId);
+  //       if (minZoom === undefined || clusterZoom >= minZoom) {
+  //         return true;
+  //       }
+  //     }
+  //     return false;
+  //   };
+  //
+  //   switch (highlight.type) {
+  //     case HighlightType.LOCATION:
+  //       const { locationId } = highlight;
+  //       return isValidForClusterZoom(locationId) ? highlight : undefined;
+  //
+  //     case HighlightType.FLOW:
+  //       const {
+  //         flow: { origin, dest },
+  //       } = highlight;
+  //       if (isValidForClusterZoom(origin) && isValidForClusterZoom(dest)) {
+  //         return highlight;
+  //       }
+  //       return undefined;
+  //   }
+  //
+  //   return undefined;
+  // };
 
   const handleClick = (info: FlowLayerPickingInfo, event: { srcEvent: MouseEvent }) => {
     switch (info.type) {
@@ -709,14 +698,15 @@ const FlowMap: React.FC<Props> = (props) => {
       // const highlight = getHighlightForZoom();
       // const locationsById = getLocationsById(state, props);
 
-      const colors = getFlowMapColors(state, props);
+      // const colors = getFlowMapColors(state, props);
 
       layers.push(
         new FlowLinesLayer({
           id: 'lines',
           data: layersData.data.lineAttributes,
           drawOutline: true,
-          outlineColor: colorAsRgba(colors.outlineColor),
+          outlineColor: colorAsRgba('#fff'),
+          // outlineColor: colorAsRgba(colors.outlineColor),
           opacity: 1,
           pickable: true,
           ...(!mapDrawingEnabled && {
@@ -918,18 +908,18 @@ const FlowMap: React.FC<Props> = (props) => {
           {/*)}*/}
         </>
       )}
-      {!embed && (
-        <Absolute bottom={40} left={10}>
-          <SettingsPopover
-            darkMode={darkMode}
-            state={state}
-            dispatch={dispatch}
-            clusterZoom={getClusterZoom(state, props)}
-            availableClusterZoomLevels={getAvailableClusterZoomLevels(state, props)}
-            onChangeClusteringAuto={handleChangeClusteringAuto}
-          />
-        </Absolute>
-      )}
+      {/*{!embed && (*/}
+      {/*  <Absolute bottom={40} left={10}>*/}
+      {/*    <SettingsPopover*/}
+      {/*      darkMode={darkMode}*/}
+      {/*      state={state}*/}
+      {/*      dispatch={dispatch}*/}
+      {/*      clusterZoom={getClusterZoom(state, props)}*/}
+      {/*      availableClusterZoomLevels={getAvailableClusterZoomLevels(state, props)}*/}
+      {/*      onChangeClusteringAuto={handleChangeClusteringAuto}*/}
+      {/*    />*/}
+      {/*  </Absolute>*/}
+      {/*)}*/}
       {showFullscreenButton && (
         <Absolute bottom={30} right={10}>
           <Button

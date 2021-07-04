@@ -11,7 +11,7 @@ import ErrorBoundary from './ErrorBoundary';
 
 const GSheetsFlowMap = React.lazy(() => import('./GSheetsFlowMap'));
 const InBrowserFlowMap = React.lazy(() => import('./InBrowserFlowMap'));
-const FromUrlFlowMap = React.lazy(() => import('./FromUrlFlowMap'));
+const FromUrlParamsFlowMap = React.lazy(() => import('./FromUrlParamsFlowMap'));
 const ODMatrixConverter = React.lazy(() => import('./ODMatrixConverter'));
 const Geocoding = React.lazy(() => import('./Geocoding'));
 
@@ -70,7 +70,7 @@ export default class App extends React.Component<Props, State> {
                 <Route path="/od-matrix-converter" component={ODMatrixConverter} />
                 <Route path="/geocoding" component={Geocoding} />
                 <Route path="/in-browser" component={InBrowserFlowMap} />
-                <Route path="/from-url" component={FromUrlFlowMap} />
+                <Route path="/from-url" component={FromUrlParamsFlowMap} />
                 <Route
                   path={`/:sheetKey(${SPREADSHEET_KEY_RE})/:flowsSheetKey(${FLOWS_SHEET_KEY_RE})/embed`}
                   component={makeGSheetsFlowMap(true)}
