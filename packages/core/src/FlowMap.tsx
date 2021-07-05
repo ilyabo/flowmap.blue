@@ -705,42 +705,47 @@ const FlowMap: React.FC<Props> = (props) => {
 
       // const colors = getFlowMapColors(state, props);
 
-      layers.push(
-        new FlowLinesLayer({
-          id: 'lines',
-          data: layersData.data.lineAttributes,
-          drawOutline: true,
-          outlineColor: colorAsRgba('#fff'),
-          // outlineColor: colorAsRgba(colors.outlineColor),
-          opacity: 1,
-          pickable: true,
-          ...(!mapDrawingEnabled && {
-            onHover: (info: any) => {
-              // const flow = info.index != -1 && flows ? flows[info.index] : undefined;
-              // console.log(info.index, info.object)
-              // handleHover({
-              //   ...info,
-              //   type: PickingType.FLOW,
-              //   object: flow,
-              //   ...flow && {
-              //     origin: locationsById?.get(flow.origin),
-              //     dest: locationsById?.get(flow.dest),
-              //   },
-              // });
-            },
-          }),
-          updateTriggers: {
-            onHover: handleHover, // to avoid stale closure in the handler
-          } as any,
-        })
-      );
-      layers.push(
-        new FlowCirclesLayer({
-          id: 'circles',
-          data: layersData.data.circleAttributes,
-          opacity: 1,
-        })
-      );
+      if (layersData.data.lineAttributes) {
+        layers.push(
+          new FlowLinesLayer({
+            id: 'lines',
+            data: layersData.data.lineAttributes,
+            drawOutline: true,
+            outlineColor: colorAsRgba('#fff'),
+            // outlineColor: colorAsRgba(colors.outlineColor),
+            opacity: 1,
+            pickable: true,
+            ...(!mapDrawingEnabled && {
+              onHover: (info: any) => {
+                // const flow = info.index != -1 && flows ? flows[info.index] : undefined;
+                // console.log(info.index, info.object)
+                // handleHover({
+                //   ...info,
+                //   type: PickingType.FLOW,
+                //   object: flow,
+                //   ...flow && {
+                //     origin: locationsById?.get(flow.origin),
+                //     dest: locationsById?.get(flow.dest),
+                //   },
+                // });
+              },
+            }),
+            updateTriggers: {
+              onHover: handleHover, // to avoid stale closure in the handler
+            } as any,
+          })
+        );
+      }
+
+      if (layersData.data.circleAttributes) {
+        layers.push(
+          new FlowCirclesLayer({
+            id: 'circles',
+            data: layersData.data.circleAttributes,
+            opacity: 1,
+          })
+        );
+      }
 
       // layers.push(
       //   new FlowMapLayer({

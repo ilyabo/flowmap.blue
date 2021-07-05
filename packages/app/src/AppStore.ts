@@ -18,6 +18,7 @@ import AppWorkerDataProvider from 'worker-loader!./AppWorkerDataProvider';
 const workerDataProvider = wrap<WorkerDataProvider>(new AppWorkerDataProvider());
 
 export type AppStore = {
+  reset: () => void;
   locationsStatus: LoadingStatus | undefined;
   flowsStatus: LoadingStatus | undefined;
   layersData: LoadingState<LayersData> | undefined;
@@ -34,6 +35,12 @@ export type AppStore = {
   >;
 };
 
+const INITIAL_STATE = {
+  locationsStatus: undefined,
+  flowsStatus: undefined,
+  layersData: undefined,
+};
+
 export const appStore = createVanilla<AppStore>(
   (set, get): AppStore => {
     async function updateLayersData() {
@@ -45,6 +52,7 @@ export const appStore = createVanilla<AppStore>(
           // TODO: error handling
           set({ layersData: { status: LoadingStatus.DONE, data: layersData! } });
         } catch (err) {
+          console.error(err);
           set({ layersData: { status: LoadingStatus.ERROR } });
         }
       } else {
@@ -54,9 +62,7 @@ export const appStore = createVanilla<AppStore>(
       }
     }
     return {
-      locationsStatus: undefined,
-      flowsStatus: undefined,
-      layersData: undefined,
+      ...INITIAL_STATE,
       updateLayersData,
       // flowMapState: undefined,
       // setFlowMapState: async (flowMapState) => {
@@ -75,10 +81,22 @@ export const appStore = createVanilla<AppStore>(
       //   set(state => ({ flowMapState: mainReducer(state.flowMapState, action) }));
       //   await workerDataProvider.dispatch(action);
       // },
+      // clearData: async () => {
+      //   set({
+      //     layersData: { status: LoadingStatus.LOADING },
+      //   });
+      //   await workerDataProvider.clearData();
+      // },
+
+      async reset() {
+        set(INITIAL_STATE);
+        await workerDataProvider.clearData();
+      },
+
       loadLocations: async (locationsUrl, dataFormat = 'csv') => {
         const { layersData } = get();
         set({
-          layersData: { ...layersData, status: LoadingStatus.LOADING },
+          layersData: { status: LoadingStatus.LOADING },
           locationsStatus: await workerDataProvider.loadLocations(locationsUrl, dataFormat),
         });
         await updateLayersData();
@@ -100,6 +118,7 @@ export const appStore = createVanilla<AppStore>(
 export const useAppStore = create<AppStore>(appStore);
 export const useFlowMapStore = createFlowMapStore();
 useFlowMapStore.subscribe(
+  // When map state changes, get the updated layers data from the worker
   throttle(
     async (flowMapState: FlowMapState) => {
       await workerDataProvider.setFlowMapState(flowMapState);

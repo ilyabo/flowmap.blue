@@ -1,5 +1,5 @@
-import {createLayersDataStore, FlowMapState, DataFormat} from './';
-import {transfer} from 'comlink';
+import { createLayersDataStore, FlowMapState, DataFormat } from './';
+import { transfer } from 'comlink';
 
 const layersDataStore = createLayersDataStore();
 const { getState, setState, subscribe, destroy } = layersDataStore;
@@ -12,6 +12,10 @@ export default class WorkerDataProvider {
 
   async setFlowMapState(flowMapState: FlowMapState) {
     await setState({ flowMapState });
+  }
+
+  async clearData() {
+    await getState().clearData();
   }
 
   async loadLocations(locationsUrl: string, dataFormat: DataFormat) {

@@ -1,9 +1,11 @@
 import createVanilla from 'zustand/vanilla';
 import {
-  ColorsRGBA, DataFormat,
+  ColorsRGBA,
+  DataFormat,
   DEFAULT_CONFIG,
   DiffColorsRGBA,
-  fetchCsv, fetchGsheet,
+  fetchCsv,
+  fetchGsheet,
   Flow,
   FlowMapState,
   getColorsRGBA,
@@ -34,6 +36,7 @@ import { getViewStateForLocations } from './getViewStateForFeatures';
 export type LayersDataStore = {
   locations: LoadingState<Location[]> | undefined;
   flows: LoadingState<Flow[]> | undefined;
+  clearData: () => void;
   loadLocations: (locationsUrl: string, dataFormat: DataFormat) => void;
   loadFlows: (flowsUrl: string, dataFormat: DataFormat) => void;
   getLayersData: () => LayersData | undefined;
@@ -41,6 +44,12 @@ export type LayersDataStore = {
   // dispatch: (action: Action) => void;
   flowMapState: FlowMapState;
   getViewportForLocations: ([width, height]: [number, number]) => ViewportProps | undefined;
+};
+
+const INITIAL = {
+  locations: undefined,
+  flows: undefined,
+  flowMapState: getInitialState(DEFAULT_CONFIG, [0, 0], ''),
 };
 
 export function createLayersDataStore() {
@@ -62,11 +71,13 @@ export function createLayersDataStore() {
       }
 
       return {
-        locations: undefined,
-        flows: undefined,
-        flowMapState: getInitialState(DEFAULT_CONFIG, [0, 0], ''),
+        ...INITIAL,
 
         // dispatch: action => set(state => ({ flowMapState: mainReducer(state.flowMapState, action) })),
+
+        clearData: () => {
+          set(INITIAL);
+        },
 
         loadLocations: async (locationsUrl, dataFormat) => {
           const fetchFn = getFetchFunction(dataFormat);
@@ -76,13 +87,16 @@ export function createLayersDataStore() {
             set({
               locations: {
                 ...result,
-                data: result.data.map((row: any) => ({
-                  id: `${row.id}`,
-                  name: `${row.name || row.id}`,
-                  lat: Number(row.lat),
-                  lon: Number(row.lon),
-                } as Location))
-              }
+                data: result.data.map(
+                  (row: any) =>
+                    ({
+                      id: `${row.id}`,
+                      name: `${row.name || row.id}`,
+                      lat: Number(row.lat),
+                      lon: Number(row.lon),
+                    } as Location)
+                ),
+              },
             });
           }
         },
@@ -172,7 +186,6 @@ export function createLayersDataStore() {
   // const {getState, setState, subscribe, destroy} = store;
   return store;
 }
-
 
 function getFetchFunction(dataFormat: DataFormat) {
   switch (dataFormat) {

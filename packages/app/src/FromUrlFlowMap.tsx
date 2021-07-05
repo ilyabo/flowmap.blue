@@ -5,7 +5,7 @@
 
 import React, { FC, useEffect } from 'react';
 import FlowMap, { MapContainer } from '@flowmap.blue/core';
-import { Config, getInitialState, LoadingStatus } from '@flowmap.blue/data';
+import { Config, DEFAULT_CONFIG, getInitialState, LoadingStatus } from '@flowmap.blue/data';
 import { useHistory } from 'react-router-dom';
 import ErrorFallback from './ErrorFallback';
 import { useAppStore, useFlowMapStore } from './AppStore';
@@ -21,6 +21,7 @@ const FromUrlFlowMap: FC<Props> = (props) => {
   const { config, locationsUrl, flowsUrl, dataFormat } = props;
   const history = useHistory();
   const setFlowMapState = useFlowMapStore((state) => state.setFlowMapState);
+  useEffect(() => {});
   const adjustViewportToLocations = useFlowMapStore(
     (state) => state.flowMapState.adjustViewportToLocations
   );
@@ -29,8 +30,11 @@ const FromUrlFlowMap: FC<Props> = (props) => {
   const layersData = useAppStore((state) => state.layersData);
   const loadLocations = useAppStore((state) => state.loadLocations);
   const loadFlows = useAppStore((state) => state.loadFlows);
+  const resetAppStore = useAppStore((state) => state.reset);
   useEffect(() => {
+    resetAppStore();
     loadLocations(locationsUrl, dataFormat);
+    setFlowMapState(getInitialState(DEFAULT_CONFIG, [0, 0], ''));
   }, [locationsUrl]);
   useEffect(() => {
     loadFlows(flowsUrl, dataFormat);
@@ -48,7 +52,7 @@ const FromUrlFlowMap: FC<Props> = (props) => {
         });
       })();
     }
-  }, [config, layersData?.status, adjustViewportToLocations]);
+  }, [config, locationsUrl, layersData?.status, adjustViewportToLocations]);
 
   if (layersData?.status === LoadingStatus.ERROR) {
     return <ErrorFallback error="Failed to fetch data" />;
