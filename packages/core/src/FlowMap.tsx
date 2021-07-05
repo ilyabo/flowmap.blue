@@ -42,6 +42,7 @@ import Away from './Away';
 import useDebounced from './hooks';
 import SharePopover from './SharePopover';
 import MapDrawingEditor, { MapDrawingFeature, MapDrawingMode } from './MapDrawingEditor';
+import SettingsPopover from './SettingsPopover';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -711,7 +712,8 @@ const FlowMap: React.FC<Props> = (props) => {
             id: 'lines',
             data: layersData.data.lineAttributes,
             drawOutline: true,
-            outlineColor: colorAsRgba('#fff'),
+            // TODO: get outline color from flowMapState
+            outlineColor: darkMode ? colorAsRgba('#000') : colorAsRgba('#fff'),
             // outlineColor: colorAsRgba(colors.outlineColor),
             opacity: 1,
             pickable: true,
@@ -918,18 +920,20 @@ const FlowMap: React.FC<Props> = (props) => {
           {/*)}*/}
         </>
       )}
-      {/*{!embed && (*/}
-      {/*  <Absolute bottom={40} left={10}>*/}
-      {/*    <SettingsPopover*/}
-      {/*      darkMode={darkMode}*/}
-      {/*      state={state}*/}
-      {/*      dispatch={dispatch}*/}
-      {/*      clusterZoom={getClusterZoom(state, props)}*/}
-      {/*      availableClusterZoomLevels={getAvailableClusterZoomLevels(state, props)}*/}
-      {/*      onChangeClusteringAuto={handleChangeClusteringAuto}*/}
-      {/*    />*/}
-      {/*  </Absolute>*/}
-      {/*)}*/}
+      {!embed && (
+        <Absolute bottom={40} left={10}>
+          <SettingsPopover
+            darkMode={darkMode}
+            state={state}
+            dispatch={dispatch}
+            // clusterZoom={getClusterZoom(state, props)}
+            // availableClusterZoomLevels={getAvailableClusterZoomLevels(state, props)}
+            clusterZoom={5}
+            availableClusterZoomLevels={[2, 3, 4, 5]}
+            onChangeClusteringAuto={handleChangeClusteringAuto}
+          />
+        </Absolute>
+      )}
       {showFullscreenButton && (
         <Absolute bottom={30} right={10}>
           <Button
