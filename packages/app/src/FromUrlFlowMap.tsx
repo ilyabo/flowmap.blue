@@ -5,12 +5,19 @@
 
 import React, { FC, useEffect } from 'react';
 import FlowMap, { MapContainer } from '@flowmap.blue/core';
-import { Config, DEFAULT_CONFIG, getInitialState, LoadingStatus } from '@flowmap.blue/data';
+import {
+  Config,
+  DEFAULT_CONFIG,
+  getInitialState,
+  DEFAULT_VIEWPORT,
+  LoadingStatus,
+} from '@flowmap.blue/data';
 import { useHistory } from 'react-router-dom';
 import ErrorFallback from './ErrorFallback';
 import { useAppStore, useFlowMapStore } from './AppStore';
 
 export type Props = {
+  inBrowser?: boolean;
   locationsUrl: string;
   flowsUrl: string;
   config: Config | undefined;
@@ -18,13 +25,13 @@ export type Props = {
 };
 
 const FromUrlFlowMap: FC<Props> = (props) => {
-  const { config, locationsUrl, flowsUrl, dataFormat } = props;
+  const { config, locationsUrl, flowsUrl, dataFormat, inBrowser = false } = props;
   const history = useHistory();
   const setFlowMapState = useFlowMapStore((state) => state.setFlowMapState);
   useEffect(() => {});
-  const adjustViewportToLocations = useFlowMapStore(
-    (state) => state.flowMapState.adjustViewportToLocations
-  );
+  // const adjustViewportToLocations = useFlowMapStore(
+  //   (state) => state.flowMapState.adjustViewportToLocations
+  // );
   // const dispatch = useFlowMapStore(state => state.dispatch);
   const getViewportForLocations = useAppStore((state) => state.getViewportForLocations);
   const layersData = useAppStore((state) => state.layersData);
@@ -32,27 +39,25 @@ const FromUrlFlowMap: FC<Props> = (props) => {
   const loadFlows = useAppStore((state) => state.loadFlows);
   const resetAppStore = useAppStore((state) => state.reset);
   useEffect(() => {
-    resetAppStore();
-    loadLocations(locationsUrl, dataFormat);
-    setFlowMapState(getInitialState(DEFAULT_CONFIG, [0, 0], ''));
-  }, [locationsUrl]);
+    (async () => {
+      resetAppStore();
+      setFlowMapState(getInitialState(DEFAULT_CONFIG, DEFAULT_VIEWPORT, ''));
+      await loadLocations(locationsUrl, dataFormat);
+      if (config) {
+        const dims: [number, number] = [window.innerWidth, window.innerHeight];
+        const viewport = await getViewportForLocations(dims);
+        if (viewport) {
+          setFlowMapState({
+            ...getInitialState(config, viewport, history.location.search),
+            adjustViewportToLocations: false,
+          });
+        }
+      }
+    })();
+  }, [config, locationsUrl]);
   useEffect(() => {
     loadFlows(flowsUrl, dataFormat);
   }, [flowsUrl]);
-
-  useEffect(() => {
-    if (config && layersData?.status === LoadingStatus.DONE && adjustViewportToLocations) {
-      (async function () {
-        const dims: [number, number] = [window.innerWidth, window.innerHeight];
-        const viewport = await getViewportForLocations(dims);
-        setFlowMapState({
-          ...getInitialState(config, dims, history.location.search),
-          viewport: viewport!,
-          adjustViewportToLocations: false,
-        });
-      })();
-    }
-  }, [config, locationsUrl, layersData?.status, adjustViewportToLocations]);
 
   if (layersData?.status === LoadingStatus.ERROR) {
     return <ErrorFallback error="Failed to fetch data" />;
@@ -62,7 +67,7 @@ const FromUrlFlowMap: FC<Props> = (props) => {
     <MapContainer>
       {config && layersData && (
         <FlowMap
-          inBrowser={true}
+          inBrowser={inBrowser}
           flowsSheet={undefined}
           layersData={layersData}
           config={config}

@@ -3,6 +3,7 @@ import {
   ColorsRGBA,
   DataFormat,
   DEFAULT_CONFIG,
+  DEFAULT_VIEWPORT,
   DiffColorsRGBA,
   fetchCsv,
   fetchGsheet,
@@ -49,7 +50,7 @@ export type LayersDataStore = {
 const INITIAL = {
   locations: undefined,
   flows: undefined,
-  flowMapState: getInitialState(DEFAULT_CONFIG, [0, 0], ''),
+  flowMapState: getInitialState(DEFAULT_CONFIG, DEFAULT_VIEWPORT, ''),
 };
 
 export function createLayersDataStore() {
@@ -57,17 +58,10 @@ export function createLayersDataStore() {
     (set, get, api): LayersDataStore => {
       function getPropsForSelectors() {
         const { locations, flows } = get();
-        if (locations?.status === LoadingStatus.DONE && flows?.status === LoadingStatus.DONE) {
-          return {
-            locations: locations.data,
-            flows: flows.data,
-          };
-        } else {
-          return {
-            locations: undefined,
-            flows: undefined,
-          };
-        }
+        return {
+          locations: locations?.status === LoadingStatus.DONE ? locations.data : undefined,
+          flows: flows?.status === LoadingStatus.DONE ? flows.data : undefined,
+        };
       }
 
       return {
@@ -98,6 +92,8 @@ export function createLayersDataStore() {
                 ),
               },
             });
+          } else {
+            set({ locations: { status: LoadingStatus.ERROR } });
           }
         },
 
@@ -107,6 +103,8 @@ export function createLayersDataStore() {
           const result = await fetchFn(flowsUrl);
           if (result.status === LoadingStatus.DONE) {
             set({ flows: { ...result, data: prepareFlows(result.data) } });
+          } else {
+            set({ flows: { status: LoadingStatus.ERROR } });
           }
         },
 

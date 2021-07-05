@@ -1,9 +1,8 @@
-import React, {useMemo} from 'react';
-import {Config, ConfigPropName, DEFAULT_CONFIG} from '@flowmap.blue/data';
+import React, { useMemo } from 'react';
+import { Config, ConfigPropName, DEFAULT_CONFIG } from '@flowmap.blue/data';
 import * as queryString from 'query-string';
-import {useLocation} from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import FromUrlFlowMap from './FromUrlFlowMap';
-
 
 // A custom hook that builds on useLocation to parse
 // the query string for you.
@@ -33,6 +32,7 @@ const FromUrlParamsFlowMap: React.FC<{}> = (props) => {
 
   return (
     <FromUrlFlowMap
+      inBrowser={true}
       dataFormat="csv"
       locationsUrl={params.locations as string}
       flowsUrl={params.flows as string}
@@ -42,4 +42,3 @@ const FromUrlParamsFlowMap: React.FC<{}> = (props) => {
 };
 
 export default FromUrlParamsFlowMap;
-

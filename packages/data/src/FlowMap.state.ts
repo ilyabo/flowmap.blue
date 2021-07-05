@@ -4,6 +4,7 @@ import { viewport } from '@mapbox/geo-viewport';
 import { COLOR_SCHEME_KEYS, parseBoolConfigProp, parseNumberConfigProp } from './';
 import { csvFormatRows, csvParseRows } from 'd3-dsv';
 import { timeFormat, timeParse } from 'd3-time-format';
+import { ViewState } from '@flowmap.gl/core';
 
 export const MAX_ZOOM_LEVEL = 20;
 export const MIN_ZOOM_LEVEL = 0;
@@ -521,6 +522,8 @@ export function stateToQueryString(state: FlowMapState) {
   return parts.join('&');
 }
 
+export const DEFAULT_VIEWPORT = getInitialViewport([0, 0], [-180, -70, 180, 70]);
+
 export function getInitialViewport(
   [width, height]: [number, number],
   bbox: [number, number, number, number]
@@ -545,9 +548,9 @@ export function getInitialViewport(
   };
 }
 
-export function getInitialState(config: Config, dims: [number, number], queryString: string) {
+export function getInitialState(config: Config, viewport: ViewportProps, queryString: string) {
   const draft = {
-    viewport: getInitialViewport(dims, [-180, -70, 180, 70]),
+    viewport,
     adjustViewportToLocations: true,
     selectedLocations: undefined,
     locationTotalsEnabled: true,
@@ -567,17 +570,17 @@ export function getInitialState(config: Config, dims: [number, number], queryStr
     selectedTimeRange: undefined,
   };
 
-  const bbox = config[ConfigPropName.MAP_BBOX];
-  if (bbox) {
-    const bounds = bbox
-      .split(',')
-      .map(asNumber)
-      .filter((v) => v != null) as number[];
-    if (bounds.length === 4) {
-      draft.viewport = getInitialViewport(dims, bounds as [number, number, number, number]);
-      draft.adjustViewportToLocations = false;
-    }
-  }
+  // const bbox = config[ConfigPropName.MAP_BBOX];
+  // if (bbox) {
+  //   const bounds = bbox
+  //     .split(',')
+  //     .map(asNumber)
+  //     .filter((v) => v != null) as number[];
+  //   if (bounds.length === 4) {
+  //     draft.viewport = getInitialViewport(dims, bounds as [number, number, number, number]);
+  //     draft.adjustViewportToLocations = false;
+  //   }
+  // }
 
   if (queryString && queryString.length > 1) {
     applyStateFromQueryString(draft, queryString);

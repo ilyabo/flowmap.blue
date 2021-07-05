@@ -95,9 +95,10 @@ export const appStore = createVanilla<AppStore>(
 
       loadLocations: async (locationsUrl, dataFormat = 'csv') => {
         const { layersData } = get();
+        const locationsStatus = await workerDataProvider.loadLocations(locationsUrl, dataFormat);
         set({
           layersData: { status: LoadingStatus.LOADING },
-          locationsStatus: await workerDataProvider.loadLocations(locationsUrl, dataFormat),
+          locationsStatus: locationsStatus,
         });
         await updateLayersData();
       },
@@ -110,7 +111,8 @@ export const appStore = createVanilla<AppStore>(
         await updateLayersData();
       },
 
-      getViewportForLocations: async (dims) => workerDataProvider.getViewportForLocations(dims),
+      getViewportForLocations: async (dims) =>
+        await workerDataProvider.getViewportForLocations(dims),
     };
   }
 );

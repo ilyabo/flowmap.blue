@@ -30,6 +30,7 @@ import {
   LocationFilterMode,
   MAX_ZOOM_LEVEL,
   MIN_ZOOM_LEVEL,
+  stateToQueryString,
   TargetBounds,
   TimeGranularity,
   ViewportProps,
@@ -43,6 +44,9 @@ import useDebounced from './hooks';
 import SharePopover from './SharePopover';
 import MapDrawingEditor, { MapDrawingFeature, MapDrawingMode } from './MapDrawingEditor';
 import SettingsPopover from './SettingsPopover';
+import LocationsSearchBox from './LocationSearchBox';
+import Timeline from './Timeline';
+import { useHistory } from 'react-router-dom';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -115,6 +119,7 @@ const TotalCount = styled.div<{ darkMode: boolean }>((props) => ({
 export const MAX_NUM_OF_IDS_IN_ERROR = 100;
 
 const FlowMap: React.FC<Props> = (props) => {
+  const history = useHistory();
   const { inBrowser, embed, config, spreadSheetKey, layersData, useFlowMapStore } = props;
   const deckRef = useRef<any>();
   const dispatch = useFlowMapStore((state: FlowMapStore) => state.dispatch);
@@ -123,13 +128,15 @@ const FlowMap: React.FC<Props> = (props) => {
   const outerRef = useRef<HTMLDivElement>(null);
 
   const [mapDrawingEnabled, setMapDrawingEnabled] = useState(false);
-  // const { selectedTimeRange } = state;
+  const { selectedTimeRange } = state;
   // const timeGranularity = getTimeGranularity(state, props);
   // const timeExtent = getTimeExtent(state, props);
   // const totalCountsByTime = getTotalCountsByTime(state, props);
+
   // const totalFilteredCount = getTotalFilteredCount(state, props);
   // const totalUnfilteredCount = getTotalUnfilteredCount(state, props);
   //
+
   // useEffect(() => {
   //   if (timeExtent) {
   //     if (!selectedTimeRange ||
@@ -143,23 +150,25 @@ const FlowMap: React.FC<Props> = (props) => {
   //     }
   //   }
   // }, [timeExtent, selectedTimeRange]);
-  //
-  // const [updateQuerySearch] = useDebounced(
-  //   () => {
-  //     if (inBrowser) return;
-  //     const locationSearch = `?${stateToQueryString(state)}`;
-  //     if (locationSearch !== history.location.search) {
-  //       history.replace({
-  //         ...history.location, // keep location state for in-browser flowmap
-  //         search: locationSearch,
-  //       });
-  //     }
-  //   },
-  //   250,
-  //   [state, history.location.search]
-  // );
-  // useEffect(updateQuerySearch, [history, state]);
-  //
+
+  // console.log('updateQuerySearch', inBrowser);
+  const [updateQuerySearch] = useDebounced(
+    () => {
+      if (inBrowser) return;
+      const locationSearch = `?${stateToQueryString(state)}`;
+      if (locationSearch !== history.location.search) {
+        history.replace({
+          ...history.location, // keep location state for in-browser flowmap
+          search: locationSearch,
+        });
+      }
+    },
+    250,
+    [state, history.location.search]
+  );
+  useEffect(updateQuerySearch, [history, state]);
+  // useEffect(() => console.log('state changed'), [state]);
+
   const { viewport, tooltip, animationEnabled, baseMapEnabled } = state;
   // const allFlows = getFetchedFlows(state, props);
   // const allLocations = getLocations(state, props);
