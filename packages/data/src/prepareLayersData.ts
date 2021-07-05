@@ -54,9 +54,9 @@ export default function prepareLayersData(
   );
   const getLocationMaxAbsTotal = getLocationMaxAbsTotalGetter(
     locations,
-    (d) => incoming[getLocationId(d)],
-    (d) => outgoing[getLocationId(d)],
-    (d) => within[getLocationId(d)]
+    (d) => incoming[getLocationId(d)] || 0,
+    (d) => outgoing[getLocationId(d)] || 0,
+    (d) => within[getLocationId(d)] || 0
   );
   const maxAbsTotalsById: Map<string, number> = locations.reduce(
     (m, d) => (m.set(getLocationId(d), getLocationMaxAbsTotal(d)), m),
