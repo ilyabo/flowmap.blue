@@ -9,7 +9,7 @@
     "declaration": true,
     "declarationMap": true,
     "skipLibCheck": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "strict": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
