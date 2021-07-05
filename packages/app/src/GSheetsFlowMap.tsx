@@ -1,10 +1,21 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
-import { AppToaster, LoadingSpinner, MapContainer } from '@flowmap.blue/core';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  AppToaster,
+  Away,
+  Collapsible,
+  Column,
+  Description,
+  LoadingSpinner,
+  MapContainer,
+  Title,
+  TitleBox,
+} from '@flowmap.blue/core';
 import {
   ConfigProp,
   ConfigPropName,
   DEFAULT_CONFIG,
+  FlowMapStore,
   getFlowsSheets,
   makeSheetQueryUrl,
 } from '@flowmap.blue/data';
@@ -12,12 +23,13 @@ import { Helmet } from 'react-helmet';
 import sendEvent from './ga';
 import { useAsync } from 'react-use';
 import { csvParse } from 'd3-dsv';
-import { Intent } from '@blueprintjs/core';
+import { HTMLSelect, Intent } from '@blueprintjs/core';
 import { IconNames } from '@blueprintjs/icons';
 import md5 from 'blueimp-md5';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import styled from '@emotion/styled';
 import FromUrlFlowMap from './FromUrlFlowMap';
+import { useFlowMapStore } from './AppStore';
 
 interface Props {
   spreadSheetKey: string;
@@ -112,8 +124,26 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
     }
   }, [configFetch.error]);
 
+  const config = useMemo(() => (configFetch.value ? configFetch.value : DEFAULT_CONFIG), [
+    configFetch.value,
+  ]);
+  const flowsSheets = useMemo(() => getFlowsSheets(config), [config]);
+  const title = config[ConfigPropName.TITLE];
+  const description = config[ConfigPropName.DESCRIPTION];
+  const sourceUrl = config[ConfigPropName.SOURCE_URL];
+  const sourceName = config[ConfigPropName.SOURCE_NAME];
+  const authorUrl = config[ConfigPropName.AUTHOR_URL];
+  const authorName = config[ConfigPropName.AUTHOR_NAME];
+
+  const darkMode = useFlowMapStore((state: FlowMapStore) => state.flowMapState.darkMode);
+
+  const handleSelectFlowsSheet: React.ChangeEventHandler<HTMLSelectElement> = (event) => {
+    const sheet = event.currentTarget.value;
+    handleChangeFlowsSheet(sheet, true);
+  };
+
   return (
-    <MapContainer embed={embed}>
+    <MapContainer embed={embed} darkMode={darkMode}>
       {configFetch.loading || flowsSheet == null ? (
         <LoadingSpinner />
       ) : (
@@ -123,9 +153,72 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
             dataFormat={'gsheets'}
             locationsUrl={makeSheetQueryUrl(spreadSheetKey!, 'locations', 'SELECT A,B,C,D', 'json')}
             flowsUrl={makeSheetQueryUrl(spreadSheetKey!, flowsSheet, 'SELECT *', 'json')}
-            config={configFetch.value ? configFetch.value : DEFAULT_CONFIG}
-            // onSetFlowsSheet={(name: string) => handleChangeFlowsSheet(name, true)}
+            config={config}
           />
+          {configFetch.value && spreadSheetKey && !embed && (
+            <TitleBox top={52} left={0} darkMode={darkMode}>
+              <Collapsible darkMode={darkMode} width={300}>
+                <Column spacing={10} padding="12px 20px">
+                  {title && (
+                    <div>
+                      <Title>{title}</Title>
+                      <Description>{description}</Description>
+                    </div>
+                  )}
+                  {flowsSheets && flowsSheets.length > 1 && (
+                    <HTMLSelect
+                      value={flowsSheet}
+                      onChange={handleSelectFlowsSheet}
+                      options={flowsSheets.map((sheet) => ({
+                        label: sheet,
+                        value: sheet,
+                      }))}
+                    />
+                  )}
+                  {authorUrl ? (
+                    <div>
+                      {`Created by: `}
+                      <Away href={`${authorUrl.indexOf('://') < 0 ? 'http://' : ''}${authorUrl}`}>
+                        {authorName || 'Author'}
+                      </Away>
+                    </div>
+                  ) : authorName ? (
+                    <div>Created by: {authorName}</div>
+                  ) : null}
+                  {sourceName && sourceUrl && (
+                    <div>
+                      {'Original data source: '}
+                      <>
+                        <Away href={`${sourceUrl.indexOf('://') < 0 ? 'http://' : ''}${sourceUrl}`}>
+                          {sourceName}
+                        </Away>
+                      </>
+                    </div>
+                  )}
+                  <div>
+                    {'Data behind this map is in '}
+                    <Away href={`https://docs.google.com/spreadsheets/d/${spreadSheetKey}`}>
+                      this spreadsheet
+                    </Away>
+                    . You can <Link to="/">publish your own</Link> too.
+                  </div>
+
+                  {/*{totalFilteredCount != null && totalUnfilteredCount != null && (*/}
+                  {/*  <TotalCount darkMode={darkMode}>*/}
+                  {/*    {Math.round(totalFilteredCount) === Math.round(totalUnfilteredCount)*/}
+                  {/*      ? config['msg.totalCount.allTrips']?.replace(*/}
+                  {/*          '{0}',*/}
+                  {/*          formatCount(totalUnfilteredCount)*/}
+                  {/*        )*/}
+                  {/*      : config['msg.totalCount.countOfTrips']*/}
+                  {/*          ?.replace('{0}', formatCount(totalFilteredCount))*/}
+                  {/*          .replace('{1}', formatCount(totalUnfilteredCount))}*/}
+                  {/*  </TotalCount>*/}
+                  {/*)}*/}
+                </Column>
+              </Collapsible>
+            </TitleBox>
+          )}
         </>
       )}
       {configFetch.value && configFetch.value[ConfigPropName.TITLE] && (

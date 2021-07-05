@@ -10,11 +10,9 @@ import {
   PickingType,
 } from '@flowmap.gl/core';
 import { Button, ButtonGroup, Classes, Colors } from '@blueprintjs/core';
-import { Absolute, BoxStyle, Column, Description, Title, TitleBox } from './Boxes';
+import { Absolute, BoxStyle, Column } from './Boxes';
 import Tooltip from './Tooltip';
-import { Link } from 'react-router-dom';
 import { UseStore } from 'zustand';
-import Collapsible, { Direction } from './Collapsible';
 import {
   ActionType,
   colorAsRgba,
@@ -30,7 +28,6 @@ import {
   LocationFilterMode,
   MAX_ZOOM_LEVEL,
   MIN_ZOOM_LEVEL,
-  stateToQueryString,
   TargetBounds,
   TimeGranularity,
   ViewportProps,
@@ -39,12 +36,9 @@ import LoadingSpinner from './LoadingSpinner';
 import NoScrollContainer from './NoScrollContainer';
 import styled from '@emotion/styled';
 import { IconNames } from '@blueprintjs/icons';
-import Away from './Away';
 import SharePopover from './SharePopover';
 import MapDrawingEditor, { MapDrawingFeature, MapDrawingMode } from './MapDrawingEditor';
 import SettingsPopover from './SettingsPopover';
-import LocationsSearchBox from './LocationSearchBox';
-import Timeline from './Timeline';
 import useDebounced from './useDebounced';
 
 const CONTROLLER_OPTIONS = {
@@ -474,12 +468,6 @@ const FlowMap: React.FC<Props> = (props) => {
 
   // const searchBoxLocations = getLocationsForSearchBox(state, props);
 
-  const title = config[ConfigPropName.TITLE];
-  const description = config[ConfigPropName.DESCRIPTION];
-  const sourceUrl = config[ConfigPropName.SOURCE_URL];
-  const sourceName = config[ConfigPropName.SOURCE_NAME];
-  const authorUrl = config[ConfigPropName.AUTHOR_URL];
-  const authorName = config[ConfigPropName.AUTHOR_NAME];
   const mapboxAccessToken = config[ConfigPropName.MAPBOX_ACCESS_TOKEN];
   // const diffMode = getDiffMode(state, props);
   const { darkMode } = state;
@@ -623,15 +611,6 @@ const FlowMap: React.FC<Props> = (props) => {
     dispatch({ type: ActionType.RESET_BEARING_PITCH });
   };
 
-  const handleSelectFlowsSheet: React.ChangeEventHandler<HTMLSelectElement> = (event) => {
-    const sheet = event.currentTarget.value;
-    const { onSetFlowsSheet } = props;
-    if (onSetFlowsSheet) {
-      onSetFlowsSheet(sheet);
-      handleChangeSelectLocations(undefined);
-    }
-  };
-
   const handleFullScreen = () => {
     const outer = outerRef.current;
     if (outer) {
@@ -653,7 +632,7 @@ const FlowMap: React.FC<Props> = (props) => {
       fadeAmount,
     } = state;
     const layers = [];
-    if (layersData && layersData.status === LoadingStatus.DONE) {
+    if (layersData?.data) {
       const id = [
         'flow-map',
         animationEnabled ? 'animated' : 'arrows',
@@ -771,7 +750,6 @@ const FlowMap: React.FC<Props> = (props) => {
     <NoScrollContainer
       ref={outerRef}
       onMouseLeave={hideTooltip}
-      className={darkMode ? Classes.DARK : undefined}
       style={{
         background: darkMode ? Colors.DARK_GRAY1 : Colors.LIGHT_GRAY5,
       }}
@@ -905,70 +883,6 @@ const FlowMap: React.FC<Props> = (props) => {
             icon={IconNames.FULLSCREEN}
           />
         </Absolute>
-      )}
-      {spreadSheetKey && !embed && (
-        <TitleBox top={52} left={0} darkMode={darkMode}>
-          <Collapsible darkMode={darkMode} width={300} direction={Direction.LEFT}>
-            <Column spacing={10} padding="12px 20px">
-              {title && (
-                <div>
-                  <Title>{title}</Title>
-                  <Description>{description}</Description>
-                </div>
-              )}
-              {/*{flowsSheets && flowsSheets.length > 1 && (*/}
-              {/*  <HTMLSelect*/}
-              {/*    value={props.flowsSheet}*/}
-              {/*    onChange={handleSelectFlowsSheet}*/}
-              {/*    options={flowsSheets.map((sheet) => ({*/}
-              {/*      label: sheet,*/}
-              {/*      value: sheet,*/}
-              {/*    }))}*/}
-              {/*  />*/}
-              {/*)}*/}
-              {authorUrl ? (
-                <div>
-                  {`Created by: `}
-                  <Away href={`${authorUrl.indexOf('://') < 0 ? 'http://' : ''}${authorUrl}`}>
-                    {authorName || 'Author'}
-                  </Away>
-                </div>
-              ) : authorName ? (
-                <div>Created by: {authorName}</div>
-              ) : null}
-              {sourceName && sourceUrl && (
-                <div>
-                  {'Original data source: '}
-                  <>
-                    <Away href={`${sourceUrl.indexOf('://') < 0 ? 'http://' : ''}${sourceUrl}`}>
-                      {sourceName}
-                    </Away>
-                  </>
-                </div>
-              )}
-              <div>
-                {'Data behind this map is in '}
-                <Away href={`https://docs.google.com/spreadsheets/d/${spreadSheetKey}`}>
-                  this spreadsheet
-                </Away>
-                . You can <Link to="/">publish your own</Link> too.
-              </div>
-
-              {/*{totalFilteredCount != null && totalUnfilteredCount != null && (*/}
-              {/*  <TotalCount darkMode={darkMode}>*/}
-              {/*    {Math.round(totalFilteredCount) === Math.round(totalUnfilteredCount)*/}
-              {/*      ? config['msg.totalCount.allTrips']?.replace(*/}
-              {/*          '{0}',*/}
-              {/*          formatCount(totalUnfilteredCount)*/}
-              {/*        )*/}
-              {/*      : config['msg.totalCount.countOfTrips']*/}
-              {/*          ?.replace('{0}', formatCount(totalFilteredCount))*/}
-              {/*          .replace('{1}', formatCount(totalUnfilteredCount))}*/}
-              {/*  </TotalCount>*/}
-              {/*)}*/}
-            </Column>
-          </Collapsible>
-        </TitleBox>
       )}
       {tooltip && <Tooltip {...tooltip} />}
       {!layersData || (layersData.status === LoadingStatus.LOADING && <LoadingSpinner />)}

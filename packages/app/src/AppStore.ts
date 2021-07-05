@@ -94,7 +94,6 @@ export const appStore = createVanilla<AppStore>(
       },
 
       loadLocations: async (locationsUrl, dataFormat = 'csv') => {
-        const { layersData } = get();
         const locationsStatus = await workerDataProvider.loadLocations(locationsUrl, dataFormat);
         set({
           layersData: { status: LoadingStatus.LOADING },
@@ -106,6 +105,9 @@ export const appStore = createVanilla<AppStore>(
         const { layersData } = get();
         set({
           layersData: { ...layersData, status: LoadingStatus.LOADING },
+        });
+        // The above should happen before the loading has finished
+        set({
           flowsStatus: await workerDataProvider.loadFlows(flowsUrl, dataFormat),
         });
         await updateLayersData();

@@ -1,5 +1,5 @@
 import { csvParse, DSVRowString } from 'd3-dsv';
-import {getSheetDataAsArray, parseGsheetsJson, SheetData} from './gsheets';
+import { getSheetDataAsArray, parseGsheetsJson, SheetData } from './gsheets';
 
 export enum LoadingStatus {
   LOADING = 'LOADING',
@@ -9,7 +9,7 @@ export enum LoadingStatus {
 
 export type LoadingState<T> =
   | { status: LoadingStatus.LOADING; data?: T }
-  | { status: LoadingStatus.ERROR }
+  | { status: LoadingStatus.ERROR; data?: T }
   | { status: LoadingStatus.DONE; data: T };
 
 export const fetchCsv = async <Row>(
