@@ -1,4 +1,4 @@
-import { Action, FlowMapState } from './';
+import { Action, DEFAULT_VIEWPORT, FlowMapState } from './';
 import create from 'zustand';
 import { getInitialState, mainReducer } from './FlowMap.state';
 import { DEFAULT_CONFIG } from './config';
@@ -14,7 +14,7 @@ export function createFlowMapStore() {
     (set, get): FlowMapStore => {
       return {
         // TODO: this should be done through dispatch
-        flowMapState: getInitialState(DEFAULT_CONFIG, [0, 0], ''),
+        flowMapState: getInitialState(DEFAULT_CONFIG, DEFAULT_VIEWPORT, ''),
         setFlowMapState: (nextState) => set({ flowMapState: nextState }),
         dispatch: async (action) => {
           set((state) => ({ flowMapState: mainReducer(state.flowMapState, action) }));
