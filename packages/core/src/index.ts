@@ -11,4 +11,5 @@ export { default as MapContainer } from './MapContainer';
 export { default as Fallback } from './Fallback';
 export { default as globalStyles } from './globalStyles';
 import { default as FlowMap } from './FlowMap';
+export { default as useDebounced } from './useDebounced';
 export default FlowMap;

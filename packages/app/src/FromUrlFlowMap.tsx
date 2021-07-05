@@ -4,13 +4,15 @@
 // Personenverkehr in der Schweiz - Velo  http://localhost:7000/from-url?colors.darkMode=no&flows=https%3A//docs.google.com/spreadsheets/d/e/2PACX-1vRYROhHQxi_WCFs0spjfJ3do4z2eD61dXhM4Lml0Ty3YN4pqCWfDitMCnYgKc8Zt2B6ge4xGg-xUdqB/pub%3Fgid%3D229626141%26single%3Dtrue%26output%3Dcsv&locations=https%3A//docs.google.com/spreadsheets/d/e/2PACX-1vRYROhHQxi_WCFs0spjfJ3do4z2eD61dXhM4Lml0Ty3YN4pqCWfDitMCnYgKc8Zt2B6ge4xGg-xUdqB/pub%3Fgid%3D877058976%26single%3Dtrue%26output%3Dcsv
 
 import React, { FC, useEffect } from 'react';
-import FlowMap, { MapContainer } from '@flowmap.blue/core';
+import FlowMap, { MapContainer, useDebounced } from '@flowmap.blue/core';
 import {
   Config,
   DEFAULT_CONFIG,
   getInitialState,
   DEFAULT_VIEWPORT,
   LoadingStatus,
+  stateToQueryString,
+  FlowMapStore,
 } from '@flowmap.blue/data';
 import { useHistory } from 'react-router-dom';
 import ErrorFallback from './ErrorFallback';
@@ -28,6 +30,7 @@ const FromUrlFlowMap: FC<Props> = (props) => {
   const { config, locationsUrl, flowsUrl, dataFormat, inBrowser = false } = props;
   const history = useHistory();
   const setFlowMapState = useFlowMapStore((state) => state.setFlowMapState);
+  const flowMapState = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
   useEffect(() => {});
   // const adjustViewportToLocations = useFlowMapStore(
   //   (state) => state.flowMapState.adjustViewportToLocations
@@ -58,6 +61,22 @@ const FromUrlFlowMap: FC<Props> = (props) => {
   useEffect(() => {
     loadFlows(flowsUrl, dataFormat);
   }, [flowsUrl]);
+  const [updateQuerySearch] = useDebounced(
+    () => {
+      if (inBrowser) return;
+      if (layersData?.status !== LoadingStatus.DONE) return;
+      const locationSearch = `?${stateToQueryString(flowMapState)}`;
+      if (locationSearch !== history.location.search) {
+        history.replace({
+          ...history.location, // keep location state for in-browser flowmap
+          search: locationSearch,
+        });
+      }
+    },
+    250,
+    [flowMapState, history.location.search]
+  );
+  useEffect(updateQuerySearch, [history, flowMapState]);
 
   if (layersData?.status === LoadingStatus.ERROR) {
     return <ErrorFallback error="Failed to fetch data" />;
