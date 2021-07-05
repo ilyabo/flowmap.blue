@@ -73,6 +73,8 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
         handleChangeFlowsSheet(name, flowsSheets.length > 1);
       }
     }
+
+    configProps.spreadSheetKey = spreadSheetKey;
     return configProps;
   }, [url]);
 
@@ -84,9 +86,26 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
         timeout: 0,
         message: (
           <ToastContent>
-            Oops… The properties sheet couldn't be loaded:
-            <br />
-            {configFetch.error.message}
+            <p>
+              Couldn't load the properties sheet from{` `}
+              <a href={`https://docs.google.com/spreadsheets/d/${spreadSheetKey}`}>
+                this spreadsheet
+              </a>
+              .
+            </p>
+            <p>Cause: {configFetch.error.message}</p>
+            <p>
+              If you are the owner of this spreadsheet, make sure you have shared it by doing the
+              following:
+              <ol>
+                <li>Click the “Share” button in the spreadsheet</li>
+                <li>
+                  Change the selection from “Restricted” to “Anyone with the link” in the drop-down
+                  under “Get link”
+                </li>
+              </ol>
+            </p>
+            <p>Make sure that there is a sheet called "properties" in the spreadsheet.</p>
           </ToastContent>
         ),
       });
@@ -98,15 +117,16 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
       {configFetch.loading || flowsSheet == null ? (
         <LoadingSpinner />
       ) : (
-        <FromUrlFlowMap
-          // spreadSheetKey={spreadSheetKey}
-          // embed={embed}
-          dataFormat={'gsheets'}
-          locationsUrl={makeSheetQueryUrl(spreadSheetKey!, 'locations', 'SELECT A,B,C,D', 'json')}
-          flowsUrl={makeSheetQueryUrl(spreadSheetKey!, flowsSheet, 'SELECT *', 'json')}
-          config={configFetch.value ? configFetch.value : DEFAULT_CONFIG}
-          // onSetFlowsSheet={(name: string) => handleChangeFlowsSheet(name, true)}
-        />
+        <>
+          <FromUrlFlowMap
+            // embed={embed}
+            dataFormat={'gsheets'}
+            locationsUrl={makeSheetQueryUrl(spreadSheetKey!, 'locations', 'SELECT A,B,C,D', 'json')}
+            flowsUrl={makeSheetQueryUrl(spreadSheetKey!, flowsSheet, 'SELECT *', 'json')}
+            config={configFetch.value ? configFetch.value : DEFAULT_CONFIG}
+            // onSetFlowsSheet={(name: string) => handleChangeFlowsSheet(name, true)}
+          />
+        </>
       )}
       {configFetch.value && configFetch.value[ConfigPropName.TITLE] && (
         <Helmet>

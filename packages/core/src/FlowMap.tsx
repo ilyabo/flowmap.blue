@@ -45,7 +45,6 @@ import MapDrawingEditor, { MapDrawingFeature, MapDrawingMode } from './MapDrawin
 import SettingsPopover from './SettingsPopover';
 import LocationsSearchBox from './LocationSearchBox';
 import Timeline from './Timeline';
-import { useHistory } from 'react-router-dom';
 import useDebounced from './useDebounced';
 
 const CONTROLLER_OPTIONS = {
@@ -119,7 +118,8 @@ const TotalCount = styled.div<{ darkMode: boolean }>((props) => ({
 export const MAX_NUM_OF_IDS_IN_ERROR = 100;
 
 const FlowMap: React.FC<Props> = (props) => {
-  const { inBrowser, embed, config, spreadSheetKey, layersData, useFlowMapStore } = props;
+  const { inBrowser, embed, config, layersData, useFlowMapStore } = props;
+  const { spreadSheetKey } = config;
   const deckRef = useRef<any>();
   const dispatch = useFlowMapStore((state: FlowMapStore) => state.dispatch);
   const state = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
@@ -470,33 +470,6 @@ const FlowMap: React.FC<Props> = (props) => {
 
   // if (!layersData) {
   //   return <LoadingSpinner />;
-  // }
-  // if (layersData.status === LoadingStatus.ERROR) {
-  //   return (
-  //     <Message>
-  //       {spreadSheetKey
-  //         ? <>
-  //           <p>
-  //             Oops… Couldn't fetch data from{` `}
-  //             <a href={`https://docs.google.com/spreadsheets/d/${spreadSheetKey}`}>this spreadsheet</a>.
-  //             {` `}
-  //           </p>
-  //           <p>
-  //             If you are the owner of this spreadsheet, make sure you have shared it by doing the
-  //             following:
-  //             <ol>
-  //               <li>Click the “Share” button in the spreadsheet</li>
-  //               <li>
-  //                 Change the selection from “Restricted” to “Anyone with the link” in the drop-down
-  //                 under “Get link”
-  //               </li>
-  //             </ol>
-  //           </p>
-  //         </>
-  //         : <p>Oops… Couldn't fetch data</p>
-  //       }
-  //     </Message>
-  //   );
   // }
 
   // const searchBoxLocations = getLocationsForSearchBox(state, props);
