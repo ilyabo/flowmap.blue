@@ -32,6 +32,14 @@ export default class WorkerDataProvider {
     return await getState().getViewportForLocations(dims);
   }
 
+  async getTotalFilteredCount() {
+    return await getState().getTotalFilteredCount();
+  }
+
+  async getTotalUnfilteredCount() {
+    return await getState().getTotalUnfilteredCount();
+  }
+
   getLayersData() {
     const layersData = getState().getLayersData();
     if (layersData) {

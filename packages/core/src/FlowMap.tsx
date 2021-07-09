@@ -102,13 +102,6 @@ const TimelineBox = styled(BoxStyle)({
   borderTop: '1px solid #999',
 });
 
-const TotalCount = styled.div<{ darkMode: boolean }>((props) => ({
-  padding: 5,
-  borderRadius: 5,
-  backgroundColor: props.darkMode ? Colors.DARK_GRAY4 : Colors.LIGHT_GRAY4,
-  textAlign: 'center',
-}));
-
 export const MAX_NUM_OF_IDS_IN_ERROR = 100;
 
 const FlowMap: React.FC<Props> = (props) => {

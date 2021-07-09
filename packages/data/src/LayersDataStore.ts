@@ -18,6 +18,8 @@ import {
   getLocations,
   getLocationsForFlowMapLayer,
   getLocationsHavingFlows,
+  getTotalFilteredCount,
+  getTotalUnfilteredCount,
   isDiffColors,
   LayersData,
   LoadingState,
@@ -45,6 +47,8 @@ export type LayersDataStore = {
   // dispatch: (action: Action) => void;
   flowMapState: FlowMapState;
   getViewportForLocations: ([width, height]: [number, number]) => ViewportProps | undefined;
+  getTotalFilteredCount: () => number | undefined;
+  getTotalUnfilteredCount: () => number | undefined;
 };
 
 const INITIAL = {
@@ -114,6 +118,16 @@ export function createLayersDataStore() {
           return isDiffColors(flowMapColors)
             ? getDiffColorsRGBA(flowMapColors)
             : getColorsRGBA(flowMapColors);
+        },
+
+        getTotalFilteredCount() {
+          const { flowMapState } = get();
+          return getTotalFilteredCount(flowMapState, getPropsForSelectors());
+        },
+
+        getTotalUnfilteredCount() {
+          const { flowMapState } = get();
+          return getTotalUnfilteredCount(flowMapState, getPropsForSelectors());
         },
 
         getViewportForLocations([width, height]) {

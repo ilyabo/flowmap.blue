@@ -33,6 +33,8 @@ export type AppStore = {
   getViewportForLocations: ([width, height]: [number, number]) => Promise<
     ViewportProps | undefined
   >;
+  getTotalFilteredCount: () => Promise<number | undefined>;
+  getTotalUnfilteredCount: () => Promise<number | undefined>;
 };
 
 const INITIAL_STATE = {
@@ -115,6 +117,14 @@ export const appStore = createVanilla<AppStore>(
 
       getViewportForLocations: async (dims) =>
         await workerDataProvider.getViewportForLocations(dims),
+
+      async getTotalFilteredCount() {
+        return await workerDataProvider.getTotalFilteredCount();
+      },
+
+      async getTotalUnfilteredCount() {
+        return await workerDataProvider.getTotalUnfilteredCount();
+      },
     };
   }
 );

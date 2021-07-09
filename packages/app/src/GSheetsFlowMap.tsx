@@ -23,13 +23,14 @@ import { Helmet } from 'react-helmet';
 import sendEvent from './ga';
 import { useAsync } from 'react-use';
 import { csvParse } from 'd3-dsv';
-import { HTMLSelect, Intent } from '@blueprintjs/core';
+import { Colors, HTMLSelect, Intent } from '@blueprintjs/core';
 import { IconNames } from '@blueprintjs/icons';
 import md5 from 'blueimp-md5';
 import { Link, useHistory } from 'react-router-dom';
 import styled from '@emotion/styled';
 import FromUrlFlowMap from './FromUrlFlowMap';
-import { useFlowMapStore } from './AppStore';
+import { useAppStore, useFlowMapStore } from './AppStore';
+import { formatCount } from './globals';
 
 interface Props {
   spreadSheetKey: string;
@@ -43,9 +44,16 @@ const ToastContent = styled.div`
 
 const getFlowsSheetKey = (name: string) => md5(name).substr(0, 7);
 
+const TotalCount = styled.div<{ darkMode: boolean }>((props) => ({
+  padding: 5,
+  borderRadius: 5,
+  backgroundColor: props.darkMode ? Colors.DARK_GRAY4 : Colors.LIGHT_GRAY4,
+  textAlign: 'center',
+}));
+
 const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed }) => {
   const url = makeSheetQueryUrl(spreadSheetKey, 'properties', 'SELECT A,B', 'csv');
-  const [flowsSheet, setFlowsSheet] = useState<string>('flows');
+  const [selectedSheet, setSelectedSheet] = useState<string>('flows');
   const history = useHistory();
 
   const handleChangeFlowsSheet = (name: string, replaceUrl: boolean) => {
@@ -55,7 +63,7 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
         pathname: `/${spreadSheetKey}/${getFlowsSheetKey(name)}${embed ? '/embed' : ''}`,
       });
     }
-    setFlowsSheet(name);
+    setSelectedSheet(name);
   };
 
   const configFetch = useAsync(async () => {
@@ -142,9 +150,32 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
     handleChangeFlowsSheet(sheet, true);
   };
 
+  const flowMapState = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
+  const getTotalFilteredCount = useAppStore((state) => state.getTotalFilteredCount);
+  const getTotalUnfilteredCount = useAppStore((state) => state.getTotalUnfilteredCount);
+  const [totals, setTotals] = useState<{
+    filteredCount: number;
+    unfilteredCount: number;
+  }>();
+  useEffect(() => {
+    (async () => {
+      console.log('getTotalFilteredCount');
+      const [filteredCount, unfilteredCount] = await Promise.all([
+        getTotalFilteredCount(),
+        getTotalUnfilteredCount(),
+      ]);
+      if (filteredCount != null && unfilteredCount != null) {
+        setTotals({ filteredCount, unfilteredCount });
+      } else {
+        setTotals(undefined);
+      }
+    })();
+    setTotals(undefined);
+  }, [flowMapState, getTotalFilteredCount, getTotalUnfilteredCount, setTotals, selectedSheet]);
+
   return (
     <MapContainer embed={embed} darkMode={darkMode}>
-      {configFetch.loading || flowsSheet == null ? (
+      {configFetch.loading || selectedSheet == null ? (
         <LoadingSpinner />
       ) : (
         <>
@@ -152,7 +183,7 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
             // embed={embed}
             dataFormat={'gsheets'}
             locationsUrl={makeSheetQueryUrl(spreadSheetKey!, 'locations', 'SELECT A,B,C,D', 'json')}
-            flowsUrl={makeSheetQueryUrl(spreadSheetKey!, flowsSheet, 'SELECT *', 'json')}
+            flowsUrl={makeSheetQueryUrl(spreadSheetKey!, selectedSheet, 'SELECT *', 'json')}
             config={config}
           />
           {configFetch.value && spreadSheetKey && !embed && (
@@ -167,7 +198,7 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
                   )}
                   {flowsSheets && flowsSheets.length > 1 && (
                     <HTMLSelect
-                      value={flowsSheet}
+                      value={selectedSheet}
                       onChange={handleSelectFlowsSheet}
                       options={flowsSheets.map((sheet) => ({
                         label: sheet,
@@ -203,18 +234,18 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
                     . You can <Link to="/">publish your own</Link> too.
                   </div>
 
-                  {/*{totalFilteredCount != null && totalUnfilteredCount != null && (*/}
-                  {/*  <TotalCount darkMode={darkMode}>*/}
-                  {/*    {Math.round(totalFilteredCount) === Math.round(totalUnfilteredCount)*/}
-                  {/*      ? config['msg.totalCount.allTrips']?.replace(*/}
-                  {/*          '{0}',*/}
-                  {/*          formatCount(totalUnfilteredCount)*/}
-                  {/*        )*/}
-                  {/*      : config['msg.totalCount.countOfTrips']*/}
-                  {/*          ?.replace('{0}', formatCount(totalFilteredCount))*/}
-                  {/*          .replace('{1}', formatCount(totalUnfilteredCount))}*/}
-                  {/*  </TotalCount>*/}
-                  {/*)}*/}
+                  {totals && (
+                    <TotalCount darkMode={darkMode}>
+                      {Math.round(totals.filteredCount) === Math.round(totals.unfilteredCount)
+                        ? config['msg.totalCount.allTrips']?.replace(
+                            '{0}',
+                            formatCount(totals.unfilteredCount)
+                          )
+                        : config['msg.totalCount.countOfTrips']
+                            ?.replace('{0}', formatCount(totals.filteredCount))
+                            .replace('{1}', formatCount(totals.unfilteredCount))}
+                    </TotalCount>
+                  )}
                 </Column>
               </Collapsible>
             </TitleBox>
