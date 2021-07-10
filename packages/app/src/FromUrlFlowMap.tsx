@@ -31,7 +31,6 @@ const FromUrlFlowMap: FC<Props> = (props) => {
   const history = useHistory();
   const setFlowMapState = useFlowMapStore((state) => state.setFlowMapState);
   const flowMapState = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
-  useEffect(() => {});
   // const adjustViewportToLocations = useFlowMapStore(
   //   (state) => state.flowMapState.adjustViewportToLocations
   // );
@@ -44,7 +43,16 @@ const FromUrlFlowMap: FC<Props> = (props) => {
   useEffect(() => {
     (async () => {
       resetAppStore();
-      setFlowMapState(getInitialState(DEFAULT_CONFIG, DEFAULT_VIEWPORT, ''));
+      setFlowMapState(
+        getInitialState(
+          DEFAULT_CONFIG,
+          DEFAULT_VIEWPORT,
+          ''
+          // TODO: this initializes the viewport correctly, but for some reason
+          //       leads to arrows not being rendered until zoomed
+          /*, history.location.search*/
+        )
+      );
       await loadLocations(locationsUrl, dataFormat);
       if (config) {
         const dims: [number, number] = [window.innerWidth, window.innerHeight];

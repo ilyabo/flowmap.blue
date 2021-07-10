@@ -13,6 +13,7 @@ import {
   WorkerDataProvider,
 } from '@flowmap.blue/data';
 /* eslint-disable import/no-webpack-loader-syntax */
+// @ts-ignore
 import AppWorkerDataProvider from 'worker-loader!./AppWorkerDataProvider';
 
 const workerDataProvider = wrap<WorkerDataProvider>(new AppWorkerDataProvider());
