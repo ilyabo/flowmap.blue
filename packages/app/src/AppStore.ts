@@ -131,16 +131,18 @@ export const appStore = createVanilla<AppStore>(
 
 export const useAppStore = create<AppStore>(appStore);
 export const useFlowMapStore = createFlowMapStore();
-useFlowMapStore.subscribe(
+const updateMapData =
   // When map state changes, get the updated layers data from the worker
   throttle(
-    async (flowMapState: FlowMapState) => {
+    async () => {
+      const { flowMapState } = useFlowMapStore.getState();
       await workerDataProvider.setFlowMapState(flowMapState);
-      // TODO: don't call if nothing relevant has changed in the state
       await appStore.getState().updateLayersData();
     },
     100,
     { leading: true, trailing: true }
-  ),
-  (state) => state.flowMapState
-);
+  );
+
+useFlowMapStore.subscribe(updateMapData, (state) => state.flowMapState.viewport);
+useFlowMapStore.subscribe(updateMapData, (state) => state.flowMapState.settingsState);
+useFlowMapStore.subscribe(updateMapData, (state) => state.flowMapState.filterState);

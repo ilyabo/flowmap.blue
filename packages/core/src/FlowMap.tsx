@@ -110,6 +110,7 @@ const FlowMap: React.FC<Props> = (props) => {
   const deckRef = useRef<any>();
   const dispatch = useFlowMapStore((state: FlowMapStore) => state.dispatch);
   const state = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
+  const { settingsState } = state;
 
   const outerRef = useRef<HTMLDivElement>(null);
 
@@ -137,7 +138,11 @@ const FlowMap: React.FC<Props> = (props) => {
   //   }
   // }, [timeExtent, selectedTimeRange]);
 
-  const { viewport, tooltip, animationEnabled, baseMapEnabled } = state;
+  const {
+    viewport,
+    tooltip,
+    settingsState: { animationEnabled, baseMapEnabled },
+  } = state;
   // const allFlows = getFetchedFlows(state, props);
   // const allLocations = getLocations(state, props);
   // const locationsHavingFlows = getLocationsHavingFlows(state, props);
@@ -463,7 +468,7 @@ const FlowMap: React.FC<Props> = (props) => {
 
   const mapboxAccessToken = config[ConfigPropName.MAPBOX_ACCESS_TOKEN];
   // const diffMode = getDiffMode(state, props);
-  const { darkMode } = state;
+  const { darkMode } = state.settingsState;
   const mapboxMapStyle = getMapboxMapStyle(config, darkMode);
 
   // const getHighlightForZoom = () => {
@@ -623,7 +628,7 @@ const FlowMap: React.FC<Props> = (props) => {
       darkMode,
       colorSchemeKey,
       fadeAmount,
-    } = state;
+    } = state.settingsState;
     const layers = [];
     if (layersData?.data) {
       const id = [
@@ -749,7 +754,7 @@ const FlowMap: React.FC<Props> = (props) => {
     >
       <DeckGLOuter
         darkMode={darkMode}
-        baseMapOpacity={state.baseMapOpacity / 100}
+        baseMapOpacity={settingsState.baseMapOpacity / 100}
         cursor={mapDrawingEnabled ? 'crosshair' : undefined}
       >
         <DeckGL
@@ -858,7 +863,7 @@ const FlowMap: React.FC<Props> = (props) => {
         <Absolute bottom={40} left={10}>
           <SettingsPopover
             darkMode={darkMode}
-            state={state}
+            state={state.settingsState}
             dispatch={dispatch}
             // clusterZoom={getClusterZoom(state, props)}
             // availableClusterZoomLevels={getAvailableClusterZoomLevels(state, props)}

@@ -143,7 +143,9 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
   const authorUrl = config[ConfigPropName.AUTHOR_URL];
   const authorName = config[ConfigPropName.AUTHOR_NAME];
 
-  const darkMode = useFlowMapStore((state: FlowMapStore) => state.flowMapState.darkMode);
+  const darkMode = useFlowMapStore(
+    (state: FlowMapStore) => state.flowMapState.settingsState.darkMode
+  );
 
   const handleSelectFlowsSheet: React.ChangeEventHandler<HTMLSelectElement> = (event) => {
     const sheet = event.currentTarget.value;
@@ -159,7 +161,6 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
   }>();
   useEffect(() => {
     (async () => {
-      console.log('getTotalFilteredCount');
       const [filteredCount, unfilteredCount] = await Promise.all([
         getTotalFilteredCount(),
         getTotalUnfilteredCount(),

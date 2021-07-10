@@ -46,10 +46,7 @@ export interface FilterState {
   locationFilterMode: LocationFilterMode;
 }
 
-export interface FlowMapState {
-  filterState: FilterState;
-  viewport: ViewportProps;
-  adjustViewportToLocations: boolean;
+export interface SettingsState {
   animationEnabled: boolean;
   fadeEnabled: boolean;
   locationTotalsEnabled: boolean;
@@ -57,12 +54,20 @@ export interface FlowMapState {
   clusteringEnabled: boolean;
   clusteringAuto: boolean;
   manualClusterZoom?: number;
-  baseMapEnabled: boolean;
   darkMode: boolean;
   fadeAmount: number;
-  baseMapOpacity: number;
   colorSchemeKey: string | undefined;
-  selectedFlowsSheet: string | undefined;
+  // TODO: move out basemap settings as changes in them
+  //       shouldn't cause recalculating layers data
+  baseMapEnabled: boolean;
+  baseMapOpacity: number;
+}
+
+export interface FlowMapState {
+  filterState: FilterState;
+  settingsState: SettingsState;
+  viewport: ViewportProps;
+  adjustViewportToLocations: boolean;
   tooltip?: TooltipProps;
   highlight?: Highlight;
 }
@@ -345,84 +350,120 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
       const { clusteringEnabled } = action;
       return {
         ...state,
-        clusteringEnabled,
+        settingsState: {
+          ...state.settingsState,
+          clusteringEnabled,
+        },
       };
     }
     case ActionType.SET_CLUSTERING_AUTO: {
       const { clusteringAuto } = action;
       return {
         ...state,
-        clusteringAuto,
+        settingsState: {
+          ...state.settingsState,
+          clusteringAuto,
+        },
       };
     }
     case ActionType.SET_ANIMATION_ENABLED: {
       const { animationEnabled } = action;
       return {
         ...state,
-        animationEnabled,
+        settingsState: {
+          ...state.settingsState,
+          animationEnabled,
+        },
       };
     }
     case ActionType.SET_LOCATION_TOTALS_ENABLED: {
       const { locationTotalsEnabled } = action;
       return {
         ...state,
-        locationTotalsEnabled,
+        settingsState: {
+          ...state.settingsState,
+          locationTotalsEnabled,
+        },
       };
     }
     case ActionType.SET_ADAPTIVE_SCALES_ENABLED: {
       const { adaptiveScalesEnabled } = action;
       return {
         ...state,
-        adaptiveScalesEnabled,
+        settingsState: {
+          ...state.settingsState,
+          adaptiveScalesEnabled,
+        },
       };
     }
     case ActionType.SET_DARK_MODE: {
       const { darkMode } = action;
       return {
         ...state,
-        darkMode,
+        settingsState: {
+          ...state.settingsState,
+          darkMode,
+        },
       };
     }
     case ActionType.SET_FADE_ENABLED: {
       const { fadeEnabled } = action;
       return {
         ...state,
-        fadeEnabled,
+        settingsState: {
+          ...state.settingsState,
+          fadeEnabled,
+        },
       };
     }
     case ActionType.SET_BASE_MAP_ENABLED: {
       const { baseMapEnabled } = action;
       return {
         ...state,
-        baseMapEnabled,
+        settingsState: {
+          ...state.settingsState,
+          baseMapEnabled,
+        },
       };
     }
     case ActionType.SET_FADE_AMOUNT: {
       const { fadeAmount } = action;
       return {
         ...state,
-        fadeAmount,
+        settingsState: {
+          ...state.settingsState,
+          fadeAmount,
+        },
       };
     }
     case ActionType.SET_BASE_MAP_OPACITY: {
       const { baseMapOpacity } = action;
       return {
         ...state,
-        baseMapOpacity,
+        settingsState: {
+          ...state.settingsState,
+          baseMapOpacity,
+        },
       };
     }
     case ActionType.SET_MANUAL_CLUSTER_ZOOM: {
       const { manualClusterZoom } = action;
       return {
         ...state,
-        manualClusterZoom,
+        settingsState: {
+          ...state.settingsState,
+          manualClusterZoom,
+        },
       };
     }
     case ActionType.SET_COLOR_SCHEME: {
       const { colorSchemeKey } = action;
       return {
         ...state,
-        colorSchemeKey,
+        settingsState: {
+          ...state.settingsState,
+          colorSchemeKey,
+        },
       };
     }
   }
@@ -474,17 +515,22 @@ function applyStateFromQueryString(draft: FlowMapState, query: string) {
       }
     }
   }
-  draft.baseMapOpacity = asNumber(params.bo) ?? draft.baseMapOpacity;
-  draft.manualClusterZoom = asNumber(params.cz) ?? draft.manualClusterZoom;
-  draft.baseMapEnabled = asBoolean(params.b) ?? draft.baseMapEnabled;
-  draft.darkMode = asBoolean(params.d) ?? draft.darkMode;
-  draft.fadeEnabled = asBoolean(params.fe) ?? draft.fadeEnabled;
-  draft.fadeAmount = asNumber(params.f) ?? draft.fadeAmount;
-  draft.animationEnabled = asBoolean(params.a) ?? draft.animationEnabled;
-  draft.adaptiveScalesEnabled = asBoolean(params.as) ?? draft.adaptiveScalesEnabled;
-  draft.clusteringEnabled = asBoolean(params.c) ?? draft.clusteringEnabled;
-  draft.clusteringAuto = asBoolean(params.ca) ?? draft.clusteringAuto;
-  draft.locationTotalsEnabled = asBoolean(params.lt) ?? draft.locationTotalsEnabled;
+  draft.settingsState.baseMapOpacity = asNumber(params.bo) ?? draft.settingsState.baseMapOpacity;
+  draft.settingsState.manualClusterZoom =
+    asNumber(params.cz) ?? draft.settingsState.manualClusterZoom;
+  draft.settingsState.baseMapEnabled = asBoolean(params.b) ?? draft.settingsState.baseMapEnabled;
+  draft.settingsState.darkMode = asBoolean(params.d) ?? draft.settingsState.darkMode;
+  draft.settingsState.fadeEnabled = asBoolean(params.fe) ?? draft.settingsState.fadeEnabled;
+  draft.settingsState.fadeAmount = asNumber(params.f) ?? draft.settingsState.fadeAmount;
+  draft.settingsState.animationEnabled =
+    asBoolean(params.a) ?? draft.settingsState.animationEnabled;
+  draft.settingsState.adaptiveScalesEnabled =
+    asBoolean(params.as) ?? draft.settingsState.adaptiveScalesEnabled;
+  draft.settingsState.clusteringEnabled =
+    asBoolean(params.c) ?? draft.settingsState.clusteringEnabled;
+  draft.settingsState.clusteringAuto = asBoolean(params.ca) ?? draft.settingsState.clusteringAuto;
+  draft.settingsState.locationTotalsEnabled =
+    asBoolean(params.lt) ?? draft.settingsState.locationTotalsEnabled;
   if (params.lfm != null && (params.lfm as string) in LocationFilterMode) {
     draft.filterState.locationFilterMode = params.lfm as LocationFilterMode;
   }
@@ -497,7 +543,7 @@ function applyStateFromQueryString(draft: FlowMapState, query: string) {
     }
   }
   if (typeof params.col === 'string' && COLOR_SCHEME_KEYS.includes(params.col)) {
-    draft.colorSchemeKey = params.col;
+    draft.settingsState.colorSchemeKey = params.col;
   }
 }
 
@@ -506,6 +552,7 @@ export function stateToQueryString(state: FlowMapState) {
   const {
     viewport: { latitude, longitude, zoom, bearing, pitch },
     filterState,
+    settingsState,
   } = state;
   const { selectedLocations } = filterState;
   parts.push(
@@ -519,24 +566,24 @@ export function stateToQueryString(state: FlowMapState) {
       ],
     ])}`
   );
-  parts.push(`a=${state.animationEnabled ? 1 : 0}`);
-  parts.push(`as=${state.adaptiveScalesEnabled ? 1 : 0}`);
-  parts.push(`b=${state.baseMapEnabled ? 1 : 0}`);
-  parts.push(`bo=${state.baseMapOpacity}`);
-  parts.push(`c=${state.clusteringEnabled ? 1 : 0}`);
-  parts.push(`ca=${state.clusteringAuto ? 1 : 0}`);
-  if (state.manualClusterZoom != null) parts.push(`cz=${state.manualClusterZoom}`);
-  parts.push(`d=${state.darkMode ? 1 : 0}`);
-  parts.push(`fe=${state.fadeEnabled ? 1 : 0}`);
-  parts.push(`lt=${state.locationTotalsEnabled ? 1 : 0}`);
+  parts.push(`a=${settingsState.animationEnabled ? 1 : 0}`);
+  parts.push(`as=${settingsState.adaptiveScalesEnabled ? 1 : 0}`);
+  parts.push(`b=${settingsState.baseMapEnabled ? 1 : 0}`);
+  parts.push(`bo=${settingsState.baseMapOpacity}`);
+  parts.push(`c=${settingsState.clusteringEnabled ? 1 : 0}`);
+  parts.push(`ca=${settingsState.clusteringAuto ? 1 : 0}`);
+  if (settingsState.manualClusterZoom != null) parts.push(`cz=${settingsState.manualClusterZoom}`);
+  parts.push(`d=${settingsState.darkMode ? 1 : 0}`);
+  parts.push(`fe=${settingsState.fadeEnabled ? 1 : 0}`);
+  parts.push(`lt=${settingsState.locationTotalsEnabled ? 1 : 0}`);
   parts.push(`lfm=${filterState.locationFilterMode}`);
   if (filterState.selectedTimeRange) {
     parts.push(`t=${filterState.selectedTimeRange.map(timeToQuery)}`);
   }
-  if (state.colorSchemeKey != null) {
-    parts.push(`col=${state.colorSchemeKey}`);
+  if (settingsState.colorSchemeKey != null) {
+    parts.push(`col=${settingsState.colorSchemeKey}`);
   }
-  parts.push(`f=${state.fadeAmount}`);
+  parts.push(`f=${settingsState.fadeAmount}`);
   if (selectedLocations) {
     parts.push(`s=${encodeURIComponent(csvFormatRows([selectedLocations]))}`);
   }
@@ -582,19 +629,20 @@ export function getInitialState(
       locationFilterMode: LocationFilterMode.ALL,
       selectedTimeRange: undefined,
     },
-    locationTotalsEnabled: true,
-    baseMapEnabled: true,
-    adaptiveScalesEnabled: true,
-    animationEnabled: parseBoolConfigProp(config[ConfigPropName.ANIMATE_FLOWS]),
-    clusteringEnabled: parseBoolConfigProp(config[ConfigPropName.CLUSTER_ON_ZOOM] || 'true'),
-    manualClusterZoom: undefined,
-    fadeEnabled: true,
-    clusteringAuto: true,
-    darkMode: parseBoolConfigProp(config[ConfigPropName.COLORS_DARK_MODE] || 'true'),
-    fadeAmount: parseNumberConfigProp(config[ConfigPropName.FADE_AMOUNT], 50),
-    baseMapOpacity: parseNumberConfigProp(config[ConfigPropName.BASE_MAP_OPACITY], 75),
-    colorSchemeKey: config[ConfigPropName.COLORS_SCHEME],
-    selectedFlowsSheet: undefined,
+    settingsState: {
+      locationTotalsEnabled: true,
+      baseMapEnabled: true,
+      adaptiveScalesEnabled: true,
+      animationEnabled: parseBoolConfigProp(config[ConfigPropName.ANIMATE_FLOWS]),
+      clusteringEnabled: parseBoolConfigProp(config[ConfigPropName.CLUSTER_ON_ZOOM] || 'true'),
+      manualClusterZoom: undefined,
+      fadeEnabled: true,
+      clusteringAuto: true,
+      darkMode: parseBoolConfigProp(config[ConfigPropName.COLORS_DARK_MODE] || 'true'),
+      fadeAmount: parseNumberConfigProp(config[ConfigPropName.FADE_AMOUNT], 50),
+      baseMapOpacity: parseNumberConfigProp(config[ConfigPropName.BASE_MAP_OPACITY], 75),
+      colorSchemeKey: config[ConfigPropName.COLORS_SCHEME],
+    },
   };
 
   // const bbox = config[ConfigPropName.MAP_BBOX];
