@@ -4,7 +4,6 @@ import { viewport } from '@mapbox/geo-viewport';
 import { COLOR_SCHEME_KEYS, parseBoolConfigProp, parseNumberConfigProp } from './';
 import { csvFormatRows, csvParseRows } from 'd3-dsv';
 import { timeFormat, timeParse } from 'd3-time-format';
-import { ViewState } from '@flowmap.gl/core';
 
 export const MAX_ZOOM_LEVEL = 20;
 export const MIN_ZOOM_LEVEL = 0;
@@ -41,12 +40,16 @@ export interface FlowHighlight {
 
 export type Highlight = LocationHighlight | FlowHighlight;
 
-export interface FlowMapState {
-  viewport: ViewportProps;
-  adjustViewportToLocations: boolean;
+export interface FilterState {
   selectedLocations: string[] | undefined;
   selectedTimeRange: [Date, Date] | undefined;
   locationFilterMode: LocationFilterMode;
+}
+
+export interface FlowMapState {
+  filterState: FilterState;
+  viewport: ViewportProps;
+  adjustViewportToLocations: boolean;
   animationEnabled: boolean;
   fadeEnabled: boolean;
   locationTotalsEnabled: boolean;
@@ -255,8 +258,11 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
     case ActionType.CLEAR_SELECTION: {
       return {
         ...state,
-        selectedLocations: undefined,
-        locationFilterMode: LocationFilterMode.ALL,
+        filterState: {
+          ...state.filterState,
+          selectedLocations: undefined,
+          locationFilterMode: LocationFilterMode.ALL,
+        },
         highlight: undefined,
         tooltip: undefined,
       };
@@ -267,31 +273,43 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
       if (isEmpty) {
         return {
           ...state,
-          locationFilterMode: LocationFilterMode.ALL,
-          selectedLocations: undefined,
+          filterState: {
+            ...state.filterState,
+            selectedLocations: undefined,
+            locationFilterMode: LocationFilterMode.ALL,
+          },
         };
       }
       return {
         ...state,
-        selectedLocations,
+        filterState: {
+          ...state.filterState,
+          selectedLocations,
+        },
       };
     }
     case ActionType.SET_LOCATION_FILTER_MODE: {
       const { mode } = action;
       return {
         ...state,
-        locationFilterMode: mode,
+        filterState: {
+          ...state.filterState,
+          locationFilterMode: mode,
+        },
       };
     }
     case ActionType.SET_TIME_RANGE: {
       const { range } = action;
       return {
         ...state,
-        selectedTimeRange: range,
+        filterState: {
+          ...state.filterState,
+          selectedTimeRange: range,
+        },
       };
     }
     case ActionType.SELECT_LOCATION: {
-      const { selectedLocations } = state;
+      const { selectedLocations } = state.filterState;
       const { locationId, incremental } = action;
       let nextSelectedLocations;
       if (selectedLocations) {
@@ -312,7 +330,10 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
       }
       return {
         ...state,
-        selectedLocations: nextSelectedLocations,
+        filterState: {
+          ...state.filterState,
+          selectedLocations: nextSelectedLocations,
+        },
         ...(!nextSelectedLocations && {
           locationFilterMode: LocationFilterMode.ALL,
         }),
@@ -409,9 +430,8 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
 }
 
 export const reducer /*: Reducer<State, Action>*/ = (state: FlowMapState, action: Action) => {
-  const nextState = mainReducer(state, action);
+  return mainReducer(state, action);
   // console.log(action.type, action);
-  return nextState;
 };
 
 export function asNumber(v: string | string[] | null | undefined): number | undefined {
@@ -429,12 +449,12 @@ export function asBoolean(v: string | string[] | null | undefined): boolean | un
   return undefined;
 }
 
-export function applyStateFromQueryString(draft: FlowMapState, query: string) {
+function applyStateFromQueryString(draft: FlowMapState, query: string) {
   const params = queryString.parse(query.substr(1));
   if (typeof params.s === 'string') {
     const rows = csvParseRows(params.s);
     if (rows.length > 0) {
-      draft.selectedLocations = rows[0];
+      draft.filterState.selectedLocations = rows[0];
     }
   }
   if (typeof params.v === 'string') {
@@ -466,14 +486,14 @@ export function applyStateFromQueryString(draft: FlowMapState, query: string) {
   draft.clusteringAuto = asBoolean(params.ca) ?? draft.clusteringAuto;
   draft.locationTotalsEnabled = asBoolean(params.lt) ?? draft.locationTotalsEnabled;
   if (params.lfm != null && (params.lfm as string) in LocationFilterMode) {
-    draft.locationFilterMode = params.lfm as LocationFilterMode;
+    draft.filterState.locationFilterMode = params.lfm as LocationFilterMode;
   }
   if (typeof params.t === 'string') {
     const parts = params.t.split(',');
     const t1 = timeFromQuery(parts[0]);
     const t2 = timeFromQuery(parts[1]);
     if (t1 && t2) {
-      draft.selectedTimeRange = [t1, t2];
+      draft.filterState.selectedTimeRange = [t1, t2];
     }
   }
   if (typeof params.col === 'string' && COLOR_SCHEME_KEYS.includes(params.col)) {
@@ -485,8 +505,9 @@ export function stateToQueryString(state: FlowMapState) {
   const parts: string[] = [];
   const {
     viewport: { latitude, longitude, zoom, bearing, pitch },
-    selectedLocations,
+    filterState,
   } = state;
+  const { selectedLocations } = filterState;
   parts.push(
     `v=${csvFormatRows([
       [
@@ -508,9 +529,9 @@ export function stateToQueryString(state: FlowMapState) {
   parts.push(`d=${state.darkMode ? 1 : 0}`);
   parts.push(`fe=${state.fadeEnabled ? 1 : 0}`);
   parts.push(`lt=${state.locationTotalsEnabled ? 1 : 0}`);
-  parts.push(`lfm=${state.locationFilterMode}`);
-  if (state.selectedTimeRange) {
-    parts.push(`t=${state.selectedTimeRange.map(timeToQuery)}`);
+  parts.push(`lfm=${filterState.locationFilterMode}`);
+  if (filterState.selectedTimeRange) {
+    parts.push(`t=${filterState.selectedTimeRange.map(timeToQuery)}`);
   }
   if (state.colorSchemeKey != null) {
     parts.push(`col=${state.colorSchemeKey}`);
@@ -548,13 +569,20 @@ export function getInitialViewport(
   };
 }
 
-export function getInitialState(config: Config, viewport: ViewportProps, queryString: string) {
-  const draft = {
+export function getInitialState(
+  config: Config,
+  viewport: ViewportProps,
+  queryString: string
+): FlowMapState {
+  const draft: FlowMapState = {
     viewport,
     adjustViewportToLocations: true,
-    selectedLocations: undefined,
+    filterState: {
+      selectedLocations: undefined,
+      locationFilterMode: LocationFilterMode.ALL,
+      selectedTimeRange: undefined,
+    },
     locationTotalsEnabled: true,
-    locationFilterMode: LocationFilterMode.ALL,
     baseMapEnabled: true,
     adaptiveScalesEnabled: true,
     animationEnabled: parseBoolConfigProp(config[ConfigPropName.ANIMATE_FLOWS]),
@@ -567,7 +595,6 @@ export function getInitialState(config: Config, viewport: ViewportProps, querySt
     baseMapOpacity: parseNumberConfigProp(config[ConfigPropName.BASE_MAP_OPACITY], 75),
     colorSchemeKey: config[ConfigPropName.COLORS_SCHEME],
     selectedFlowsSheet: undefined,
-    selectedTimeRange: undefined,
   };
 
   // const bbox = config[ConfigPropName.MAP_BBOX];

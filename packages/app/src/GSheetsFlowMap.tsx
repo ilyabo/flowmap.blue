@@ -150,7 +150,7 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
     handleChangeFlowsSheet(sheet, true);
   };
 
-  const flowMapState = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
+  const filterState = useFlowMapStore((state: FlowMapStore) => state.flowMapState.filterState);
   const getTotalFilteredCount = useAppStore((state) => state.getTotalFilteredCount);
   const getTotalUnfilteredCount = useAppStore((state) => state.getTotalUnfilteredCount);
   const [totals, setTotals] = useState<{
@@ -171,7 +171,7 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
       }
     })();
     setTotals(undefined);
-  }, [flowMapState, getTotalFilteredCount, getTotalUnfilteredCount, setTotals, selectedSheet]);
+  }, [filterState, getTotalFilteredCount, getTotalUnfilteredCount, setTotals, selectedSheet]);
 
   return (
     <MapContainer embed={embed} darkMode={darkMode}>
@@ -215,7 +215,7 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
                     </div>
                   ) : authorName ? (
                     <div>Created by: {authorName}</div>
-                  ) : null}
+                  ) : null}{' '}
                   {sourceName && sourceUrl && (
                     <div>
                       {'Original data source: '}
@@ -233,7 +233,6 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
                     </Away>
                     . You can <Link to="/">publish your own</Link> too.
                   </div>
-
                   {totals && (
                     <TotalCount darkMode={darkMode}>
                       {Math.round(totals.filteredCount) === Math.round(totals.unfilteredCount)

@@ -114,7 +114,7 @@ const FlowMap: React.FC<Props> = (props) => {
   const outerRef = useRef<HTMLDivElement>(null);
 
   const [mapDrawingEnabled, setMapDrawingEnabled] = useState(false);
-  const { selectedTimeRange } = state;
+  // const { selectedTimeRange } = state;
   // const timeGranularity = getTimeGranularity(state, props);
   // const timeExtent = getTimeExtent(state, props);
   // const totalCountsByTime = getTotalCountsByTime(state, props);

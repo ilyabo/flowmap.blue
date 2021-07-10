@@ -43,15 +43,17 @@ export type Selector<T> = ParametricSelector<FlowMapState, Props, T>;
 
 export const getFetchedFlows = (state: FlowMapState, props: Props) => props.flows;
 export const getFetchedLocations = (state: FlowMapState, props: Props) => props.locations;
-export const getSelectedLocations = (state: FlowMapState, props: Props) => state.selectedLocations;
+export const getSelectedLocations = (state: FlowMapState, props: Props) =>
+  state.filterState.selectedLocations;
 export const getLocationFilterMode = (state: FlowMapState, props: Props) =>
-  state.locationFilterMode;
+  state.filterState.locationFilterMode;
 export const getClusteringEnabled = (state: FlowMapState, props: Props) => state.clusteringEnabled;
 export const getLocationTotalsEnabled = (state: FlowMapState, props: Props) =>
   state.locationTotalsEnabled;
 export const getZoom = (state: FlowMapState, props: Props) => state.viewport.zoom;
 export const getViewport = (state: FlowMapState, props: Props) => state.viewport;
-export const getSelectedTimeRange = (state: FlowMapState, props: Props) => state.selectedTimeRange;
+export const getSelectedTimeRange = (state: FlowMapState, props: Props) =>
+  state.filterState.selectedTimeRange;
 
 export const getInvalidLocationIds: Selector<string[] | undefined> = createSelector(
   getFetchedLocations,
