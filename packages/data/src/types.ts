@@ -22,6 +22,11 @@ export interface Flow {
   color?: string;
 }
 
+export type FlowTotals = {
+  filteredCount: number;
+  unfilteredCount: number;
+};
+
 export enum LocationFilterMode {
   ALL = 'ALL',
   INCOMING = 'INCOMING',

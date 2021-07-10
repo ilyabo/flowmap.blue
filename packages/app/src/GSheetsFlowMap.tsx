@@ -16,7 +16,9 @@ import {
   ConfigPropName,
   DEFAULT_CONFIG,
   FlowMapStore,
+  FlowTotals,
   getFlowsSheets,
+  LoadingStatus,
   makeSheetQueryUrl,
 } from '@flowmap.blue/data';
 import { Helmet } from 'react-helmet';
@@ -152,27 +154,7 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
     handleChangeFlowsSheet(sheet, true);
   };
 
-  const filterState = useFlowMapStore((state: FlowMapStore) => state.flowMapState.filterState);
-  const getTotalFilteredCount = useAppStore((state) => state.getTotalFilteredCount);
-  const getTotalUnfilteredCount = useAppStore((state) => state.getTotalUnfilteredCount);
-  const [totals, setTotals] = useState<{
-    filteredCount: number;
-    unfilteredCount: number;
-  }>();
-  useEffect(() => {
-    (async () => {
-      const [filteredCount, unfilteredCount] = await Promise.all([
-        getTotalFilteredCount(),
-        getTotalUnfilteredCount(),
-      ]);
-      if (filteredCount != null && unfilteredCount != null) {
-        setTotals({ filteredCount, unfilteredCount });
-      } else {
-        setTotals(undefined);
-      }
-    })();
-    setTotals(undefined);
-  }, [filterState, getTotalFilteredCount, getTotalUnfilteredCount, setTotals, selectedSheet]);
+  const flowTotals = useAppStore((state) => state.flowTotals);
 
   return (
     <MapContainer embed={embed} darkMode={darkMode}>
@@ -234,16 +216,17 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
                     </Away>
                     . You can <Link to="/">publish your own</Link> too.
                   </div>
-                  {totals && (
+                  {flowTotals?.data && (
                     <TotalCount darkMode={darkMode}>
-                      {Math.round(totals.filteredCount) === Math.round(totals.unfilteredCount)
+                      {Math.round(flowTotals.data.filteredCount) ===
+                      Math.round(flowTotals.data.unfilteredCount)
                         ? config['msg.totalCount.allTrips']?.replace(
                             '{0}',
-                            formatCount(totals.unfilteredCount)
+                            formatCount(flowTotals.data.unfilteredCount)
                           )
                         : config['msg.totalCount.countOfTrips']
-                            ?.replace('{0}', formatCount(totals.filteredCount))
-                            .replace('{1}', formatCount(totals.unfilteredCount))}
+                            ?.replace('{0}', formatCount(flowTotals.data.filteredCount))
+                            .replace('{1}', formatCount(flowTotals.data.unfilteredCount))}
                     </TotalCount>
                   )}
                 </Column>

@@ -5,7 +5,7 @@ import throttle from 'lodash.throttle';
 import {
   createFlowMapStore,
   DataFormat,
-  FlowMapState,
+  FlowTotals,
   LayersData,
   LoadingState,
   LoadingStatus,
@@ -22,6 +22,7 @@ export type AppStore = {
   locationsStatus: LoadingStatus | undefined;
   flowsStatus: LoadingStatus | undefined;
   layersData: LoadingState<LayersData> | undefined;
+  flowTotals: LoadingState<FlowTotals> | undefined;
   loadLocations: (locationsUrl: string, dataFormat?: DataFormat) => Promise<void>;
   loadFlows: (locationsUrl: string, dataFormat?: DataFormat) => Promise<void>;
   // getFlowMapColorsRGBA(): ColorsRGBA;
@@ -33,14 +34,14 @@ export type AppStore = {
   getViewportForLocations: ([width, height]: [number, number]) => Promise<
     ViewportProps | undefined
   >;
-  getTotalFilteredCount: () => Promise<number | undefined>;
-  getTotalUnfilteredCount: () => Promise<number | undefined>;
+  updateFlowTotals: () => void;
 };
 
 const INITIAL_STATE = {
   locationsStatus: undefined,
   flowsStatus: undefined,
   layersData: undefined,
+  flowTotals: undefined,
 };
 
 export const appStore = createVanilla<AppStore>(
@@ -61,6 +62,34 @@ export const appStore = createVanilla<AppStore>(
         if (locationsStatus === LoadingStatus.ERROR || flowsStatus === LoadingStatus.ERROR) {
           set({ layersData: { status: LoadingStatus.ERROR } });
         }
+      }
+    }
+
+    async function updateFlowTotals() {
+      set({
+        flowTotals: {
+          ...get().flowTotals,
+          status: LoadingStatus.LOADING,
+        },
+      });
+      try {
+        const totals = await workerDataProvider.getFlowTotals();
+        set({
+          flowTotals: totals
+            ? {
+                status: LoadingStatus.DONE,
+                data: totals,
+              }
+            : undefined,
+        });
+      } catch (error) {
+        console.error(error);
+        set({
+          flowTotals: {
+            ...get().flowTotals,
+            status: LoadingStatus.ERROR,
+          },
+        });
       }
     }
     return {
@@ -113,36 +142,34 @@ export const appStore = createVanilla<AppStore>(
           flowsStatus: await workerDataProvider.loadFlows(flowsUrl, dataFormat),
         });
         await updateLayersData();
+        await updateFlowTotals();
       },
 
       getViewportForLocations: async (dims) =>
         await workerDataProvider.getViewportForLocations(dims),
 
-      async getTotalFilteredCount() {
-        return await workerDataProvider.getTotalFilteredCount();
-      },
-
-      async getTotalUnfilteredCount() {
-        return await workerDataProvider.getTotalUnfilteredCount();
-      },
+      updateFlowTotals,
     };
   }
 );
 
 export const useAppStore = create<AppStore>(appStore);
 export const useFlowMapStore = createFlowMapStore();
-const updateMapData =
+const update = (withTotals: boolean) =>
   // When map state changes, get the updated layers data from the worker
   throttle(
     async () => {
       const { flowMapState } = useFlowMapStore.getState();
       await workerDataProvider.setFlowMapState(flowMapState);
       await appStore.getState().updateLayersData();
+      if (withTotals) {
+        await appStore.getState().updateFlowTotals();
+      }
     },
     100,
     { leading: true, trailing: true }
   );
 
-useFlowMapStore.subscribe(updateMapData, (state) => state.flowMapState.viewport);
-useFlowMapStore.subscribe(updateMapData, (state) => state.flowMapState.settingsState);
-useFlowMapStore.subscribe(updateMapData, (state) => state.flowMapState.filterState);
+useFlowMapStore.subscribe(update(false), (state) => state.flowMapState.viewport);
+useFlowMapStore.subscribe(update(false), (state) => state.flowMapState.settingsState);
+useFlowMapStore.subscribe(update(true), (state) => state.flowMapState.filterState);

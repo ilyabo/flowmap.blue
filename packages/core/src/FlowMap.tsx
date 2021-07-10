@@ -120,10 +120,6 @@ const FlowMap: React.FC<Props> = (props) => {
   // const timeExtent = getTimeExtent(state, props);
   // const totalCountsByTime = getTotalCountsByTime(state, props);
 
-  // const totalFilteredCount = getTotalFilteredCount(state, props);
-  // const totalUnfilteredCount = getTotalUnfilteredCount(state, props);
-  //
-
   // useEffect(() => {
   //   if (timeExtent) {
   //     if (!selectedTimeRange ||

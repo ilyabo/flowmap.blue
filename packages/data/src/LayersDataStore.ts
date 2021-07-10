@@ -9,6 +9,7 @@ import {
   fetchGsheet,
   Flow,
   FlowMapState,
+  FlowTotals,
   getColorsRGBA,
   getDiffColorsRGBA,
   getFlowMapColors,
@@ -47,8 +48,7 @@ export type LayersDataStore = {
   // dispatch: (action: Action) => void;
   flowMapState: FlowMapState;
   getViewportForLocations: ([width, height]: [number, number]) => ViewportProps | undefined;
-  getTotalFilteredCount: () => number | undefined;
-  getTotalUnfilteredCount: () => number | undefined;
+  getFlowTotals: () => FlowTotals | undefined;
 };
 
 const INITIAL = {
@@ -120,14 +120,17 @@ export function createLayersDataStore() {
             : getColorsRGBA(flowMapColors);
         },
 
-        getTotalFilteredCount() {
+        getFlowTotals() {
           const { flowMapState } = get();
-          return getTotalFilteredCount(flowMapState, getPropsForSelectors());
-        },
-
-        getTotalUnfilteredCount() {
-          const { flowMapState } = get();
-          return getTotalUnfilteredCount(flowMapState, getPropsForSelectors());
+          const filteredCount = getTotalFilteredCount(flowMapState, getPropsForSelectors());
+          const unfilteredCount = getTotalUnfilteredCount(flowMapState, getPropsForSelectors());
+          if (filteredCount != null && unfilteredCount != null) {
+            return {
+              filteredCount,
+              unfilteredCount,
+            };
+          }
+          return undefined;
         },
 
         getViewportForLocations([width, height]) {
