@@ -19,6 +19,10 @@ import {
   getLocations,
   getLocationsForFlowMapLayer,
   getLocationsHavingFlows,
+  getTimeExtent,
+  getTimeGranularityKey,
+  getTimeGranularityByKey,
+  getTotalCountsByTime,
   getTotalFilteredCount,
   getTotalUnfilteredCount,
   isDiffColors,
@@ -122,15 +126,14 @@ export function createLayersDataStore() {
 
         getFlowTotals() {
           const { flowMapState } = get();
-          const filteredCount = getTotalFilteredCount(flowMapState, getPropsForSelectors());
-          const unfilteredCount = getTotalUnfilteredCount(flowMapState, getPropsForSelectors());
-          if (filteredCount != null && unfilteredCount != null) {
-            return {
-              filteredCount,
-              unfilteredCount,
-            };
-          }
-          return undefined;
+          const props = getPropsForSelectors();
+          return {
+            filteredCount: getTotalFilteredCount(flowMapState, props),
+            unfilteredCount: getTotalUnfilteredCount(flowMapState, props),
+            timeGranularityKey: getTimeGranularityKey(flowMapState, props),
+            timeExtent: getTimeExtent(flowMapState, props),
+            totalCountsByTime: getTotalCountsByTime(flowMapState, props),
+          };
         },
 
         getViewportForLocations([width, height]) {

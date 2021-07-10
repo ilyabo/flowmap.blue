@@ -216,19 +216,20 @@ const GSheetsFlowMap: React.FC<Props> = ({ spreadSheetKey, flowsSheetKey, embed 
                     </Away>
                     . You can <Link to="/">publish your own</Link> too.
                   </div>
-                  {flowTotals?.data && (
-                    <TotalCount darkMode={darkMode}>
-                      {Math.round(flowTotals.data.filteredCount) ===
-                      Math.round(flowTotals.data.unfilteredCount)
-                        ? config['msg.totalCount.allTrips']?.replace(
-                            '{0}',
-                            formatCount(flowTotals.data.unfilteredCount)
-                          )
-                        : config['msg.totalCount.countOfTrips']
-                            ?.replace('{0}', formatCount(flowTotals.data.filteredCount))
-                            .replace('{1}', formatCount(flowTotals.data.unfilteredCount))}
-                    </TotalCount>
-                  )}
+                  {flowTotals?.data?.filteredCount != null &&
+                    flowTotals.data.unfilteredCount != null && (
+                      <TotalCount darkMode={darkMode}>
+                        {Math.round(flowTotals.data.filteredCount) ===
+                        Math.round(flowTotals.data.unfilteredCount)
+                          ? config['msg.totalCount.allTrips']?.replace(
+                              '{0}',
+                              formatCount(flowTotals.data.unfilteredCount)
+                            )
+                          : config['msg.totalCount.countOfTrips']
+                              ?.replace('{0}', formatCount(flowTotals.data.filteredCount))
+                              .replace('{1}', formatCount(flowTotals.data.unfilteredCount))}
+                      </TotalCount>
+                    )}
                 </Column>
               </Collapsible>
             </TitleBox>

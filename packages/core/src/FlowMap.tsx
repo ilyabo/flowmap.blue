@@ -21,6 +21,7 @@ import {
   FlowMapStore,
   getLocationId,
   getMapboxMapStyle,
+  getTimeGranularityByKey,
   Highlight,
   LayersData,
   LoadingState,
@@ -40,6 +41,8 @@ import SharePopover from './SharePopover';
 import MapDrawingEditor, { MapDrawingFeature, MapDrawingMode } from './MapDrawingEditor';
 import SettingsPopover from './SettingsPopover';
 import useDebounced from './useDebounced';
+import { useAppStore } from '@flowmap.blue/app/src/AppStore';
+import Timeline from './Timeline';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -107,29 +110,34 @@ const FlowMap: React.FC<Props> = (props) => {
   const deckRef = useRef<any>();
   const dispatch = useFlowMapStore((state: FlowMapStore) => state.dispatch);
   const state = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
-  const { settingsState } = state;
+  const { settingsState, filterState } = state;
+  const { selectedTimeRange } = filterState;
 
   const outerRef = useRef<HTMLDivElement>(null);
 
   const [mapDrawingEnabled, setMapDrawingEnabled] = useState(false);
-  // const { selectedTimeRange } = state;
-  // const timeGranularity = getTimeGranularity(state, props);
-  // const timeExtent = getTimeExtent(state, props);
-  // const totalCountsByTime = getTotalCountsByTime(state, props);
+  const flowTotals = useAppStore((state) => state.flowTotals);
 
-  // useEffect(() => {
-  //   if (timeExtent) {
-  //     if (!selectedTimeRange ||
-  //        // reset selectedTimeRange if not within the timeExtent
-  //        !(timeExtent[0] <= selectedTimeRange[0] && selectedTimeRange[1] <= timeExtent[1])
-  //     ) {
-  //       dispatch({
-  //         type: ActionType.SET_TIME_RANGE,
-  //         range: timeExtent,
-  //       });
-  //     }
-  //   }
-  // }, [timeExtent, selectedTimeRange]);
+  const timeGranularity = flowTotals?.data?.timeGranularityKey
+    ? getTimeGranularityByKey(flowTotals.data.timeGranularityKey)
+    : undefined;
+  const timeExtent = flowTotals?.data?.timeExtent;
+  const totalCountsByTime = flowTotals?.data?.totalCountsByTime;
+
+  useEffect(() => {
+    if (timeExtent) {
+      if (
+        !selectedTimeRange ||
+        // reset selectedTimeRange if not within the timeExtent
+        !(timeExtent[0] <= selectedTimeRange[0] && selectedTimeRange[1] <= timeExtent[1])
+      ) {
+        dispatch({
+          type: ActionType.SET_TIME_RANGE,
+          range: timeExtent,
+        });
+      }
+    }
+  }, [timeExtent, selectedTimeRange]);
 
   const {
     viewport,
@@ -777,25 +785,25 @@ const FlowMap: React.FC<Props> = (props) => {
           )}
         </DeckGL>
       </DeckGLOuter>
-      {/*{timeExtent && timeGranularity && totalCountsByTime && selectedTimeRange && (*/}
-      {/*  <Absolute bottom={20} left={100} right={200}>*/}
-      {/*    <Column spacing={10}>*/}
-      {/*      <SelectedTimeRangeBox darkMode={darkMode}>*/}
-      {/*        {selectedTimeRangeToString(selectedTimeRange, timeGranularity)}*/}
-      {/*      </SelectedTimeRangeBox>*/}
-      {/*      <TimelineBox darkMode={darkMode}>*/}
-      {/*        <Timeline*/}
-      {/*          darkMode={darkMode}*/}
-      {/*          extent={timeExtent}*/}
-      {/*          selectedRange={selectedTimeRange}*/}
-      {/*          timeGranularity={timeGranularity}*/}
-      {/*          totalCountsByTime={totalCountsByTime}*/}
-      {/*          onChange={handleTimeRangeChanged}*/}
-      {/*        />*/}
-      {/*      </TimelineBox>*/}
-      {/*    </Column>*/}
-      {/*  </Absolute>*/}
-      {/*)}*/}
+      {timeExtent && timeGranularity && totalCountsByTime && selectedTimeRange && (
+        <Absolute bottom={20} left={100} right={200}>
+          <Column spacing={10}>
+            <SelectedTimeRangeBox darkMode={darkMode}>
+              {selectedTimeRangeToString(selectedTimeRange, timeGranularity)}
+            </SelectedTimeRangeBox>
+            <TimelineBox darkMode={darkMode}>
+              <Timeline
+                darkMode={darkMode}
+                extent={timeExtent}
+                selectedRange={selectedTimeRange}
+                timeGranularity={timeGranularity}
+                totalCountsByTime={totalCountsByTime}
+                onChange={handleTimeRangeChanged}
+              />
+            </TimelineBox>
+          </Column>
+        </Absolute>
+      )}
       {layersData?.status === LoadingStatus.DONE && (
         <>
           {/*{searchBoxLocations && (*/}

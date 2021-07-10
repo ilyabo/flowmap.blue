@@ -4,7 +4,13 @@ import {
   defaultMemoize,
   ParametricSelector,
 } from 'reselect';
-import { LocationFilterMode, MAX_ZOOM_LEVEL, FlowMapState } from './';
+import {
+  LocationFilterMode,
+  MAX_ZOOM_LEVEL,
+  FlowMapState,
+  TimeGranularityKey,
+  getTimeGranularityByKey,
+} from './';
 import {
   Config,
   ConfigPropName,
@@ -125,7 +131,7 @@ const getActualTimeExtent: Selector<[Date, Date] | undefined> = createSelector(
   }
 );
 
-export const getTimeGranularity: Selector<TimeGranularity | undefined> = createSelector(
+export const getTimeGranularityKey: Selector<TimeGranularityKey | undefined> = createSelector(
   getSortedFlowsForKnownLocations,
   getActualTimeExtent,
   (flows, timeExtent) => {
@@ -133,14 +139,18 @@ export const getTimeGranularity: Selector<TimeGranularity | undefined> = createS
 
     const minOrder = min(flows, (d) => getTimeGranularityForDate(getFlowTime(d)!).order);
     if (minOrder == null) return undefined;
-    return getTimeGranularityByOrder(minOrder);
+    const timeGranularity = getTimeGranularityByOrder(minOrder);
+    return timeGranularity ? timeGranularity.key : undefined;
   }
 );
 
 export const getTimeExtent: Selector<[Date, Date] | undefined> = createSelector(
   getActualTimeExtent,
-  getTimeGranularity,
-  (timeExtent, timeGranularity) => {
+  getTimeGranularityKey,
+  (timeExtent, timeGranularityKey) => {
+    const timeGranularity = timeGranularityKey
+      ? getTimeGranularityByKey(timeGranularityKey)
+      : undefined;
     if (!timeExtent || !timeGranularity?.interval) return undefined;
     const { interval } = timeGranularity;
     return [timeExtent[0], interval.offset(interval.floor(timeExtent[1]), 1)];
@@ -503,11 +513,14 @@ export const getExpandedSelectedLocationsSet: Selector<Set<string> | undefined> 
 
 export const getTotalCountsByTime: Selector<CountByTime[] | undefined> = createSelector(
   getSortedFlowsForKnownLocations,
-  getTimeGranularity,
+  getTimeGranularityKey,
   getTimeExtent,
   getExpandedSelectedLocationsSet,
   getLocationFilterMode,
-  (flows, timeGranularity, timeExtent, selectedLocationSet, locationFilterMode) => {
+  (flows, timeGranularityKey, timeExtent, selectedLocationSet, locationFilterMode) => {
+    const timeGranularity = timeGranularityKey
+      ? getTimeGranularityByKey(timeGranularityKey)
+      : undefined;
     if (!flows || !timeGranularity || !timeExtent) return undefined;
     const byTime = flows.reduce((m, flow) => {
       if (isFlowInSelection(flow, selectedLocationSet, locationFilterMode)) {

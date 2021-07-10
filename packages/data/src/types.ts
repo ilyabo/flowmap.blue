@@ -1,5 +1,6 @@
 import * as Cluster from '@flowmap.gl/cluster';
 import { ClusterNode } from '@flowmap.gl/cluster';
+import { TimeGranularity, TimeGranularityKey } from './time';
 
 export interface Location {
   id: string;
@@ -23,8 +24,11 @@ export interface Flow {
 }
 
 export type FlowTotals = {
-  filteredCount: number;
-  unfilteredCount: number;
+  filteredCount: number | undefined;
+  unfilteredCount: number | undefined;
+  timeGranularityKey: TimeGranularityKey | undefined;
+  timeExtent: [Date, Date] | undefined;
+  totalCountsByTime: CountByTime[] | undefined;
 };
 
 export enum LocationFilterMode {
