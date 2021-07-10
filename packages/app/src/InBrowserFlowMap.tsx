@@ -47,8 +47,6 @@ const FlowMapContainer = (props: Props) => {
           inBrowser={true}
           layersData={layersData}
           config={DEFAULT_CONFIG}
-          spreadSheetKey={undefined}
-          flowsSheet={undefined}
         />
       )}
     </MapContainer>

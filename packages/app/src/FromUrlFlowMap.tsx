@@ -87,10 +87,8 @@ const FromUrlFlowMap: FC<Props> = (props) => {
       {config && layersData && (
         <FlowMap
           inBrowser={inBrowser}
-          flowsSheet={undefined}
           layersData={layersData}
           config={config}
-          spreadSheetKey={undefined}
           useFlowMapStore={useFlowMapStore}
         />
       )}

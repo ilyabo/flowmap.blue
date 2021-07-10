@@ -55,8 +55,6 @@ export type Props = {
   embed?: boolean;
   config: Config;
   layersData: LoadingState<LayersData> | undefined;
-  spreadSheetKey: string | undefined;
-  flowsSheet: string | undefined;
   onSetFlowsSheet?: (sheet: string) => void;
   useFlowMapStore: UseStore<FlowMapStore>;
 };
@@ -106,7 +104,6 @@ export const MAX_NUM_OF_IDS_IN_ERROR = 100;
 
 const FlowMap: React.FC<Props> = (props) => {
   const { inBrowser, embed, config, layersData, useFlowMapStore } = props;
-  const { spreadSheetKey } = config;
   const deckRef = useRef<any>();
   const dispatch = useFlowMapStore((state: FlowMapStore) => state.dispatch);
   const state = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
@@ -143,7 +140,6 @@ const FlowMap: React.FC<Props> = (props) => {
   // const allLocations = getLocations(state, props);
   // const locationsHavingFlows = getLocationsHavingFlows(state, props);
   // const flows = getFlowsForFlowMapLayer(state, props);
-  // const flowsSheets = getFlowsSheets(config);
   //
   // const handleKeyDown = (evt: Event) => {
   //   if (evt instanceof KeyboardEvent && evt.key === 'Escape') {

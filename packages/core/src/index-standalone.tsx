@@ -128,8 +128,6 @@ export function init({
               [ConfigPropName.BASE_MAP_OPACITY]:
                 baseMapOpacity != undefined ? `${baseMapOpacity}` : undefined,
             }}
-            spreadSheetKey={undefined}
-            flowsSheet={undefined}
           />
         </MapContainer>
       </ErrorBoundary>
