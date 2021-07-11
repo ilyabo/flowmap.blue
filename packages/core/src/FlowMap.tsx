@@ -7,6 +7,8 @@ import {
   FlowCirclesLayer,
   FlowLayerPickingInfo,
   FlowLinesLayer,
+  FlowPickingInfo,
+  LocationPickingInfo,
   PickingType,
 } from '@flowmap.gl/core';
 import { Button, ButtonGroup, Colors } from '@blueprintjs/core';
@@ -19,10 +21,12 @@ import {
   Config,
   ConfigPropName,
   FlowMapStore,
+  getLocationCentroid,
   getLocationId,
   getMapboxMapStyle,
   getTimeGranularityByKey,
   Highlight,
+  HighlightType,
   LayersData,
   LoadingState,
   LoadingStatus,
@@ -43,6 +47,8 @@ import SettingsPopover from './SettingsPopover';
 import useDebounced from './useDebounced';
 import Timeline from './Timeline';
 import { AppStore } from './CoreAppStore';
+import { FlowTooltipContent, LocationTooltipContent } from './TooltipContent';
+import WebMercatorViewport from '@math.gl/web-mercator';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -111,6 +117,8 @@ const FlowMap: React.FC<Props> = (props) => {
   const deckRef = useRef<any>();
   const dispatch = useFlowMapStore((state: FlowMapStore) => state.dispatch);
   const state = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
+  const tooltip = useAppStore((state) => state.tooltip);
+  const setTooltip = useAppStore((state) => state.setTooltip);
   const { settingsState, filterState } = state;
   const { selectedTimeRange } = filterState;
 
@@ -118,6 +126,8 @@ const FlowMap: React.FC<Props> = (props) => {
 
   const [mapDrawingEnabled, setMapDrawingEnabled] = useState(false);
   const flowTotals = useAppStore((state) => state.flowTotals);
+  const getFlowByIndex = useAppStore((state) => state.getFlowByIndex);
+  const getLocationById = useAppStore((state) => state.getLocationById);
 
   const timeGranularity = flowTotals?.data?.timeGranularityKey
     ? getTimeGranularityByKey(flowTotals.data.timeGranularityKey)
@@ -142,7 +152,6 @@ const FlowMap: React.FC<Props> = (props) => {
 
   const {
     viewport,
-    tooltip,
     settingsState: { animationEnabled, baseMapEnabled },
   } = state;
   // const allFlows = getFetchedFlows(state, props);
@@ -297,32 +306,29 @@ const FlowMap: React.FC<Props> = (props) => {
     return container.getBoundingClientRect();
   }, [outerRef]);
   //
-  // const getMercator = useCallback(() => {
-  //   const containerBounds = getContainerClientRect();
-  //   if (!containerBounds) return undefined;
-  //   const { width, height } = containerBounds;
-  //   return new WebMercatorViewport({
-  //     ...viewport,
-  //     width,
-  //     height,
-  //   });
-  // }, [viewport, getContainerClientRect]);
-  //
+  const getMercator = useCallback(() => {
+    const containerBounds = getContainerClientRect();
+    if (!containerBounds) return undefined;
+    const { width, height } = containerBounds;
+    return new WebMercatorViewport({
+      ...viewport,
+      width,
+      height,
+    });
+  }, [viewport, getContainerClientRect]);
+
   const showTooltip = (bounds: TargetBounds, content: React.ReactNode) => {
     const containerBounds = getContainerClientRect();
     if (!containerBounds) return;
     const { top, left } = containerBounds;
-    dispatch({
-      type: ActionType.SET_TOOLTIP,
-      tooltip: {
-        target: {
-          ...bounds,
-          left: left + bounds.left,
-          top: top + bounds.top,
-        },
-        placement: 'top',
-        content,
+    setTooltip({
+      target: {
+        ...bounds,
+        left: left + bounds.left,
+        top: top + bounds.top,
       },
+      placement: 'top',
+      content,
     });
   };
 
@@ -333,112 +339,107 @@ const FlowMap: React.FC<Props> = (props) => {
   const [highlightDebounced, cancelHighlightDebounced] = useDebounced(highlight, 500);
 
   const hideTooltip = () => {
-    dispatch({
-      type: ActionType.SET_TOOLTIP,
-      tooltip: undefined,
-    });
+    setTooltip(undefined);
     cancelShowTooltipDebounced();
   };
 
   if (!viewport) return null;
 
-  //
-  // const showFlowTooltip = (pos: [number, number], info: FlowPickingInfo) => {
-  //   const [x, y] = pos;
-  //   const r = 5;
-  //   const bounds = {
-  //     left: x - r,
-  //     top: y - r,
-  //     width: r * 2,
-  //     height: r * 2,
-  //   };
-  //   const content = (
-  //     <FlowTooltipContent
-  //       flow={info.object}
-  //       origin={info.origin}
-  //       dest={info.dest}
-  //       config={config}
-  //     />
-  //   );
-  //   if (state.tooltip) {
-  //     showTooltip(bounds, content);
-  //     cancelShowTooltipDebounced();
-  //   } else {
-  //     showTooltipDebounced(bounds, content);
-  //   }
-  // };
-  //
-  // const showLocationTooltip = (info: LocationPickingInfo) => {
-  //   const { object: location, circleRadius } = info;
-  //   const mercator = getMercator();
-  //   if (!mercator) return;
-  //   const [x, y] = mercator.project(getLocationCentroid(location));
-  //   const r = circleRadius + 5;
-  //   const { selectedLocations } = state;
-  //   const bounds = {
-  //     left: x - r,
-  //     top: y - r,
-  //     width: r * 2,
-  //     height: r * 2,
-  //   };
-  //   const content = (
-  //     <LocationTooltipContent
-  //       locationInfo={info}
-  //       isSelectionEmpty={!selectedLocations}
-  //       isSelected={
-  //         selectedLocations && selectedLocations.find((id) => id === location.id) ? true : false
-  //       }
-  //       config={config}
-  //     />
-  //   );
-  //   if (state.tooltip) {
-  //     showTooltip(bounds, content);
-  //     cancelShowTooltipDebounced();
-  //   } else {
-  //     showTooltipDebounced(bounds, content);
-  //   }
-  // };
+  const showFlowTooltip = (pos: [number, number], info: FlowPickingInfo) => {
+    const [x, y] = pos;
+    const r = 5;
+    const bounds = {
+      left: x - r,
+      top: y - r,
+      width: r * 2,
+      height: r * 2,
+    };
+    const content = (
+      <FlowTooltipContent
+        flow={info.object}
+        origin={info.origin}
+        dest={info.dest}
+        config={config}
+      />
+    );
+    if (tooltip) {
+      showTooltip(bounds, content);
+      cancelShowTooltipDebounced();
+    } else {
+      showTooltipDebounced(bounds, content);
+    }
+  };
 
-  const handleHover = (info: FlowLayerPickingInfo) => {};
-  // const handleHover = (info: FlowLayerPickingInfo) => {
-  //   const { type, object, x, y } = info;
-  //   switch (type) {
-  //     case PickingType.FLOW: {
-  //       if (object) {
-  //         highlight({
-  //           type: HighlightType.FLOW,
-  //           flow: object,
-  //         });
-  //         cancelHighlightDebounced();
-  //         showFlowTooltip([x, y], info as FlowPickingInfo);
-  //       } else {
-  //         highlight(undefined);
-  //         cancelHighlightDebounced();
-  //         hideTooltip();
-  //       }
-  //       break;
-  //     }
-  //     case PickingType.LOCATION: {
-  //       if (object) {
-  //         highlightDebounced({
-  //           type: HighlightType.LOCATION,
-  //           locationId: getLocationId!(object),
-  //         });
-  //         showLocationTooltip(info as LocationPickingInfo);
-  //       } else {
-  //         highlight(undefined);
-  //         cancelHighlightDebounced();
-  //         hideTooltip();
-  //       }
-  //       break;
-  //     }
-  //     default: {
-  //       highlight(undefined);
-  //       cancelHighlightDebounced();
-  //       hideTooltip();
-  //     }
-  //   }
-  // };
+  const showLocationTooltip = (info: LocationPickingInfo) => {
+    const { object: location, circleRadius } = info;
+    const mercator = getMercator();
+    if (!mercator) return;
+    const [x, y] = mercator.project(getLocationCentroid(location));
+    const r = circleRadius + 5;
+    const { selectedLocations } = state.filterState;
+    const bounds = {
+      left: x - r,
+      top: y - r,
+      width: r * 2,
+      height: r * 2,
+    };
+    const content = (
+      <LocationTooltipContent
+        locationInfo={info}
+        isSelectionEmpty={!selectedLocations}
+        isSelected={
+          selectedLocations && selectedLocations.find((id) => id === location.id) ? true : false
+        }
+        config={config}
+      />
+    );
+    if (tooltip) {
+      showTooltip(bounds, content);
+      cancelShowTooltipDebounced();
+    } else {
+      showTooltipDebounced(bounds, content);
+    }
+  };
+
+  const handleHover = (info: FlowLayerPickingInfo) => {
+    const { type, object, x, y } = info;
+    switch (type) {
+      case PickingType.FLOW: {
+        if (object) {
+          highlight({
+            type: HighlightType.FLOW,
+            flow: object,
+          });
+          cancelHighlightDebounced();
+          showFlowTooltip([x, y], info as FlowPickingInfo);
+        } else {
+          highlight(undefined);
+          cancelHighlightDebounced();
+          hideTooltip();
+        }
+        break;
+      }
+      case PickingType.LOCATION: {
+        if (object) {
+          highlightDebounced({
+            type: HighlightType.LOCATION,
+            locationId: getLocationId!(object),
+          });
+          showLocationTooltip(info as LocationPickingInfo);
+        } else {
+          highlight(undefined);
+          cancelHighlightDebounced();
+          hideTooltip();
+        }
+        break;
+      }
+      default: {
+        highlight(undefined);
+        cancelHighlightDebounced();
+        hideTooltip();
+      }
+    }
+  };
 
   // if (!layersData) {
   //   return <LoadingSpinner />;
@@ -638,18 +639,25 @@ const FlowMap: React.FC<Props> = (props) => {
             opacity: 1,
             pickable: true,
             ...(!mapDrawingEnabled && {
-              onHover: (info: any) => {
-                // const flow = info.index != -1 && flows ? flows[info.index] : undefined;
-                // console.log(info.index, info.object)
-                // handleHover({
-                //   ...info,
-                //   type: PickingType.FLOW,
-                //   object: flow,
-                //   ...flow && {
-                //     origin: locationsById?.get(flow.origin),
-                //     dest: locationsById?.get(flow.dest),
-                //   },
-                // });
+              onHover: async (info: any) => {
+                const flow = info.index === -1 ? undefined : await getFlowByIndex(info.index);
+                if (flow) {
+                  handleHover({
+                    ...info,
+                    type: PickingType.FLOW,
+                    object: flow,
+                    ...(flow && {
+                      origin: await getLocationById(flow.origin),
+                      dest: await getLocationById(flow.dest),
+                    }),
+                  });
+                } else {
+                  handleHover({
+                    ...info,
+                    type: PickingType.FLOW,
+                    object: undefined,
+                  });
+                }
               },
             }),
             updateTriggers: {

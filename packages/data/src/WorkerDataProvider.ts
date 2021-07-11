@@ -1,4 +1,4 @@
-import { createLayersDataStore, FlowMapState, DataFormat } from './';
+import { createLayersDataStore, FlowMapState, DataFormat, Flow, Location } from './';
 import { transfer } from 'comlink';
 
 const layersDataStore = createLayersDataStore();
@@ -34,6 +34,14 @@ export default class WorkerDataProvider {
 
   async getFlowTotals() {
     return await getState().getFlowTotals();
+  }
+
+  async getFlowByIndex(index: number) {
+    return await getState().getFlowByIndex(index);
+  }
+
+  async getLocationById(id: string): Promise<Location | undefined> {
+    return await getState().getLocationById(id);
   }
 
   getLayersData() {

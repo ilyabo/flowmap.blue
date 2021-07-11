@@ -35,6 +35,7 @@ import {
   MIN_PITCH,
   MIN_ZOOM_LEVEL,
   ViewportProps,
+  getLocationsById,
 } from './';
 import getColors from './colors';
 import prepareLayersData from './prepareLayersData';
@@ -53,6 +54,8 @@ export type LayersDataStore = {
   flowMapState: FlowMapState;
   getViewportForLocations: ([width, height]: [number, number]) => ViewportProps | undefined;
   getFlowTotals: () => FlowTotals | undefined;
+  getFlowByIndex: (index: number) => Flow | undefined;
+  getLocationById: (id: string) => Location | undefined;
 };
 
 const INITIAL = {
@@ -197,6 +200,20 @@ export function createLayersDataStore() {
           } else {
             return undefined;
           }
+        },
+
+        getFlowByIndex(index: number) {
+          const { flowMapState } = get();
+          const flows = getFlowsForFlowMapLayer(flowMapState, getPropsForSelectors());
+          if (!flows) return undefined;
+          return flows[index];
+        },
+
+        getLocationById(id: string) {
+          const { flowMapState } = get();
+          const locationsById = getLocationsById(flowMapState, getPropsForSelectors());
+          if (!locationsById) return undefined;
+          return locationsById.get(id);
         },
       };
     }

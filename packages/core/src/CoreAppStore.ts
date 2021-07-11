@@ -4,10 +4,13 @@ import createVanilla from 'zustand/vanilla';
 import {
   createFlowMapStore,
   DataFormat,
+  Flow,
+  Location,
   FlowTotals,
   LayersData,
   LoadingState,
   LoadingStatus,
+  TooltipProps,
   ViewportProps,
   WorkerDataProvider,
 } from '@flowmap.blue/data';
@@ -30,9 +33,14 @@ export type AppStore = {
     ViewportProps | undefined
   >;
   updateFlowTotals: () => void;
+  getFlowByIndex: (index: number) => Promise<Flow | undefined>;
+  getLocationById: (id: string) => Promise<Location | undefined>;
+  tooltip: TooltipProps | undefined;
+  setTooltip: (tooltip: TooltipProps | undefined) => void;
 };
 
 const INITIAL_STATE = {
+  tooltip: undefined,
   locationsStatus: undefined,
   flowsStatus: undefined,
   layersData: undefined,
@@ -144,7 +152,15 @@ export function createCoreAppStore(workerDataProvider: WorkerDataProvider) {
         getViewportForLocations: async (dims) =>
           await workerDataProvider.getViewportForLocations(dims),
 
+        getFlowByIndex: async (index) => await workerDataProvider.getFlowByIndex(index),
+
+        getLocationById: async (id) => await workerDataProvider.getLocationById(id),
+
         updateFlowTotals,
+
+        setTooltip(tooltip) {
+          set({ tooltip });
+        },
       };
     }
   );

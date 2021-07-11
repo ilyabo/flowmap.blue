@@ -1,7 +1,15 @@
-import { Config, ConfigPropName, Flow, LocationFilterMode, ViewportProps, TooltipProps } from './';
+import {
+  COLOR_SCHEME_KEYS,
+  Config,
+  ConfigPropName,
+  Flow,
+  LocationFilterMode,
+  parseBoolConfigProp,
+  parseNumberConfigProp,
+  ViewportProps,
+} from './';
 import * as queryString from 'query-string';
 import { viewport } from '@mapbox/geo-viewport';
-import { COLOR_SCHEME_KEYS, parseBoolConfigProp, parseNumberConfigProp } from './';
 import { csvFormatRows, csvParseRows } from 'd3-dsv';
 import { timeFormat, timeParse } from 'd3-time-format';
 
@@ -68,7 +76,6 @@ export interface FlowMapState {
   settingsState: SettingsState;
   viewport: ViewportProps;
   adjustViewportToLocations: boolean;
-  tooltip?: TooltipProps;
   highlight?: Highlight;
 }
 
@@ -78,7 +85,6 @@ export enum ActionType {
   ZOOM_OUT = 'ZOOM_OUT',
   RESET_BEARING_PITCH = 'RESET_BEARING_PITCH',
   SET_HIGHLIGHT = 'SET_HIGHLIGHT',
-  SET_TOOLTIP = 'SET_TOOLTIP',
   CLEAR_SELECTION = 'CLEAR_SELECTION',
   SELECT_LOCATION = 'SELECT_LOCATION',
   SET_SELECTED_LOCATIONS = 'SET_SELECTED_LOCATIONS',
@@ -136,10 +142,6 @@ export type Action =
   | {
       type: ActionType.SET_TIME_RANGE;
       range: [Date, Date];
-    }
-  | {
-      type: ActionType.SET_TOOLTIP;
-      tooltip: TooltipProps | undefined;
     }
   | {
       type: ActionType.SET_CLUSTERING_ENABLED;
@@ -201,7 +203,6 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
           zoom: Math.min(MAX_ZOOM_LEVEL, Math.max(MIN_ZOOM_LEVEL, viewport.zoom)),
           ...mapTransition(),
         },
-        tooltip: undefined,
         highlight: undefined,
         ...(adjustViewportToLocations != null && {
           adjustViewportToLocations: false,
@@ -217,7 +218,6 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
           zoom: Math.min(MAX_ZOOM_LEVEL, viewport.zoom * 1.1),
           ...mapTransition(),
         },
-        tooltip: undefined,
         highlight: undefined,
       };
     }
@@ -230,7 +230,6 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
           zoom: Math.max(MIN_ZOOM_LEVEL, viewport.zoom / 1.1),
           ...mapTransition(),
         },
-        tooltip: undefined,
         highlight: undefined,
       };
     }
@@ -253,13 +252,6 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
         highlight,
       };
     }
-    case ActionType.SET_TOOLTIP: {
-      const { tooltip } = action;
-      return {
-        ...state,
-        tooltip,
-      };
-    }
     case ActionType.CLEAR_SELECTION: {
       return {
         ...state,
@@ -269,7 +261,6 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
           locationFilterMode: LocationFilterMode.ALL,
         },
         highlight: undefined,
-        tooltip: undefined,
       };
     }
     case ActionType.SET_SELECTED_LOCATIONS: {
@@ -343,7 +334,6 @@ export function mainReducer(state: FlowMapState, action: Action): FlowMapState {
           locationFilterMode: LocationFilterMode.ALL,
         }),
         highlight: undefined,
-        tooltip: undefined,
       };
     }
     case ActionType.SET_CLUSTERING_ENABLED: {

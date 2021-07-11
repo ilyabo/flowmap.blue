@@ -32,7 +32,7 @@ import getColors from './colors';
 import { nest } from 'd3-collection';
 import { bounds } from '@mapbox/geo-viewport';
 import KDBush from 'kdbush';
-import { descending, min } from 'd3-array';
+import { ascending, descending, min } from 'd3-array';
 import { csvParseRows } from 'd3-dsv';
 import { getTimeGranularityByOrder, getTimeGranularityForDate, TimeGranularity } from './time';
 import { FlowAccessors } from '@flowmap.gl/core';
@@ -798,9 +798,9 @@ export const getFlowsForFlowMapLayer: Selector<Flow[] | undefined> = createSelec
       if (locationIdsInViewport.has(origin) || locationIdsInViewport.has(dest)) {
         let pick = isFlowInSelection(flow, selectedLocationsSet, locationFilterMode);
         if (pick) {
-          picked.push(flow);
           if (origin !== dest) {
-            // exclude self-loops from count
+            // exclude self-loops
+            picked.push(flow);
             pickedCount++;
           }
         }
@@ -808,7 +808,9 @@ export const getFlowsForFlowMapLayer: Selector<Flow[] | undefined> = createSelec
       // Only keep top
       if (pickedCount > NUMBER_OF_FLOWS_TO_DISPLAY) break;
     }
-    return picked;
+    // assuming they are sorted in descending order,
+    // we need ascending for rendering
+    return picked.reverse();
   }
 );
 
