@@ -642,13 +642,15 @@ const FlowMap: React.FC<Props> = (props) => {
               onHover: async (info: any) => {
                 const flow = info.index === -1 ? undefined : await getFlowByIndex(info.index);
                 if (flow) {
+                  const origin = await getLocationById(flow.origin);
+                  const dest = await getLocationById(flow.dest);
                   handleHover({
                     ...info,
                     type: PickingType.FLOW,
                     object: flow,
                     ...(flow && {
-                      origin: await getLocationById(flow.origin),
-                      dest: await getLocationById(flow.dest),
+                      origin: origin ?? { id: flow.origin },
+                      dest: dest ?? { id: flow.dest },
                     }),
                   });
                 } else {
