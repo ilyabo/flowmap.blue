@@ -1,5 +1,6 @@
 import { createLayersDataStore, FlowMapState, DataFormat, Flow, Location } from './';
 import { transfer } from 'comlink';
+import { Cluster } from '@flowmap.gl/cluster';
 
 const layersDataStore = createLayersDataStore();
 const { getState, setState, subscribe, destroy } = layersDataStore;
@@ -40,7 +41,7 @@ export default class WorkerDataProvider {
     return await getState().getFlowByIndex(index);
   }
 
-  async getLocationById(id: string): Promise<Location | undefined> {
+  async getLocationById(id: string): Promise<Location | Cluster | undefined> {
     return await getState().getLocationById(id);
   }
 

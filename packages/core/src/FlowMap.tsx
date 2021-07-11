@@ -531,6 +531,7 @@ const FlowMap: React.FC<Props> = (props) => {
       type: ActionType.SET_VIEWPORT,
       viewport: viewState,
     });
+    hideTooltip();
   };
 
   // const locationsTree = getLocationsTree(state, props);

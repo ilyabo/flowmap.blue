@@ -14,6 +14,7 @@ import {
   ViewportProps,
   WorkerDataProvider,
 } from '@flowmap.blue/data';
+import { Cluster } from '@flowmap.gl/cluster';
 
 export type AppStore = {
   reset: () => void;
@@ -34,7 +35,7 @@ export type AppStore = {
   >;
   updateFlowTotals: () => void;
   getFlowByIndex: (index: number) => Promise<Flow | undefined>;
-  getLocationById: (id: string) => Promise<Location | undefined>;
+  getLocationById: (id: string) => Promise<Location | Cluster | undefined>;
   tooltip: TooltipProps | undefined;
   setTooltip: (tooltip: TooltipProps | undefined) => void;
 };

@@ -36,11 +36,13 @@ import {
   MIN_ZOOM_LEVEL,
   ViewportProps,
   getLocationsById,
+  getClusterIndex,
 } from './';
 import getColors from './colors';
 import prepareLayersData from './prepareLayersData';
 import prepareFlows from './prepareFlows';
 import { getViewStateForLocations } from './getViewStateForFeatures';
+import { Cluster } from '@flowmap.gl/cluster';
 
 export type LayersDataStore = {
   locations: LoadingState<Location[]> | undefined;
@@ -55,7 +57,7 @@ export type LayersDataStore = {
   getViewportForLocations: ([width, height]: [number, number]) => ViewportProps | undefined;
   getFlowTotals: () => FlowTotals | undefined;
   getFlowByIndex: (index: number) => Flow | undefined;
-  getLocationById: (id: string) => Location | undefined;
+  getLocationById: (id: string) => Location | Cluster | undefined;
 };
 
 const INITIAL = {
@@ -211,6 +213,11 @@ export function createLayersDataStore() {
 
         getLocationById(id: string) {
           const { flowMapState } = get();
+          const clusterIndex = getClusterIndex(flowMapState, getPropsForSelectors());
+          const cluster = clusterIndex?.getClusterById(id);
+          if (cluster) {
+            return cluster;
+          }
           const locationsById = getLocationsById(flowMapState, getPropsForSelectors());
           if (!locationsById) return undefined;
           return locationsById.get(id);
