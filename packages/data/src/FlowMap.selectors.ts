@@ -255,10 +255,9 @@ export const getClusterIndex: Selector<Cluster.ClusterIndex | undefined> = creat
 );
 
 export const getAvailableClusterZoomLevels = createSelector(
-  getZoom,
   getClusterIndex,
   getSelectedLocations,
-  (mapZoom, clusterIndex, selectedLocations): number[] | undefined => {
+  (clusterIndex, selectedLocations): number[] | undefined => {
     if (!clusterIndex) {
       return undefined;
     }
