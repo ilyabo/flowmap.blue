@@ -9,7 +9,7 @@ import {
   FlowLinesLayer,
   PickingType,
 } from '@flowmap.gl/core';
-import { Button, ButtonGroup, Classes, Colors } from '@blueprintjs/core';
+import { Button, ButtonGroup, Colors } from '@blueprintjs/core';
 import { Absolute, BoxStyle, Column } from './Boxes';
 import Tooltip from './Tooltip';
 import { UseStore } from 'zustand';
@@ -41,8 +41,8 @@ import SharePopover from './SharePopover';
 import MapDrawingEditor, { MapDrawingFeature, MapDrawingMode } from './MapDrawingEditor';
 import SettingsPopover from './SettingsPopover';
 import useDebounced from './useDebounced';
-import { useAppStore } from '@flowmap.blue/app/src/AppStore';
 import Timeline from './Timeline';
+import { AppStore } from './CoreAppStore';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -60,6 +60,7 @@ export type Props = {
   layersData: LoadingState<LayersData> | undefined;
   onSetFlowsSheet?: (sheet: string) => void;
   useFlowMapStore: UseStore<FlowMapStore>;
+  useAppStore: UseStore<AppStore>;
 };
 
 /* This is temporary until mixBlendMode style prop works in <DeckGL> as before v8 */
@@ -106,7 +107,7 @@ const TimelineBox = styled(BoxStyle)({
 export const MAX_NUM_OF_IDS_IN_ERROR = 100;
 
 const FlowMap: React.FC<Props> = (props) => {
-  const { inBrowser, embed, config, layersData, useFlowMapStore } = props;
+  const { inBrowser, embed, config, layersData, useFlowMapStore, useAppStore } = props;
   const deckRef = useRef<any>();
   const dispatch = useFlowMapStore((state: FlowMapStore) => state.dispatch);
   const state = useFlowMapStore((state: FlowMapStore) => state.flowMapState);
@@ -277,27 +278,6 @@ const FlowMap: React.FC<Props> = (props) => {
   //   }
   // }, [unknownLocations, showErrorToast, allFlows, flowsForKnownLocations]);
   //
-
-  const handleChangeClusteringAuto = (value: boolean) => {};
-  // const clusterIndex = getClusterIndex(state, props);
-  // const handleChangeClusteringAuto = (value: boolean) => {
-  //   if (!value) {
-  //     if (clusterIndex) {
-  //       const { availableZoomLevels } = clusterIndex;
-  //       if (availableZoomLevels != null) {
-  //         dispatch({
-  //           type: ActionType.SET_MANUAL_CLUSTER_ZOOM,
-  //           manualClusterZoom:
-  //             findAppropriateZoomLevel(clusterIndex.availableZoomLevels, viewport.zoom),
-  //         });
-  //       }
-  //     }
-  //   }
-  //   dispatch({
-  //     type: ActionType.SET_CLUSTERING_AUTO,
-  //     clusteringAuto: value,
-  //   });
-  // }
 
   const [showFullscreenButton, setShowFullscreenButton] = useState(
     embed && document.fullscreenEnabled
@@ -861,16 +841,7 @@ const FlowMap: React.FC<Props> = (props) => {
       )}
       {!embed && (
         <Absolute bottom={40} left={10}>
-          <SettingsPopover
-            darkMode={darkMode}
-            state={state.settingsState}
-            dispatch={dispatch}
-            // clusterZoom={getClusterZoom(state, props)}
-            // availableClusterZoomLevels={getAvailableClusterZoomLevels(state, props)}
-            clusterZoom={5}
-            availableClusterZoomLevels={[2, 3, 4, 5]}
-            onChangeClusteringAuto={handleChangeClusteringAuto}
-          />
+          <SettingsPopover useFlowMapStore={useFlowMapStore} />
         </Absolute>
       )}
       {showFullscreenButton && (

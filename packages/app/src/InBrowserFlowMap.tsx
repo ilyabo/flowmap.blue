@@ -16,6 +16,7 @@ import {
   createLayersDataStore,
   LoadingStatus,
 } from '@flowmap.blue/data';
+import { useAppStore } from './AppStore';
 
 interface Props {
   location: HistoryLocation<{
@@ -43,6 +44,7 @@ const FlowMapContainer = (props: Props) => {
     <MapContainer>
       {layersData.status === LoadingStatus.DONE && (
         <FlowMap
+          useAppStore={useAppStore}
           useFlowMapStore={useFlowMapStore}
           inBrowser={true}
           layersData={layersData}

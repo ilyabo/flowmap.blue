@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "es6",
+    "outDir": "dist",
+    "moduleResolution": "node",
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "declarationMap": true,
+    "skipLibCheck": true,
+    "sourceMap": false,
+    "strict": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react",
+    "lib": [
+      "esnext",
+      "dom"
+    ]
+  },
+  "include": [
+    "src/**/*",
+    "../../typings/*"
+  ],
+  "exclude": ["dist/**/*"]
+}

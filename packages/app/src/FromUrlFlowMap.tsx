@@ -98,6 +98,7 @@ const FromUrlFlowMap: FC<Props> = (props) => {
           layersData={layersData}
           config={config}
           useFlowMapStore={useFlowMapStore}
+          useAppStore={useAppStore}
         />
       )}
     </MapContainer>
